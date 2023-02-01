@@ -4,7 +4,7 @@ function HomePage() {
 
 	return (
 		<div>
-			homepage
+			login page
 		</div>
 	);
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 
-function HomePage() {
+function User() {
 
 	return (
 		<div>
-			homepage
+			data page
 		</div>
 	);
 }
 
-export default HomePage;
+export default User;
