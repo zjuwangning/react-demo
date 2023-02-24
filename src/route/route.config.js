@@ -1,7 +1,7 @@
 import React from 'react';
-import {Link} from 'react-router-dom'
-import HomePage from "../pages/homepage";
-import LoginPage from "../pages/login";
+import { Navigate, Link } from 'react-router-dom'
+import LoginLayouts from "../layouts/LoginLayouts";
+import IndexLayouts from "../layouts/IndexLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
 import User from "../pages/user";
 import Data from "../pages/data";
@@ -13,15 +13,20 @@ const NoMatch = () => (
 	</div>
 )
 
-// 主路由 登录页 首页 后台页面
+// 主路由
+// 包括 登录页 索引页 后台页
 export const routes = [
 	{
-		path: '/homepage',
-		element: <HomePage/>
+		path: '/',
+		element: <Navigate to={'/index'}/>
 	},
 	{
 		path: '/login',
-		element: <LoginPage/>
+		element: <LoginLayouts/>
+	},
+	{
+		path: '/index',
+		element: <IndexLayouts/>
 	},
 	{
 		path: '/*',
