@@ -1,16 +1,38 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { DashboardOutlined, UploadOutlined, ShareAltOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { useNavigate, useLocation, Link } from 'react-router-dom'
+import PubSub from "pubsub-js";
+import { SubEvent } from '../enum'
 import '../index.css'
 
 
 const MenuList = () => {
 	const [openKeys, setOpenKeys] = useState(['']);
+	const [selectedKeys, setSelectedKeys] = useState(['']);
 	const navigate = useNavigate();
+	const location = useLocation();
+	let menuSub = null;
+
+	// componentDidMount
+	useEffect(() => {
+		setSelectedKeys([location.pathname]);
+		menuSub = PubSub.subscribe(SubEvent.SWITCH_PAGE, (_, url)=>{
+			navigate(url)
+			setSelectedKeys([url])
+		})
+
+		return () => {
+			PubSub.unsubscribe(menuSub);
+		}
+	}, []);
+
 	const primaryClick = (item) => {
 		navigate(item['key'])
+		setSelectedKeys([item['key']])
 	}
+
+
 	const rootSubmenuKeys = ['/storage', '/share', '/credentials', '/system'];
 	const onOpenChange = (keys) => {
 		const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
@@ -62,7 +84,7 @@ const MenuList = () => {
 		<Menu
 			theme="dark"
 			mode="inline"
-			defaultSelectedKeys={['/user']}
+			selectedKeys={selectedKeys}
 			openKeys={openKeys}
 			onOpenChange={onOpenChange}
 			onClick={primaryClick}

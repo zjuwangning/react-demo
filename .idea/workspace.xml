@@ -10,10 +10,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: react-router-dom v6 路由功能添加">
+    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: 路由功能完善; 增加useEffect hooks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/IndexLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/IndexLayouts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/LoginLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/LoginLayouts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/component/Footer.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/Footer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/component/Menu.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/Menu.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/route/Router.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/route/Router.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/route/route.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/route/route.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -66,7 +71,10 @@
       <workItem from="1675042875738" duration="17973000" />
       <workItem from="1675213384288" duration="15153000" />
       <workItem from="1677034485038" duration="206000" />
-      <workItem from="1677232052386" duration="315000" />
+      <workItem from="1677232052386" duration="562000" />
+      <workItem from="1677555799177" duration="89000" />
+      <workItem from="1677556765122" duration="630000" />
+      <workItem from="1677577264873" duration="630000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
@@ -75,7 +83,14 @@
       <option name="project" value="LOCAL" />
       <updated>1675245372202</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="feat: 路由功能完善; 增加useEffect hooks">
+      <created>1677232450683</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1677232450683</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -95,7 +110,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: react-router-dom v6 路由功能添加" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: react-router-dom v6 路由功能添加" />
+    <MESSAGE value="feat: 路由功能完善; 增加useEffect hooks" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: 路由功能完善; 增加useEffect hooks" />
   </component>
   <component name="WindowStateProjectService">
     <state x="968" y="431" key="#ESLint" timestamp="1675221539898">
@@ -114,10 +130,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="654" y="166" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1675044860726" />
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1675245373200">
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1677232451774">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1675245373200" />
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1677232451774" />
     <state x="692" y="102" width="1130" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1675043497996">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

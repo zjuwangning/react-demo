@@ -3,8 +3,10 @@ import { Navigate, Link } from 'react-router-dom'
 import LoginLayouts from "../layouts/LoginLayouts";
 import IndexLayouts from "../layouts/IndexLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
-import User from "../pages/user";
-import Data from "../pages/data";
+
+import Dashboard from "../pages/dashboard";
+import Disk from "../pages/storage/disks";
+import Pool from "../pages/storage/pool";
 
 const NoMatch = () => (
 	<div style={{margin: "50px"}}>
@@ -41,12 +43,16 @@ export const routes = [
 // 后台页面路由
 export const basicRoutes = [
 	{
-		path: '/user',
-		element: <User/>
+		path: '/dashboard',
+		element: <Dashboard/>
 	},
 	{
-		path: '/data',
-		element: <Data/>
+		path: '/storage/disks',
+		element: <Disk/>
+	},
+	{
+		path: '/storage/pool-lists',
+		element: <Pool/>
 	},
 	{
 		path: '*',

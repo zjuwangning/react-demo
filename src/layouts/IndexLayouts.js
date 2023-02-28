@@ -1,27 +1,25 @@
 import React, { useEffect } from 'react';
-import { MenuFoldOutlined, MenuUnfoldOutlined, UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Layout, theme, Breadcrumb, Row } from 'antd';
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import BasicRouter from '../route/BasicRouter';
-import Footer from "./component/Footer";
-import Menu from "./component/Menu";
+import { useNavigate } from 'react-router-dom'
+import Cache from '../utils/Cache'
 import './index.css'
-
-const { Header, Sider, Content } = Layout;
 
 
 const IndexLayout = () => {
-
-
-	useEffect(authentication, [])
-
-	const authentication = () => {
-
-	}
+	const navigate = useNavigate();
+	useEffect(() => {
+		// 登录校验 未登录需跳转到登录页面
+		let userInfo = Cache.getUserInfo();
+		if (userInfo && userInfo['token']) {
+			navigate('/dashboard')
+		}
+		else {
+			navigate('/login')
+		}
+	}, [])
 
 	return (
 		<div>
-			123
+
 		</div>
 	);
 };
