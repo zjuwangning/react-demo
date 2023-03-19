@@ -1,11 +1,13 @@
 const SubEvent = {
-	SWITCH_PAGE: 'switch_page',
+	SWITCH_PAGE: 'switch_page'
 }
 
 const BreadcrumbData = {
 	'storage': {name: '存储池', isPage: false},
-	'disks': {name: '硬盘列表', isPage: true},
-	'pool-lists': {name: '存储池列表', isPage: true},
+	'disks': {name: '物理硬盘', isPage: true},
+	'initialization': {name: '初始化', isPage: true},
+	'pools': {name: '存储池列表', isPage: true},
+	'scrub': {name: '存储池校验', isPage: true},
 
 	'share': {name: 'NAS共享', isPage: false},
 	'files': {name: '共享文件', isPage: true},
@@ -21,8 +23,9 @@ const BreadcrumbData = {
 	'network': {name: '网络设置', isPage: true},
 	'update': {name: '系统升级', isPage: true},
 
-	'create': {name: '编辑', isPage: true},
+	'create': {name: '新建', isPage: true},
 	'edit': {name: '编辑', isPage: true},
+	'member': {name: '成员', isPage: true},
 }
 
 export { SubEvent, BreadcrumbData }

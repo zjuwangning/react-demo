@@ -1,12 +1,6 @@
 import React, {useEffect} from 'react';
-import Cache from "../../utils/Cache";
-import PubSub from "pubsub-js";
-import { WebSocketService } from '../../server/index'
-import {getUUID} from "../../utils/cmn";
-import {URL} from "../../server/enum";
-import { Chart, Line, Point, Tooltip, Legend } from 'bizcharts';
+import { Chart, Line, Point, Legend } from 'bizcharts';
 import Panel from '../../component/Panel'
-import './index.css'
 import { Row, Col } from 'antd'
 
 function Dashboard() {

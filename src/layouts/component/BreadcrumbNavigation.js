@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { SubEvent, BreadcrumbData } from "../enum";
 import '../index.css'
+import {isEmpty} from "../../utils/cmn";
 
 
 const BreadcrumbNavigation = () => {
@@ -12,7 +13,8 @@ const BreadcrumbNavigation = () => {
 	const pathSnippets = location.pathname.split('/').filter((i) => i);
 	const extraBreadcrumbItems = pathSnippets.map((item, index) => {
 		const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
-		if (item === 'dashboard') return
+		if (item === 'dashboard') {}
+		else if (isEmpty(BreadcrumbData[item])) {}
 		else if (index+'' === pathSnippets.length-1+'') {
 			return (
 				<Breadcrumb.Item key={url}>

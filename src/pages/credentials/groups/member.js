@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Button, Select, Input, Form, Transfer, notification } from 'antd'
-import {useNavigate, useSearchParams} from "react-router-dom";
+import { Row, Button, Transfer, notification } from 'antd'
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
@@ -9,7 +9,6 @@ import './index.css'
 
 
 function GroupMember() {
-	const [form] = Form.useForm();
 	const [loading, setLoading] = useState(false)
 	const [item, setItem] = useState({});           // 当前群组信息
 	const [userList, setUser] = useState([]);       // 全部user列表
@@ -36,7 +35,6 @@ function GroupMember() {
 							for (let k in data) {
 								memberList.push(data[k]['id']+'')
 							}
-							console.log('memberList', memberList);
 							setMember(memberList)
 						})
 						WebSocketService.call(uuid, URL.USER_QUERY, [[["id", "in", data[0]['users']]]]);
@@ -53,9 +51,6 @@ function GroupMember() {
 				setUser(data)
 			})
 			WebSocketService.call(uuid, URL.USER_QUERY);
-
-
-
 		}
 		else {
 			// 数据没有拿到id 跳转错误
@@ -69,63 +64,42 @@ function GroupMember() {
 		}
 	}, []);
 
-	const handleSubmit = values => {
-		console.log('values', values);
-		let temp = {}
-		temp['name'] = values['name'];
-
+	const handleSubmit = () => {
 		const uuid = getUUID();
 		setLoading(true);
 		editSub = PubSub.subscribe(uuid, (_, result)=>{
 			setLoading(false);
 			if (result && result>0) {
-				notification.success({message: '修改NAS群组', description: '修改NAS群组成功'});
+				notification.success({message: 'NAS群组成员', description: '保存NAS群组成员成功'});
 				navigate('/credentials/groups')
 			}
 		})
-		WebSocketService.call(uuid, URL.GROUP_EDIT, [item['id'], temp]);
+		WebSocketService.call(uuid, URL.GROUP_EDIT, [item['id'], {users: memberList || []}]);
 	}
 
-	const createCallback = result => {
-		setLoading(false);
-		if (result && result>0) {
-			notification.success({message: 'NAS群组成员', description: '编辑NAS群组成员成功'});
-			navigate('/credentials/groups')
-		}
-	}
-
+	const onChange = (nextTargetKeys) => {
+		setMember(nextTargetKeys);
+	};
 
 	return (
 		<div className={'full-page'}>
 			<Row className={'title'}>NAS群组成员</Row>
 			<Row className={'sub-title'}>编辑NAS群组成员</Row>
 			<Row type={'flex'} justify={'center'}>
-				<Form
-					labelCol={{span: 6,}}
-					wrapperCol={{span: 14,}}
-					layout="horizontal"
-					initialValues={{size: 'default',}}
-					size={'default'}
-					style={{width: 450,}}
-					form={form}
-					onFinish={handleSubmit}
-				>
-					<Form.Item label="群组名称">
-						{item['name']}
-					</Form.Item>
-				</Form>
+				群组名称：{item['name']}
 			</Row>
-			<Row type={'flex'} justify={'center'}>
+			<Row type={'flex'} justify={'center'} style={{marginTop: '2vh'}}>
 				<Transfer
 					dataSource={userList}
 					titles={['所有用户', '组成员']}
 					targetKeys={memberList}
-					// selectedKeys={selectedKeys}
-					// onChange={onChange}
-					// onSelectChange={onSelectChange}
-					// onScroll={onScroll}
+					onChange={onChange}
 					render={(item) => item.username}
 				/>
+			</Row>
+			<Row type={'flex'} justify={'center'} style={{marginTop: '2vh'}}>
+				<Button type={'primary'} onClick={handleSubmit} loading={loading}>保存</Button>
+				<Button style={{marginLeft: '40px'}} onClick={()=>{navigate('/credentials/groups')}}>取消</Button>
 			</Row>
 		</div>
 	);

@@ -5,7 +5,6 @@ import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
-import './index.css'
 
 
 function GroupCreate() {
@@ -53,7 +52,7 @@ function GroupCreate() {
 	const createCallback = result => {
 		setLoading(false);
 		if (result && result>0) {
-			notification.success({message: '新增群组', description: '新增NAS群组成功'});
+			notification.success({message: '新建群组', description: '新建NAS群组成功'});
 			navigate('/credentials/groups')
 		}
 	}
@@ -81,7 +80,7 @@ function GroupCreate() {
 
 	return (
 		<div className={'full-page'}>
-			<Row className={'title'}>新增NAS群组</Row>
+			<Row className={'title'}>新建NAS群组</Row>
 			<Row className={'sub-title'}>创建新的NAS群组</Row>
 			<Row type={'flex'} justify={'center'}>
 				<Form

@@ -51,7 +51,7 @@ const MenuList = () => {
 			key: '/storage', icon: <UploadOutlined style={{fontSize: '20px'}}/>, label: '存储池',
 			children: [
 				{key: '/storage/disks', label: '硬盘列表'},
-				{key: '/storage/pool-lists', label: '存储池列表'}
+				{key: '/storage/pools', label: '存储池列表'}
 			]
 		},
 		{

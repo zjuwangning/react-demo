@@ -1,4 +1,4 @@
-import {isEmpty} from "../../../utils/cmn";
+import { isEmpty } from "../../../utils/cmn";
 
 export const usernameValidator = (_, value) => {
 	const reg = /^[a-zA-Z0-9]{4,16}$/

@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Layout, Spin, Form, Input, Button, notification } from 'antd';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from 'pubsub-js'
-import { URL } from '../server/enum'
+import { WebSocketService } from '../server'
+import {EventMessage, URL} from '../server/enum'
 import { isEmpty, getUUID } from "../utils/cmn";
+import { usernameValidator, passwordValidator, tipsText } from '../pages/credentials/users/helptext'
 import Cache from "../utils/Cache";
 import './index.css'
 
@@ -13,14 +15,18 @@ const FormItem = Form.Item;
 
 
 const LoginLayout = () => {
+	Cache.removeUserInfo();
 	const [loading, setSpin] = useState(false);
 	const navigate = useNavigate();
-	let websocket = null;
+	const location = useLocation();
 	let loginSub = null, tokenSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		Cache.removeUserInfo();
+		if (location.search && location.search.indexOf('expired')) {
+			notification.warning({message: '令牌已过期，请重新登录。'});
+		}
 		PubSub.unsubscribe(loginSub);
 		PubSub.unsubscribe(tokenSub);
 		return () => {
@@ -31,11 +37,10 @@ const LoginLayout = () => {
 
 	const handleSubmit = values => {
 		const {username, password} = values;
-		websocket = window.websocket;
-		if (websocket) {
+		if (WebSocketService) {
 			const uuid = getUUID();
-			websocket.call(uuid, URL.LOGIN, [username, password]);
 			loginSub = PubSub.subscribe(uuid, (_, result)=>{loginCallback(result, username)})
+			WebSocketService.call(uuid, URL.LOGIN, [username, password]);
 		}
 	}
 
@@ -58,33 +63,18 @@ const LoginLayout = () => {
 	// 登录成功后 获取token
 	const getToken = username => {
 		const uuid = getUUID();
-		websocket.call(uuid, URL.GET_TOKEN, [300]);
 		tokenSub = PubSub.subscribe(uuid, (_, token)=>{
 			Cache.saveUserInfo({username, token})
 			navigate('/index')
 		})
-	}
+		WebSocketService.call(uuid, URL.GET_TOKEN, [300]);
 
-	const usernameValidator = (_, value) => {
-		const reg = /^[a-zA-Z0-9]{4,16}$/
-		if (isEmpty(value)) {
-			return Promise.resolve();
-		}
-		if (reg.test(value)) {
-			return Promise.resolve();
-		}
-		return Promise.reject();
-	}
-
-	const passwordValidator = (_, value) => {
-		const reg = /^[a-zA-Z0-9]{6,16}$/
-		if (isEmpty(value)) {
-			return Promise.resolve();
-		}
-		if (reg.test(value)) {
-			return Promise.resolve();
-		}
-		return Promise.reject();
+		// 开启主动推送功能
+		WebSocketService.send({
+			id: getUUID(),
+			name: '*',
+			msg: EventMessage.Sub,
+		});
 	}
 
 
@@ -94,21 +84,23 @@ const LoginLayout = () => {
 				<Spin tip="登录中..." spinning={!!loading}>
 					<Form onFinish={handleSubmit} className="login-form">
 						<div className="user-img">
-							<b>SmartNAS</b>
+							<b>Smart Store</b>
 							<span> - 登录</span>
 						</div>
-						<FormItem name="username" rules={[{ validator: usernameValidator, message: '用户名长度为4-16且只能包含数字、大小写字母' }, { required: true, message: '请输入您的用户名' }]}>
+						{/*<div className="login-title">*/}
+						{/*	<b>Storage Manager</b>*/}
+						{/*</div>*/}
+						<FormItem name="username" rules={[{ validator: usernameValidator, message: tipsText.usernameMsg }, { required: true, message: tipsText.usernameRequire }]}>
 							<Input
 								size="large"
 								prefix={<UserOutlined />}
 								placeholder="用户名"
 							/>
 						</FormItem>
-						<FormItem name="password" rules={[{ validator: passwordValidator, message: '密码长度为6-16且只能包含数字、大小写字母' }, { required: true, message: '请输入您的密码' }]}>
-							<Input
+						<FormItem name="password" rules={[{ validator: passwordValidator, message: tipsText.passwordMsg }, { required: true, message: tipsText.passwordRequire }]}>
+							<Input.Password
 								size="large"
 								prefix={<LockOutlined />}
-								type="password"
 								placeholder="密码"
 							/>
 						</FormItem>

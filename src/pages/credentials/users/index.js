@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Row, Button, notification, Modal } from 'antd'
-import {useLocation, useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BaseTablePage from "../../../component/TablePage";
 import { URL } from "../../../server/enum";
-import {WebSocketService} from "../../../server";
-import {getUUID} from "../../../utils/cmn";
+import { WebSocketService } from "../../../server";
+import { getUUID } from "../../../utils/cmn";
 import PubSub from "pubsub-js";
 
 function User() {
@@ -82,7 +82,7 @@ function User() {
 		},
 	];
 
-	const actions = <Button type={'primary'} onClick={()=>{navigate('/credentials/users/create')}}>新增</Button>
+	const actions = <Button type={'primary'} onClick={()=>{navigate('/credentials/users/create')}}>新建</Button>
 
 	const filters = item => {
 		return !item['builtin'] || item['username'] === 'root';
@@ -92,7 +92,7 @@ function User() {
 		<BaseTablePage
 			ref={cRef}
 			title={'NAS用户'}
-			subTitle={'进行NAS用户的新增，修改，删除'}
+			subTitle={'进行NAS用户的新建，修改，删除'}
 			url={URL.USER_QUERY}
 			columns={columns}
 			actions={actions}

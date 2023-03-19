@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Row, Button, notification, Modal } from 'antd'
-import {useLocation, useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BaseTablePage from "../../../component/TablePage";
 import { URL } from "../../../server/enum";
-import {WebSocketService} from "../../../server";
-import {getUUID} from "../../../utils/cmn";
+import { WebSocketService } from "../../../server";
+import { getUUID } from "../../../utils/cmn";
 import PubSub from "pubsub-js";
 
 function Group() {
@@ -84,7 +84,7 @@ function Group() {
 		},
 	];
 
-	const actions = <Button type={'primary'} onClick={()=>{navigate('/credentials/groups/create')}}>新增</Button>
+	const actions = <Button type={'primary'} onClick={()=>{navigate('/credentials/groups/create')}}>新建</Button>
 
 	const filters = item => {
 		return !item['builtin'];
@@ -94,7 +94,7 @@ function Group() {
 		<BaseTablePage
 			ref={cRef}
 			title={'NAS群组'}
-			subTitle={'进行NAS群组的新增，修改，删除'}
+			subTitle={'进行NAS群组的新建，修改，删除'}
 			url={URL.GROUP_QUERY}
 			columns={columns}
 			actions={actions}

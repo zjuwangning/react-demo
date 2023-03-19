@@ -1,15 +1,23 @@
 import PubSub from 'pubsub-js'
 import environment from './environment'
-import { EventMessage } from './enum'
-import { getUUID } from '../utils/cmn'
+import {EventMessage, URL} from './enum'
+import {getUUID, isEmpty} from '../utils/cmn'
+import Cache from "../utils/Cache";
 
-
-export default class WebSocketService {
+class Socket {
 	constructor() {
 		this.protocol = window.location.protocol;
 		this.remote = environment.remote;
 		this.pendingMessages = [];
 		this.shuttingdown = false;      // 准备关闭socket 后续会用到
+		this.onToken = false;
+		this.token = null;
+		const userInfo = Cache.getUserInfo();
+		// 解决页面刷新问题 刷新后进行token验证 验证通过重置token 不通过则跳转登录页面重新登录 以免遇到获取数据错误问题
+		if (userInfo && userInfo['token']) {
+			this.onToken = true;
+			this.token = userInfo['token'];
+		}
 		this.connect();
 	}
 
@@ -25,7 +33,7 @@ export default class WebSocketService {
 
 	//
 	onOpen() {
-		this.send({ msg: EventMessage.Connect, version: '1', support: ['1'] });
+		this.socket.send(JSON.stringify({ msg: EventMessage.Connect, version: '1', support: ['1'] }))
 	}
 
 	//
@@ -45,16 +53,31 @@ export default class WebSocketService {
 		}
 		catch (e) {
 			console.warn(`Malformed response: "${msg.data}"`);
-			return;
+			return ;
+		}
+		// Not Authenticated
+		if (data.error && data.error.error && data.error.error+'' ==='13') {
+			window.location = '/login?type=expired';
+			return ;
 		}
 
 		if (data.msg === EventMessage.Result) {
-			PubSub.publish(data.id, data.result);
+			PubSub.publish(data.id+'', data.result);
 		}
 		else if (data.msg === EventMessage.Connected) {
 			this.connected = true;
 			setTimeout(() => this.ping(), 20000);
-			this.onConnect();
+			if (this.onToken) {
+				this.loginToken();
+			}
+			else {
+				this.onConnect();
+			}
+		}
+		else if (data.msg === EventMessage.Changed || data.msg === EventMessage.Added) {
+			if (!isEmpty(data['fields']) && !isEmpty(data['fields']['arguments'])) {
+				PubSub.publish(data['fields']['method']+'-'+data['fields']['arguments'][0], data['fields']);
+			}
 		}
 	}
 
@@ -68,16 +91,17 @@ export default class WebSocketService {
 	}
 
 	//
-	call(id, url, params) {
-		const payload = {
-			id, msg: EventMessage.Method, method: url, params,
-		};
+	call(id, url, params=null) {
+		let payload = {id, msg: EventMessage.Method, method: url};
+		if (params !== null) {
+			payload = {id, msg: EventMessage.Method, method: url, params};
+		}
 		this.send(payload);
 	}
 
 	//
 	send(payload) {
-		if (this.socket.readyState === WebSocket.OPEN) {
+		if (this.socket.readyState === WebSocket.OPEN && !this.onToken) {
 			this.socket.send(JSON.stringify(payload));
 		} else {
 			this.pendingMessages.push(payload);
@@ -91,4 +115,40 @@ export default class WebSocketService {
 			setTimeout(() => this.ping(), 20000);
 		}
 	}
+
+	//loginToken
+	loginToken() {
+		const id = getUUID();
+		const payload = {id, msg: EventMessage.Method, method: URL.AUTH, params: [this.token]};
+		this.socket.send(JSON.stringify(payload))
+		PubSub.subscribe(id, (_, result)=>{this.loginTokenCallback(result)})
+	}
+
+	// loginTokenCallback
+	loginTokenCallback(result) {
+		this.onToken = false;
+		this.token = null;
+		if (result) {
+			this.onConnect();
+			const uuid = getUUID();
+			PubSub.subscribe(uuid, (_, token)=>{
+				let userInfo = Cache.getUserInfo();
+				userInfo['token'] = token;
+				Cache.saveUserInfo(userInfo);
+			})
+			this.call(uuid, URL.GET_TOKEN, [300]);
+
+			// 开启主动推送功能
+			this.send({
+				id: getUUID(),
+				name: '*',
+				msg: EventMessage.Sub,
+			});
+		}
+		else {
+			window.location = '/login?type=expired'
+		}
+	}
 }
+
+export const WebSocketService = new Socket()

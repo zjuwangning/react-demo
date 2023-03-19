@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {Row, Button, Form, Input, InputNumber, Select, notification} from 'antd'
+import { Row, Button, Form, Input, Select, notification } from 'antd'
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { getUUID, isEmpty } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
-import { passwordValidator, tipsText, usernameValidator } from "./helptext";
-import './index.css'
+import { passwordValidator, tipsText } from "./helptext";
+
 
 function UserEdit() {
 	const [form] = Form.useForm();
@@ -14,18 +14,19 @@ function UserEdit() {
 	const [loading, setLoading] = useState(false)
 	const [item, setItem] = useState({})
 	const navigate = useNavigate();
-	const [search, setSearch] = useSearchParams();
-	let fetchSub = null, groupSub = null, editSub = null;
+	const [search] = useSearchParams();
+	let editSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
+		let fetchSub = null, groupSub = null;
 		let uuid = getUUID();
 		groupSub = PubSub.subscribe(uuid, (_, result)=>{
 			if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
 			else {
 				let options = [];
 				for (let k in result) {
-					options.push((<Select.Option value={result[k]['id']} key={k+''}>{result[k]['group']}</Select.Option>))
+					options.push({label: result[k]['group'], value: result[k]['id']})
 				}
 				setOptions(options);
 			}
@@ -107,9 +108,7 @@ function UserEdit() {
 						{item['username']}
 					</Form.Item>
 					<Form.Item label="分配组" name={'group'} rules={[{ required: true, message: '请选择要分配的用户组！' }]}>
-						<Select>
-							{groupOptions}
-						</Select>
+						<Select options={groupOptions}/>
 					</Form.Item>
 					<Form.Item
 						label="修改密码" name="password"

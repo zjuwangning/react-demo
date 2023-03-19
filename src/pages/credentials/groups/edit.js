@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Button, Select, Input, Form, InputNumber, notification } from 'antd'
-import {useNavigate, useSearchParams} from "react-router-dom";
+import { Row, Button, Input, Form, notification } from 'antd'
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
-import './index.css'
 
 
 function GroupEdit() {
@@ -14,7 +13,7 @@ function GroupEdit() {
 	const [groupList, setGroupList] = useState([])
 	const [item, setItem] = useState({})
 	const navigate = useNavigate();
-	const [search, setSearch] = useSearchParams();
+	const [search] = useSearchParams();
 	let fetchSub = null, editSub = null, groupSub = null;
 
 	// componentDidMount componentWillUnmount
@@ -52,7 +51,6 @@ function GroupEdit() {
 	}, []);
 
 	const handleSubmit = values => {
-		console.log('values', values);
 		let temp = {}
 		temp['name'] = values['name'];
 
@@ -127,7 +125,7 @@ function GroupEdit() {
 						<Button type="primary" htmlType="submit" loading={loading}>
 							确定
 						</Button>
-						<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/credentials/users')}}>
+						<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/credentials/groups')}}>
 							取消
 						</Button>
 					</Form.Item>

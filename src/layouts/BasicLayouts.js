@@ -6,6 +6,7 @@ import Footer from "./component/Footer";
 import Menu from "./component/Menu";
 import User from "./component/User";
 import BreadcrumbNavigation from "./component/BreadcrumbNavigation";
+import logo from '../images/logo.png'
 import './index.css'
 
 const { Header, Sider, Content } = Layout;
@@ -21,7 +22,17 @@ const BasicLayout = () => {
 	return (
 		<Layout>
 			<Sider trigger={null} collapsible collapsed={collapsed} style={{height: '100vh', overflowY: 'auto'}}>
-				<div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)' }} />
+				{
+					collapsed?(
+						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px'}}><img src={logo} alt="" style={{height: '40px'}}/></Row>
+					):(
+						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px', width: '200px'}}>
+							<img src={logo} alt="" style={{height: '40px'}}/>
+							<span className={'menu-title'}>SmarStor</span>
+						</Row>
+					)
+				}
+
 				<Menu />
 			</Sider>
 			<Layout className="site-layout">
@@ -40,7 +51,7 @@ const BasicLayout = () => {
 					<Row type={'flex'} align={'middle'} style={{height: '50px'}}>
 						<BreadcrumbNavigation />
 					</Row>
-					<div style={{ height: "calc(100vh - 145px)", padding: 12, background: colorBgContainer }}>
+					<div style={{ height: "calc(100vh - 145px)", padding: '12px 25px', background: colorBgContainer }}>
 						<BasicRouter />
 					</div>
 					<Footer />

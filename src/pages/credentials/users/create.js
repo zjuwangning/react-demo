@@ -6,7 +6,6 @@ import { URL } from "../../../server/enum";
 import { usernameValidator, passwordValidator, tipsText } from "./helptext";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
-import './index.css'
 
 
 function UserCreate() {
@@ -30,7 +29,7 @@ function UserCreate() {
 				else {
 					let options = [];
 					for (let k in result) {
-						options.push((<Select.Option value={result[k]['id']} key={k+''}>{result[k]['group']}</Select.Option>))
+						options.push({label: result[k]['group'], value: result[k]['id']})
 					}
 					setOptions(options);
 				}
@@ -69,7 +68,7 @@ function UserCreate() {
 	const createCallback = result => {
 		setLoading(false);
 		if (result && result>0) {
-			notification.success({message: '新增用户', description: '新增NAS用户成功'});
+			notification.success({message: '新建用户', description: '新建NAS用户成功'});
 			navigate('/credentials/users')
 		}
 	}
@@ -97,7 +96,7 @@ function UserCreate() {
 
 	return (
 		<div className={'full-page'}>
-			<Row className={'title'}>新增NAS用户</Row>
+			<Row className={'title'}>新建NAS用户</Row>
 			<Row className={'sub-title'}>创建新的NAS用户</Row>
 			<Row type={'flex'} justify={'center'}>
 				<Form
@@ -147,9 +146,7 @@ function UserCreate() {
 						<InputNumber style={{width: '100%'}}/>
 					</Form.Item>
 					<Form.Item label="分配组" name={'group'} rules={[{ required: true, message: '请选择要分配的用户组！' }]}>
-						<Select>
-							{groupOptions}
-						</Select>
+						<Select options={groupOptions}/>
 					</Form.Item>
 					<Form.Item {...tailFormItemLayout}>
 						<Button type="primary" htmlType="submit" loading={loading}>
