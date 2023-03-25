@@ -11,6 +11,8 @@ import Initial from "../pages/storage/disks/initialization";
 import Pool from "../pages/storage/pool";
 import PoolCreate from "../pages/storage/pool/create";
 import PoolScrub from "../pages/storage/pool/scrub";
+import PoolDetails from "../pages/storage/pool/details";
+import PoolEdit from "../pages/storage/pool/edit";
 
 import User from "../pages/credentials/users";
 import UserCreate from "../pages/credentials/users/create";
@@ -45,6 +47,8 @@ export const basicRoutes = [
 	{path: '/storage/pools', element: <Pool/>},
 	{path: '/storage/pools/create', element: <PoolCreate/>},
 	{path: '/storage/pools/scrub', element: <PoolScrub/>},
+	{path: '/storage/pools/details', element: <PoolDetails/>},
+	{path: '/storage/pools/edit', element: <PoolEdit/>},
 	{path: '/credentials/users', element: <User/>},
 	{path: '/credentials/users/create', element: <UserCreate/>},
 	{path: '/credentials/users/edit', element: <UserEdit/>},

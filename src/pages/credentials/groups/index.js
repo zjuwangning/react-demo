@@ -7,10 +7,12 @@ import { WebSocketService } from "../../../server";
 import { getUUID } from "../../../utils/cmn";
 import PubSub from "pubsub-js";
 
+let deleteSub = null;
+
+
 function Group() {
 	const navigate = useNavigate();
 	const cRef = useRef(null)
-	let deleteSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -25,7 +27,7 @@ function Group() {
 				deleteSub = PubSub.subscribe(uuid, (_, result)=>{
 					if (result && result>0) {
 						notification.success({message: '删除群组', description: '删除NAS群组成功'});
-						cRef.current.fetchData()
+						cRef.current.fetchData(URL.GROUP_QUERY)
 					}
 					else {
 						cRef.current.setTableLoading(false);

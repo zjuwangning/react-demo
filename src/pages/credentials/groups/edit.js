@@ -6,6 +6,10 @@ import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
 
+let fetchSub = null,
+	editSub = null,
+	groupSub = null;
+
 
 function GroupEdit() {
 	const [form] = Form.useForm();
@@ -14,7 +18,6 @@ function GroupEdit() {
 	const [item, setItem] = useState({})
 	const navigate = useNavigate();
 	const [search] = useSearchParams();
-	let fetchSub = null, editSub = null, groupSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {

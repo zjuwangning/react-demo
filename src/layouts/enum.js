@@ -23,6 +23,7 @@ const BreadcrumbData = {
 	'network': {name: '网络设置', isPage: true},
 	'update': {name: '系统升级', isPage: true},
 
+	'details': {name: '查看详情', isPage: true},
 	'create': {name: '新建', isPage: true},
 	'edit': {name: '编辑', isPage: true},
 	'member': {name: '成员', isPage: true},

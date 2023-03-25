@@ -6,13 +6,18 @@ import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
 
+let createSub = null,
+	uidSub = null,
+	groupSub = null,
+	userSub = null;
+
 
 function GroupCreate() {
 	const [form] = Form.useForm();
 	const [groupList, setGroupList] = useState([])
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate();
-	let createSub = null, uidSub = null, groupSub = null, userSub = null;
+
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {

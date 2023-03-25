@@ -1,3 +1,30 @@
+/**对象和数组相关的函数**/
+/**
+ * 深度拷贝, 防止因直接赋值引起的地址相同问题
+ * @returns {*}
+ */
+export function cpy(o) {
+	let res = {}
+	switch (typeof o) {
+		case "object":
+			//判断o是否是react组件对象， 如果是 直接赋值
+			if (!isEmpty(o) && o["$$typeof"] === Symbol.for('react.element')) {
+				res = o
+				break
+			}
+			if (Object.prototype.toString.call(o) === '[object Array]')
+				res = []
+			for (let i in o) {
+				res[i] = cpy(o[i])
+			}
+			break
+		default:
+			res = o
+			break
+	}
+	return res
+}
+
 
 /**
  * 数据是否为空判断函数
@@ -25,7 +52,6 @@ export function isEmpty(o) {
 			return true
 	}
 }
-
 
 
 /**

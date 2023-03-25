@@ -8,6 +8,11 @@ import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
 import { PoolScanFunction, PoolScanState, PoolScrubAction } from './enum'
 
+let startSub = null,
+	jobSub = null,
+	fetchSub = null,
+	jobListSub = null;
+
 
 function PoolScrub() {
 	const [form] = Form.useForm();
@@ -19,7 +24,6 @@ function PoolScrub() {
 	const [search] = useSearchParams();
 	const navigate = useNavigate();
 
-	let startSub = null, jobSub = null, fetchSub = null, jobListSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -27,14 +31,14 @@ function PoolScrub() {
 			if (search.get('id')) {
 				getPoolInfo(search.get('id'));
 				getJobsList(search.get('id'));
-				jobSub = PubSub.subscribe("pool.scrub-"+search.get('id'), (_, data)=>{
-					console.log('jobSub data', data);
+				jobSub = PubSub.subscribe("pool.scrub-START-"+search.get('id'), (_, data)=>{
 					if (data['progress']) {
-						setPercent((data['progress']['percent']).toFixed(2))
-						if (data['progress']['percent']===100 && data['progress']['percent']===0) {
-							setFlag(true);
+						let percent = data['progress']['percent'];
+						if (data['state'] === 'SUCCESS') {
+							setFlag(false);
 							getJobsList(search.get('id'));
 						}
+						setPercent(percent.toFixed(2))
 					}
 				})
 			}
@@ -68,12 +72,26 @@ function PoolScrub() {
 		WebSocketService.call(uuid, URL.POOL_QUERY, [[["id", "=", Number(search.get('id'))]]]);
 	}
 
-	// 获取近期全部任务 筛选出属于该池的 只从近期100条任务中筛选出至多10条 过多容易导致页面卡顿
+	// 获取近期全部任务 至多显示10条
 	const getJobsList = poolId => {
 		const uuid = getUUID();
 		jobListSub = PubSub.subscribe(uuid, (_, data)=>{
-			console.log('jobListSub', data)
-			setJobList(data);
+			let temp = [];
+			let flag = false;
+			for (let k in data) {
+				if (data[k]['arguments'][1] === 'STOP') {
+					flag = true;
+				}
+				else if (data[k]['arguments'][1] === 'START') {
+					if (flag) {
+						data[k]['state'] = 'ABORT'
+						flag = false;
+					}
+					temp.push(data[k])
+					if (temp.length>=10) break;
+				}
+			}
+			setJobList(temp);
 		})
 		WebSocketService.call(uuid, URL.JOBS_QUERY, [[['method', '=', 'pool.scrub'], ['arguments', 'in' ,[[poolId, 'START'], [poolId, 'STOP']]]], {order_by: ["-id"]}]);
 	}
@@ -94,7 +112,7 @@ function PoolScrub() {
 		}
 	}
 
-	// 停止校验
+	// 中止校验
 	const stopScrub = () => {
 		let uuid = getUUID();
 		if (WebSocketService && search.get('id')) {
@@ -102,17 +120,11 @@ function PoolScrub() {
 			startSub = PubSub.subscribe(uuid, (_, result)=>{
 				setLoading(false);
 				if (!isEmpty(result)) {
-					setFlag(true);
 					getJobsList(search.get('id'));
 				}
 			})
 			WebSocketService.call(uuid, URL.POOL_SCRUB, [search.get('id'), PoolScrubAction.Stop]);
 		}
-	}
-
-	// 暂停校验
-	const pauseScrub = () => {
-
 	}
 
 	// confirmScrub
@@ -127,8 +139,8 @@ function PoolScrub() {
 	const columns = [
 		{title: '序号', dataIndex: 'index', width: '15%', render: (t,r,i)=>i+1},
 		{title: '状态', dataIndex: 'state', width: '19%'},
-		{title: '开始时间', dataIndex: 'time_started', width: '33%', render: t=>moment(t['$date']).format('YYYY-MM-DD HH:mm:ss')},
-		{title: '完成时间', dataIndex: 'time_finished', width: '33%', render: (t, r)=>{if (t) return moment(t['$date']).format('YYYY-MM-DD HH:mm:ss'); else return r['state']}},
+		{title: '开始时间', dataIndex: 'time_started', width: '33%', render: t=>{if (t) return moment(t['$date']).format('YYYY-MM-DD HH:mm:ss'); else return ''}},
+		{title: '完成时间', dataIndex: 'time_finished', width: '33%', render: t=>{if (t) return moment(t['$date']).format('YYYY-MM-DD HH:mm:ss'); else return ''}},
 	];
 
 
@@ -157,11 +169,8 @@ function PoolScrub() {
 							<Button type="primary" loading={loading} disabled={scrubFlag} onClick={confirmScrub}>
 								开始
 							</Button>
-							<Button style={{marginLeft: '10px'}} onClick={()=>{}}>
-								暂停
-							</Button>
 							<Button style={{marginLeft: '10px'}} loading={loading} disabled={!scrubFlag} onClick={()=>{confirmScrub(false)}}>
-								停止
+								中止
 							</Button>
 							<Button style={{marginLeft: '10px'}} onClick={()=>{navigate('/storage/pools')}}>
 								返回
@@ -178,7 +187,6 @@ function PoolScrub() {
 						rowKey={(record) => record.id}
 						dataSource={jobList}
 						loading={loading}
-						childrenColumnName={'notallow'}
 					/>
 				</Col>
 			</Row>

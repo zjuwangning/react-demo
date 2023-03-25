@@ -1,8 +1,9 @@
 import PubSub from 'pubsub-js'
 import environment from './environment'
-import {EventMessage, URL} from './enum'
-import {getUUID, isEmpty} from '../utils/cmn'
+import { EventMessage, URL } from './enum'
+import { getUUID, isEmpty } from '../utils/cmn'
 import Cache from "../utils/Cache";
+
 
 class Socket {
 	constructor() {
@@ -62,7 +63,7 @@ class Socket {
 		}
 
 		if (data.msg === EventMessage.Result) {
-			PubSub.publish(data.id+'', data.result);
+			PubSub.publish(data.id+'', data.result, data.error);
 		}
 		else if (data.msg === EventMessage.Connected) {
 			this.connected = true;
@@ -75,8 +76,33 @@ class Socket {
 			}
 		}
 		else if (data.msg === EventMessage.Changed || data.msg === EventMessage.Added) {
-			if (!isEmpty(data['fields']) && !isEmpty(data['fields']['arguments'])) {
-				PubSub.publish(data['fields']['method']+'-'+data['fields']['arguments'][0], data['fields']);
+			if (data['collection'] === URL.CORE_GET_JOBS) {
+				if (!isEmpty(data['fields']) && !isEmpty(data['fields']['arguments']) && !isEmpty(data['fields']['method'])) {
+					if (data['fields']['method'] === URL.POOL_EXPORT
+						|| data['fields']['method'] === URL.POOL_REPLACE
+						|| data['fields']['method'] === URL.POOL_UPDATE) {
+						PubSub.publish(data['fields']['method']+ '-'+ data['fields']['arguments'][0], data['fields']);
+					}
+					else if (data['fields']['method'] === URL.POOL_CREATE) {
+						PubSub.publish(data['fields']['method']+ '-' + data['fields']['id'], data['fields']);
+						PubSub.publish(data['fields']['method'], data['fields']);
+					}
+					else if (data['fields']['method'] === URL.POOL_SCRUB) {
+						PubSub.publish(
+							data['fields']['method']+ '-'+
+							data['fields']['arguments'][1]+'-'+
+							data['fields']['arguments'][0], data['fields']
+						);
+					}
+				}
+			}
+			else if (data['collection'] === URL.POOL_QUERY) {
+				PubSub.publish(data['collection']+ '-'+ data['fields']['id'], data['fields']);
+			}
+			else if (data['collection'] === URL.ZFS_POOL_SCAN) {
+				if (data['fields']['scan']) {
+					PubSub.publish(data['collection']+ '-'+ data['fields']['name'], data['fields']['scan']);
+				}
 			}
 		}
 	}

@@ -7,6 +7,11 @@ import { usernameValidator, passwordValidator, tipsText } from "./helptext";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
 
+let createSub = null,
+	uidSub = null,
+	groupSub = null,
+	userSub = null;
+
 
 function UserCreate() {
 	const [form] = Form.useForm();
@@ -14,7 +19,6 @@ function UserCreate() {
 	const [groupOptions, setOptions] = useState([])
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate();
-	let createSub = null, uidSub = null, groupSub = null, userSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {

@@ -140,7 +140,7 @@ const BaseTablePage = forwardRef((
 			<Table
 				size={'middle'}
 				columns={columns}
-				rowKey={(record) => record.id}
+				rowKey={(record) => record.id || record.serial}
 				dataSource={data}
 				pagination={tableParams.pagination}
 				loading={loading}

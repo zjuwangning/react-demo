@@ -7,6 +7,9 @@ import { getUUID, isEmpty } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 import { passwordValidator, tipsText } from "./helptext";
 
+let editSub = null,
+	fetchSub = null,
+	groupSub = null;
 
 function UserEdit() {
 	const [form] = Form.useForm();
@@ -15,11 +18,9 @@ function UserEdit() {
 	const [item, setItem] = useState({})
 	const navigate = useNavigate();
 	const [search] = useSearchParams();
-	let editSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
-		let fetchSub = null, groupSub = null;
 		let uuid = getUUID();
 		groupSub = PubSub.subscribe(uuid, (_, result)=>{
 			if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})

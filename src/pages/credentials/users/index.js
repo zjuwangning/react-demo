@@ -7,10 +7,12 @@ import { WebSocketService } from "../../../server";
 import { getUUID } from "../../../utils/cmn";
 import PubSub from "pubsub-js";
 
+let deleteSub = null;
+
+
 function User() {
 	const navigate = useNavigate();
 	const cRef = useRef(null)
-	let deleteSub = null;
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -27,7 +29,7 @@ function User() {
 				deleteSub = PubSub.subscribe(uuid, (_, result)=>{
 					if (result && result>0) {
 						notification.success({message: '删除用户', description: '删除NAS用户成功'});
-						cRef.current.fetchData()
+						cRef.current.fetchData(URL.USER_QUERY)
 					}
 				})
 				WebSocketService.call(uuid, URL.USER_DELETE, [record.id, {delete_group: false}]);

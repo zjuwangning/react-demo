@@ -7,6 +7,11 @@ import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty } from "../../../utils/cmn";
 import './index.css'
 
+let fetchSub = null,    // 获取当前群组信息
+	editSub = null,     // 保存NAS群组成员信息
+	memberSub = null,   // 获取当前组内成员
+	userSub = null;     // 获取所有用户
+
 
 function GroupMember() {
 	const [loading, setLoading] = useState(false)
@@ -15,10 +20,6 @@ function GroupMember() {
 	const [memberList, setMember] = useState([]);   // 当前组内user列表
 	const navigate = useNavigate();
 	const [search] = useSearchParams();
-	let fetchSub = null,    // 获取当前群组信息
-		editSub = null,     // 保存NAS群组成员信息
-		memberSub = null,   // 获取当前组内成员
-		userSub = null;     // 获取所有用户
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
