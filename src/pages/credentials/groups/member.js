@@ -26,30 +26,30 @@ function GroupMember() {
 		let uuid = getUUID();
 
 		if (search.get('id')) {
-			fetchSub = PubSub.subscribe(uuid, (_, data)=>{
-				if (!isEmpty(data) && !isEmpty(data[0])) {
-					setItem(data[0])
-					if (data[0] && data[0]['users'] && data[0]['users'].length>0) {
+			fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
+				if (!isEmpty(result) && !isEmpty(result[0])) {
+					setItem(result[0])
+					if (result[0] && result[0]['users'] && result[0]['users'].length>0) {
 						uuid = getUUID();
-						userSub = PubSub.subscribe(uuid, (_, data)=>{
+						userSub = PubSub.subscribe(uuid, (_, {result})=>{
 							let memberList = []
-							for (let k in data) {
-								memberList.push(data[k]['id']+'')
+							for (let k in result) {
+								memberList.push(result[k]['id']+'')
 							}
 							setMember(memberList)
 						})
-						WebSocketService.call(uuid, URL.USER_QUERY, [[["id", "in", data[0]['users']]]]);
+						WebSocketService.call(uuid, URL.USER_QUERY, [[["id", "in", result[0]['users']]]]);
 					}
 				}
 			})
 			WebSocketService.call(uuid, URL.GROUP_QUERY, [[["id", "=", Number(search.get('id'))]]]);
 
 			uuid = getUUID();
-			userSub = PubSub.subscribe(uuid, (_, data)=>{
-				for (let k in data) {
-					data[k]['key'] = data[k]['id']+''
+			userSub = PubSub.subscribe(uuid, (_, {result})=>{
+				for (let k in result) {
+					result[k]['key'] = result[k]['id']+''
 				}
-				setUser(data)
+				setUser(result)
 			})
 			WebSocketService.call(uuid, URL.USER_QUERY);
 		}
@@ -68,7 +68,7 @@ function GroupMember() {
 	const handleSubmit = () => {
 		const uuid = getUUID();
 		setLoading(true);
-		editSub = PubSub.subscribe(uuid, (_, result)=>{
+		editSub = PubSub.subscribe(uuid, (_, {result})=>{
 			setLoading(false);
 			if (result && result>0) {
 				notification.success({message: 'NAS群组成员', description: '保存NAS群组成员成功'});

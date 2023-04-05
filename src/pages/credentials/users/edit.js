@@ -22,7 +22,7 @@ function UserEdit() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		let uuid = getUUID();
-		groupSub = PubSub.subscribe(uuid, (_, result)=>{
+		groupSub = PubSub.subscribe(uuid, (_, {result})=>{
 			if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
 			else {
 				let options = [];
@@ -37,10 +37,10 @@ function UserEdit() {
 		if (search.get('id')) {
 			uuid = getUUID();
 			WebSocketService.call(uuid, URL.USER_QUERY, [[["id", "=", Number(search.get('id'))]]]);
-			fetchSub = PubSub.subscribe(uuid, (_, data)=>{
-				if (!isEmpty(data) && !isEmpty(data[0])) {
-					setItem(data[0])
-					form.setFieldsValue({group: data[0]['group']['id']})
+			fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
+				if (!isEmpty(result) && !isEmpty(result[0])) {
+					setItem(result[0])
+					form.setFieldsValue({group: result[0]['group']['id']})
 				}
 			})
 		}
@@ -64,7 +64,7 @@ function UserEdit() {
 
 			const uuid = getUUID();
 			setLoading(true);
-			editSub = PubSub.subscribe(uuid, (_, result)=>{
+			editSub = PubSub.subscribe(uuid, (_, {result})=>{
 				setLoading(false);
 				if (result && result>0) {
 					notification.success({message: '修改NAS用户', description: '修改NAS用户成功'});

@@ -5,14 +5,23 @@ import IndexLayouts from "../layouts/IndexLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
 
 import Dashboard from "../pages/dashboard";
+
 import Disk from "../pages/storage/disks";
 import Initial from "../pages/storage/disks/initialization";
-
 import Pool from "../pages/storage/pool";
 import PoolCreate from "../pages/storage/pool/create";
 import PoolScrub from "../pages/storage/pool/scrub";
 import PoolDetails from "../pages/storage/pool/details";
-import PoolEdit from "../pages/storage/pool/edit";
+
+import ShareFiles from "../pages/share/files"
+import FileCreate from "../pages/share/files/create"
+import FileDetails from "../pages/share/files/details"
+import FileEdit from "../pages/share/files/edit"
+import NFSAuth from "../pages/share/files/nfs"
+import SMBAuth from "../pages/share/files/smb"
+import Snapshot from "../pages/share/files/snapshot"
+
+import ShareProtocol from "../pages/share/protocol"
 
 import User from "../pages/credentials/users";
 import UserCreate from "../pages/credentials/users/create";
@@ -42,19 +51,33 @@ export const routes = [
 // 后台页面路由
 export const basicRoutes = [
 	{path: '/dashboard', element: <Dashboard/>},
+
 	{path: '/storage/disks', element: <Disk/>},
 	{path: '/storage/disks/initialization', element: <Initial/>},
+
 	{path: '/storage/pools', element: <Pool/>},
 	{path: '/storage/pools/create', element: <PoolCreate/>},
 	{path: '/storage/pools/scrub', element: <PoolScrub/>},
 	{path: '/storage/pools/details', element: <PoolDetails/>},
-	{path: '/storage/pools/edit', element: <PoolEdit/>},
+
+	{path: '/share/files', element: <ShareFiles/>},
+	{path: '/share/files/create', element: <FileCreate/>},
+	{path: '/share/files/details', element: <FileDetails/>},
+	{path: '/share/files/edit', element: <FileEdit/>},
+	{path: '/share/files/nfs-auth', element: <NFSAuth/>},
+	{path: '/share/files/smb-auth', element: <SMBAuth/>},
+	{path: '/share/files/snapshot', element: <Snapshot/>},
+
+	{path: '/share/protocol', element: <ShareProtocol/>},
+
 	{path: '/credentials/users', element: <User/>},
 	{path: '/credentials/users/create', element: <UserCreate/>},
 	{path: '/credentials/users/edit', element: <UserEdit/>},
+
 	{path: '/credentials/groups', element: <Group/>},
 	{path: '/credentials/groups/create', element: <GroupCreate/>},
 	{path: '/credentials/groups/edit', element: <GroupEdit/>},
 	{path: '/credentials/groups/member', element: <GroupMember/>},
+
 	{path: '*', element: <NoMatch/>}
 ];

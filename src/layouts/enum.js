@@ -15,6 +15,10 @@ const BreadcrumbData = {
 	'snapshot-manage': {name: '快照管理', isPage: true},
 	'snapshot-lists': {name: '定期快照', isPage: true},
 
+	'smb-auth': {name: 'SMB授权', isPage: true},
+	'nfs-auth': {name: 'NFS授权', isPage: true},
+	'snapshot': {name: '快照', isPage: true},
+
 	'credentials': {name: 'NAS账户', isPage: false},
 	'users': {name: 'NAS用户', isPage: true},
 	'groups': {name: 'NAS群组', isPage: true},

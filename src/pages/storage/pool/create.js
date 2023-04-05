@@ -32,7 +32,7 @@ function PoolCreate() {
 	useEffect(() => {
 		if (WebSocketService) {
 			let uuid = getUUID();
-			poolSub = PubSub.subscribe(uuid, (_, result)=>{
+			poolSub = PubSub.subscribe(uuid, (_, {result})=>{
 				let temp = [];
 				for (let k in result) {
 					temp.push(result[k]['name'])
@@ -42,7 +42,7 @@ function PoolCreate() {
 			WebSocketService.call(uuid, URL.POOL_QUERY);
 
 			uuid = getUUID();
-			diskSub = PubSub.subscribe(uuid, (_, result)=>{
+			diskSub = PubSub.subscribe(uuid, (_, {result})=>{
 				let temp = [], slotList=[];
 				for (let k in result) {
 					temp.push({label: '位置-'+result[k]['enclosure']['slot'], value: result[k]['name']})
@@ -94,15 +94,15 @@ function PoolCreate() {
 
 		let uuid = getUUID();
 		setLoading(true);
-		createSub = PubSub.subscribe(uuid, (_, result)=>{
+		createSub = PubSub.subscribe(uuid, (_, {result})=>{
 			if (!isEmpty(result)) {     // 开启创建流程监听
-				percentSub = PubSub.subscribe('pool.create-'+result, (_, data) => {
-					setPercent(data['progress']['percent'])
-					if (data['state'] === 'SUCCESS') {
+				percentSub = PubSub.subscribe('pool.create-'+result, (_, {result}) => {
+					setPercent(result['progress']['percent'])
+					if (result['state'] === 'SUCCESS') {
 						notification.success({message: '创建存储池完成'});
 						navigate('/storage/pools')
 					}
-					else if (data['state'] === 'FAILED') {
+					else if (result['state'] === 'FAILED') {
 						setLoading(false);
 					}
 				})
@@ -124,6 +124,7 @@ function PoolCreate() {
 		}
 		return Promise.resolve();
 	}
+
 
 	// form数据变化
 	const onDataChange = (changedValues, allValues) => {
@@ -227,7 +228,10 @@ function PoolCreate() {
 					onFinish={handleSubmit}
 					onValuesChange={onDataChange}
 				>
-					<Form.Item label="名称" name="name" rules={[{required: true, message: '请输入名称！', whitespace: true}, {validator: poolNameUsed, message: '该名称已被使用！'}]}>
+					<Form.Item label="名称" name="name" rules={[
+						{required: true, message: '请输入名称！', whitespace: true},
+						{validator: poolNameUsed, message: '该名称已被使用！'}
+					]}>
 						<Input style={{width: '300px'}}/>
 					</Form.Item>
 					<Form.Item label="介质类型" name="type" rules={[{required: true, message: '请选择介质类型！'}]}>

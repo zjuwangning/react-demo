@@ -24,7 +24,7 @@ function Group() {
 			cRef.current.setTableLoading(true);
 			if (WebSocketService) {
 				const uuid = getUUID();
-				deleteSub = PubSub.subscribe(uuid, (_, result)=>{
+				deleteSub = PubSub.subscribe(uuid, (_, {result})=>{
 					if (result && result>0) {
 						notification.success({message: '删除群组', description: '删除NAS群组成功'});
 						cRef.current.fetchData(URL.GROUP_QUERY)

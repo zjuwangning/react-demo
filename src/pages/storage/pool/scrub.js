@@ -31,10 +31,10 @@ function PoolScrub() {
 			if (search.get('id')) {
 				getPoolInfo(search.get('id'));
 				getJobsList(search.get('id'));
-				jobSub = PubSub.subscribe("pool.scrub-START-"+search.get('id'), (_, data)=>{
-					if (data['progress']) {
-						let percent = data['progress']['percent'];
-						if (data['state'] === 'SUCCESS') {
+				jobSub = PubSub.subscribe("pool.scrub-START-"+search.get('id'), (_, {result})=>{
+					if (result['progress']) {
+						let percent = result['progress']['percent'];
+						if (result['state'] === 'SUCCESS') {
 							setFlag(false);
 							getJobsList(search.get('id'));
 						}
@@ -57,11 +57,11 @@ function PoolScrub() {
 	// 获取池信息
 	const getPoolInfo = () => {
 		const uuid = getUUID();
-		fetchSub = PubSub.subscribe(uuid, (_, data)=>{
-			if (!isEmpty(data) && !isEmpty(data[0])) {
-				setItem(data[0])
+		fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
+			if (!isEmpty(result) && !isEmpty(result[0])) {
+				setItem(result[0])
 				// 正在校验中
-				if (data[0]['scan']['function'] === PoolScanFunction.Scrub && data[0]['scan']['state'] === PoolScanState.Scanning) {
+				if (result[0]['scan']['function'] === PoolScanFunction.Scrub && result[0]['scan']['state'] === PoolScanState.Scanning) {
 					setFlag(true);
 				}
 				else {
@@ -75,19 +75,19 @@ function PoolScrub() {
 	// 获取近期全部任务 至多显示10条
 	const getJobsList = poolId => {
 		const uuid = getUUID();
-		jobListSub = PubSub.subscribe(uuid, (_, data)=>{
+		jobListSub = PubSub.subscribe(uuid, (_, {result})=>{
 			let temp = [];
 			let flag = false;
-			for (let k in data) {
-				if (data[k]['arguments'][1] === 'STOP') {
+			for (let k in result) {
+				if (result[k]['arguments'][1] === 'STOP') {
 					flag = true;
 				}
-				else if (data[k]['arguments'][1] === 'START') {
+				else if (result[k]['arguments'][1] === 'START') {
 					if (flag) {
-						data[k]['state'] = 'ABORT'
+						result[k]['state'] = 'ABORT'
 						flag = false;
 					}
-					temp.push(data[k])
+					temp.push(result[k])
 					if (temp.length>=10) break;
 				}
 			}
@@ -101,7 +101,7 @@ function PoolScrub() {
 		let uuid = getUUID();
 		if (WebSocketService && search.get('id')) {
 			setLoading(true);
-			startSub = PubSub.subscribe(uuid, (_, result)=>{
+			startSub = PubSub.subscribe(uuid, (_, {result})=>{
 				setLoading(false);
 				if (!isEmpty(result)) {
 					setFlag(true);
@@ -117,7 +117,7 @@ function PoolScrub() {
 		let uuid = getUUID();
 		if (WebSocketService && search.get('id')) {
 			setLoading(true);
-			startSub = PubSub.subscribe(uuid, (_, result)=>{
+			startSub = PubSub.subscribe(uuid, (_, {result})=>{
 				setLoading(false);
 				if (!isEmpty(result)) {
 					getJobsList(search.get('id'));

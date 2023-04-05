@@ -23,11 +23,11 @@ function GroupCreate() {
 	useEffect(() => {
 		if (WebSocketService) {
 			let uuid = getUUID();
-			uidSub = PubSub.subscribe(uuid, (_, result)=>{form.setFieldsValue({gid: result})})
+			uidSub = PubSub.subscribe(uuid, (_, {result})=>{form.setFieldsValue({gid: result})})
 			WebSocketService.call(uuid, URL.GROUP_GID_QUERY);
 
 			uuid = getUUID();
-			groupSub = PubSub.subscribe(uuid, (_, result)=>{
+			groupSub = PubSub.subscribe(uuid, (_, {result})=>{
 				let temp = [];
 				result.map(item=>{
 					if (!isEmpty(item) && !isEmpty(item['group'])) temp.push(item['group'])
@@ -49,7 +49,7 @@ function GroupCreate() {
 		if (WebSocketService) {
 			const uuid = getUUID();
 			setLoading(true);
-			createSub = PubSub.subscribe(uuid, (_, result)=>{createCallback(result)})
+			createSub = PubSub.subscribe(uuid, (_, {result})=>{createCallback(result)})
 			WebSocketService.call(uuid, URL.GROUP_CREATE, [values]);
 		}
 	}

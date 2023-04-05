@@ -25,15 +25,15 @@ function GroupEdit() {
 
 		if (search.get('id')) {
 			WebSocketService.call(uuid, URL.GROUP_QUERY, [[["id", "=", Number(search.get('id'))]]]);
-			fetchSub = PubSub.subscribe(uuid, (_, data)=>{
-				if (!isEmpty(data) && !isEmpty(data[0])) {
-					setItem(data[0])
-					form.setFieldsValue({name: data[0]['name']})
+			fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
+				if (!isEmpty(result) && !isEmpty(result[0])) {
+					setItem(result[0])
+					form.setFieldsValue({name: result[0]['name']})
 				}
 			})
 
 			uuid = getUUID();
-			groupSub = PubSub.subscribe(uuid, (_, result)=>{
+			groupSub = PubSub.subscribe(uuid, (_, {result})=>{
 				let temp = [];
 				result.map(item=>{
 					if (!isEmpty(item) && !isEmpty(item['group'])) temp.push(item['group'])
@@ -59,7 +59,7 @@ function GroupEdit() {
 
 		const uuid = getUUID();
 		setLoading(true);
-		editSub = PubSub.subscribe(uuid, (_, result)=>{
+		editSub = PubSub.subscribe(uuid, (_, {result})=>{
 			setLoading(false);
 			if (result && result>0) {
 				notification.success({message: '修改NAS群组', description: '修改NAS群组成功'});

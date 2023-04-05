@@ -39,13 +39,14 @@ const LoginLayout = () => {
 		const {username, password} = values;
 		if (WebSocketService) {
 			const uuid = getUUID();
-			loginSub = PubSub.subscribe(uuid, (_, result)=>{loginCallback(result, username)})
+			loginSub = PubSub.subscribe(uuid, (_, {result})=>{loginCallback(result, username)})
 			WebSocketService.call(uuid, URL.LOGIN, [username, password]);
 		}
 	}
 
 	const loginCallback = (result, username) => {
 		if (result === 0) {
+		// if (result) {
 			notification.success({message: '登录成功'})
 			getToken(username);
 		}
@@ -63,8 +64,8 @@ const LoginLayout = () => {
 	// 登录成功后 获取token
 	const getToken = username => {
 		const uuid = getUUID();
-		tokenSub = PubSub.subscribe(uuid, (_, token)=>{
-			Cache.saveUserInfo({username, token})
+		tokenSub = PubSub.subscribe(uuid, (_, {result})=>{
+			Cache.saveUserInfo({username, token: result})
 			navigate('/index')
 		})
 		WebSocketService.call(uuid, URL.GET_TOKEN, [300]);

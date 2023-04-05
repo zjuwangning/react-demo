@@ -60,7 +60,7 @@ function Disk() {
 	const onLocateConfirm = () => {
 		setLoading(true);
 		let uuid = getUUID();
-		locateConfirmSub = PubSub.subscribe(uuid, (_, result)=>{
+		locateConfirmSub = PubSub.subscribe(uuid, (_, {})=>{
 			setLoading(false);
 			getLocateState(record['enclosure']['number'], record['enclosure']['slot']);
 		})
@@ -71,7 +71,7 @@ function Disk() {
 	const onLocateCancel = () => {
 		setLoading(true);
 		let uuid = getUUID();
-		locateConfirmSub = PubSub.subscribe(uuid, (_, result)=>{
+		locateConfirmSub = PubSub.subscribe(uuid, (_, {})=>{
 			setLoading(false);
 			getLocateState(record['enclosure']['number'], record['enclosure']['slot']);
 		})
@@ -81,7 +81,7 @@ function Disk() {
 	// 获取当前定位状态
 	const getLocateState = (enclosure, slot) => {
 		let uuid = getUUID();
-		locateGetSub = PubSub.subscribe(uuid, (_, result)=>{
+		locateGetSub = PubSub.subscribe(uuid, (_, {result})=>{
 			setDisabled(result);
 			setLocated(result);
 		})
@@ -91,7 +91,7 @@ function Disk() {
 	// 获取一次当前定位剩余时间 用于数据的立刻显示
 	const getRemainOnce = (enclosure, slot) => {
 		let uuid = getUUID();
-		locateGetSub = PubSub.subscribe(uuid, (_, result)=>{
+		locateGetSub = PubSub.subscribe(uuid, (_, {result})=>{
 			setRemain(result[0]);
 			if (result[1]>0) setTime(result[1]);
 			else setTime(60);
@@ -102,7 +102,7 @@ function Disk() {
 	// 轮询获取当前定位剩余时间 用于数据更新
 	const getRemainTime = (enclosure, slot) => {
 		let uuid = getUUID();
-		locateGetSub = PubSub.subscribe(uuid, (_, result)=>{
+		locateGetSub = PubSub.subscribe(uuid, (_, {result})=>{
 			setRemain(result[0]);
 		})
 		if (timer!==null) {
@@ -165,7 +165,7 @@ function Disk() {
 			width: '14%'
 		},
 		{
-			title: '角色',
+			title: '存储池',
 			dataIndex: 'pool',
 			width: '14%',
 			render: t => t?t:'N/A'

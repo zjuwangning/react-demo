@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from "react-router-dom";
-import { Row, Descriptions, Progress, Tag, Modal, notification, Table, Button, Form, Select } from "antd";
+import { Row, Col, Descriptions, Progress, Tag, Modal, notification, Table, Button, Form, Select, Popover } from "antd";
 import PubSub from "pubsub-js";
 import moment from "moment";
 import { URL } from "../../../server/enum";
@@ -9,7 +9,8 @@ import { WebSocketService } from "../../../server";
 import { PoolScanState, renderState, renderDisk } from "./enum";
 
 let poolSub = null, setSub = null, jobSub = null, handleSub = null,
-	diskSub = null, replaceSub = null, poolChange = null, scanSub = null;
+	diskSub = null, replaceSub = null, poolChange = null, scanSub = null,
+	addSub = null, addSubProgress = null, delSub = null, delSubProgress = null;
 
 
 function PoolDetails() {
@@ -19,10 +20,21 @@ function PoolDetails() {
 	const [topology, setTopology] = useState({})    // topology数据 所有盘使用情况
 	const [percent, setPercent] = useState(0)       // 替换进度
 	const [replace, setReplace] = useState(false)   // 替换进度Modal窗
-	const [record, setRecord] = useState({})     // 要调换的record
+	const [record, setRecord] = useState({})        // 要调换的record
 	const [options, setOption] = useState([])       // 可用硬盘选项
 	const [loading, setLoading] = useState(false)   // 替换过程中按钮的loading
 	const [scans, setScan] = useState({})        // 显示scan任务
+	// 添加硬盘
+	const [box, setBox] = useState([])              // 显示机壳图
+	const [title, setTitle] = useState('')          // 弹窗标题
+	const [addOpen, setAddOpen] = useState(false)      // 弹窗open
+	const [addOptions, setAddOption] = useState([]) // 添加硬盘可用硬盘选项
+	const [addPercent, setAddPercent] = useState(0) // 添加进度
+	const [disks, setDisk] = useState([])           // 选择添加的磁盘
+	const [disabled, setDisabled] = useState(false) // 添加窗口选择框disabled
+	// 删除硬盘
+	const [delOpen, setDelOpen] = useState(false)      // 弹窗open
+
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -38,41 +50,50 @@ function PoolDetails() {
 		return () => {
 			PubSub.unsubscribe(poolSub);PubSub.unsubscribe(setSub);PubSub.unsubscribe(jobSub);PubSub.unsubscribe(handleSub);
 			PubSub.unsubscribe(diskSub);PubSub.unsubscribe(replaceSub);PubSub.unsubscribe(poolChange);PubSub.unsubscribe(scanSub);
+			PubSub.unsubscribe(addSub);PubSub.unsubscribe(addSubProgress);PubSub.unsubscribe(delSub);PubSub.unsubscribe(delSubProgress);
 		}
 	}, []);
 
 	// 页面所有需要获取的数据
 	const getAllData = () => {
-		getPoolInfo(search.get('id'));
+		getPoolInfo(true);
 		getUnusedDisk();
 	}
 
 	// 获取可用硬盘 生成options 用于硬盘替换
 	const getUnusedDisk = () => {
 		let uuid = getUUID();
-		diskSub = PubSub.subscribe(uuid, (_, result)=>{
-			let temp = [];
+		diskSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [], addTemp = [], slotList=[], disks={};
 			for (let k in result) {
 				temp.push({
 					label: `${result[k]['name']}（${result[k]['type']}, ${Number(result[k]['size']/1024/1024/1024).toFixed(0)}GB）`,
 					value: result[k]['identifier']
 				})
-			}
-			if (isEmpty(temp)) {
-				notification.warning({message: '暂无可用硬盘'})
+				addTemp.push({
+					label: `${result[k]['name']}（${result[k]['type']}, ${Number(result[k]['size']/1024/1024/1024).toFixed(0)}GB）`,
+					value: result[k]['name']
+				})
+				slotList.push(result[k]['enclosure']['slot']);
+				disks[result[k]['enclosure']['slot']] = result[k]
 			}
 			setOption(temp);
+			setAddOption(addTemp);
+			generateBox(1, slotList, disks);
 		})
 		WebSocketService.call(uuid, URL.DISK_UNUSED);
 	}
 
 	// 获取池信息
-	const getPoolInfo = () => {
+	const getPoolInfo = (flag=false) => {
 		let uuid = getUUID();
-		poolSub = PubSub.subscribe(uuid, (_, data)=>{
-			if (!isEmpty(data) && !isEmpty(data[0])) {
-				getDatasetInfo(data[0]);
-				subReplace(data[0]);
+		poolSub = PubSub.subscribe(uuid, (_, {result})=>{
+			if (!isEmpty(result) && !isEmpty(result[0])) {
+				getDatasetInfo(result[0]);
+				if (flag) {
+					// 首次获取池信息时 开启所有上报数据监听
+					startSub(result[0]);
+				}
 			}
 			else {
 				notification.error({message: '存储池信息获取失败'})
@@ -84,7 +105,7 @@ function PoolDetails() {
 	// 获取数据集信息 用于展示容量
 	const getDatasetInfo = data => {
 		let uuid = getUUID();
-		setSub = PubSub.subscribe(uuid, (_, result)=>{
+		setSub = PubSub.subscribe(uuid, (_, {result})=>{
 			if (!isEmpty(result) && !isEmpty(result[0])) {
 				generateData(data, result[0]);
 			}
@@ -95,29 +116,63 @@ function PoolDetails() {
 		WebSocketService.call(uuid, URL.DATASET_QUERY, [[["id", "=", data['name']]]]);
 	}
 
-	// 开启任务进度监听
-	const subReplace = r => {
-		replaceSub = PubSub.subscribe('pool.replace-'+r['id'], (_, data)=>{
-			setPercent(data['progress']['percent']);
-			if (data['state'] === 'SUCCESS') {
+	// 开启各种任务进度监听
+	const startSub = r => {
+		// 替换硬盘任务
+		replaceSub = PubSub.subscribe('pool.replace-'+r['id'], (_, {result})=>{
+			setPercent(result['progress']['percent']);
+			if (result['state'] === 'SUCCESS') {
 				notification.success({message: '硬盘替换完成，等待数据同步'});
 			}
-			else if (data['state'] === 'FAILED') {
+			else if (result['state'] === 'FAILED') {
 				setLoading(false);
 				notification.error({message: '硬盘替换失败'});
 			}
 		})
+		// 添加磁盘任务
+		addSubProgress = PubSub.subscribe('pool.update-'+r['id'], (_, {result})=>{
+			setAddPercent(result['progress']['percent']);
+			if (result['state'] === 'SUCCESS') {
+				notification.success({message: `添加${title}完成，等待数据同步`});
+			}
+			else if (result['state'] === 'FAILED') {
+				setLoading(false);
+				setDisabled(false);
+				notification.error({message: '硬盘替换失败'});
+			}
+		})
+		// 删除磁盘任务
+		delSubProgress = PubSub.subscribe('pool.remove-'+r['id'], (_, {result})=>{
+			setPercent(result['progress']['percent']);
+			if (result['state'] === 'SUCCESS') {
+				notification.success({message: '删除完成'});
+				setLoading(false);
+				setDelOpen(false);
+				setPercent(0);
+				getPoolInfo(false);
+				getUnusedDisk();
+			}
+			else if (result['state'] === 'FAILED') {
+				setLoading(false);
+				setDisabled(false);
+				notification.error({message: '硬盘替换失败'});
+			}
+		})
 		// scanSub
-		scanSub = PubSub.subscribe('zfs.pool.scan-'+r['name'], (_, data)=>{
-			setScan(data)
+		scanSub = PubSub.subscribe('zfs.pool.scan-'+r['name'], (_, {result})=>{
+			setScan(result)
 		})
 		// 接收到新的池数据推送 认为操作成功
-		poolChange = PubSub.subscribe('pool.query-'+r['id'], (_, data)=>{
+		poolChange = PubSub.subscribe('pool.query-'+r['id'], (_, {result})=>{
 			form.setFieldsValue({disk: undefined})
 			setPercent(0);
+			setAddPercent(0);
 			setLoading(false);
 			setReplace(false);
-			getDatasetInfo(data);
+			setDisabled(false);
+			setAddOpen(false);
+			setDisk([]);
+			getDatasetInfo(result);
 			getUnusedDisk();
 		})
 	}
@@ -163,6 +218,34 @@ function PoolDetails() {
 		setPool(temp);
 	}
 
+	// 渲染机壳图
+	const generateBox = (boxType, canUse, disks) => {
+		let temp = []
+		if (boxType === 1) {
+			for (let k=1; k<25; k++) {
+				if (canUse.includes(Number(k))) {
+					const content = (
+						<div>
+							<p>名称：{disks[k]['name']}</p>
+							<p>介质类型：{disks[k]['type']}</p>
+							<p>容量：{Number(disks[k]['size']/1024/1024/1024).toFixed(0)+'GB'}</p>
+						</div>
+					);
+					temp.push((
+						<Popover content={content} title={'可用硬盘'}>
+							<Col span={1}><div id={'disk-'+Number(k)} className={'disk-use-item'}>{k}</div></Col>
+						</Popover>
+					))
+				}
+				else {
+					temp.push((<Col span={1}><div id={'disk-'+Number(k)} className={'disk-disabled-item'}>{k}</div></Col>))
+				}
+			}
+			temp = (<div className={'box-1'}><Row className={'box-1-row'} type={'flex'}>{temp}</Row></div>)
+		}
+		setBox(temp)
+	}
+
 	// 上线/离线硬盘  0离线;1上线;
 	const handleDisk = (r, type) => {
 		const handleText = ['离线', '上线']
@@ -177,9 +260,9 @@ function PoolDetails() {
 				onOk() {
 					return new Promise((resolve, reject) => {
 						let uuid = getUUID();
-						handleSub = PubSub.subscribe(uuid, (_, result, error)=>{
+						handleSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 							if (result) {
-								getPoolInfo(search.get('id'));
+								getPoolInfo(false);
 								getUnusedDisk();
 								resolve()
 							}
@@ -196,8 +279,8 @@ function PoolDetails() {
 
 	// 替换硬盘
 	const replaceDisk = r => {
-		if (loading) {
-			notification.warning({message: '有磁盘替换任务进行中'});
+		if (loading || disabled) {
+			notification.warning({message: '存储池有任务进行中'});
 			return ;
 		}
 		if (r['type'] === 'REPLACING') {
@@ -212,7 +295,7 @@ function PoolDetails() {
 	const confirmReplace = values => {
 		setLoading(true);
 		let uuid = getUUID();
-		handleSub = PubSub.subscribe(uuid, (_, result, error)=>{
+		handleSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 			if (result) {
 
 			}
@@ -225,26 +308,85 @@ function PoolDetails() {
 		WebSocketService.call(uuid, URL.POOL_REPLACE, [poolInfo['id'], {label: record['guid'], disk: values['disk'], force: true}]);
 	}
 
+	// 添加硬盘 addDisk
+	const addDisk = title => {
+		if (loading || disabled) {
+			notification.warning({message: '存储池有任务进行中'});
+			return ;
+		}
+		setTitle(title);
+		setAddOpen(true);
+	}
+
+	// 确认添加
+	const confirmAdd = () => {
+		let params = [];
+		if (title === '热备盘') {
+			params = [poolInfo['id'], {topology: {spares: disks}}]
+		}
+		else if (title === '缓存盘') {
+			params = [poolInfo['id'], {topology: {cache: [{type: "STRIPE", disks}]}}]
+		}
+
+		let uuid = getUUID();
+		setLoading(true);
+		setDisabled(true);
+		addSub = PubSub.subscribe(uuid, (_, {error})=>{
+			if (error) {
+				notification.error({message: '磁盘添加失败'});
+				setLoading(false);
+				setDisabled(false);
+			}
+		})
+		WebSocketService.call(uuid, URL.POOL_UPDATE, params);
+	}
+
+	// 删除硬盘
+	const delDisk = r => {
+		if (loading || disabled) {
+			notification.warning({message: '存储池有任务进行中'});
+			return ;
+		}
+		setRecord(r)
+		setDelOpen(true);
+	}
+
+	// 确认删除
+	const confirmDel = () => {
+		let uuid = getUUID();
+		setLoading(true);
+		delSub = PubSub.subscribe(uuid, (_, {error})=>{
+			if (error) {
+				notification.error({message: '磁盘删除失败'});
+				setLoading(false);
+				setDisabled(false);
+			}
+		})
+		WebSocketService.call(uuid, URL.POOL_REMOVE, [poolInfo['id'], {label: record['guid']}]);
+	}
+
 	// 关闭弹窗
 	const onCancel = () => {
 		form.setFieldsValue({disk: undefined})
 		setReplace(false)
+		setAddOpen(false);
+		setDelOpen(false);
 	}
 
 	// columns
 	const dataColumns = [
 		{title: '序号', dataIndex: 'index', width: '15%', render: (t,r,i)=>i+1},
-		{title: '磁盘', dataIndex: 'disk', width: '20%', render: renderDisk},
+		{title: '磁盘', dataIndex: 'disk', width: '22%', render: renderDisk},
 		{
 			title: '状态',
 			dataIndex: 'status',
-			width: '25%',
+			width: '20%',
 			render: renderState
 		},
 		{
 			title: '操作',
 			dataIndex: 'operation',
-			width: '40%',
+			width: '43%',
 			render: (t, r)=>{
 				return (
 					<Row type={'flex'}>
@@ -257,13 +399,25 @@ function PoolDetails() {
 		},
 	]
 	const columns = [
-		{title: '序号', dataIndex: 'index', width: '20%', render: (t,r,i)=>i+1},
-		{title: '磁盘', dataIndex: 'disk', width: '40%', render: t => t?t:'N/A'},
+		{title: '序号', dataIndex: 'index', width: '15%', render: (t,r,i)=>i+1},
+		{title: '磁盘', dataIndex: 'disk', width: '25%', render: t => t?t:'N/A'},
 		{
 			title: '状态',
 			dataIndex: 'status',
-			width: '40%',
+			width: '25%',
 			render: renderState
+		},
+		{
+			title: '操作',
+			dataIndex: 'operation',
+			width: '35%',
+			render: (t, r)=>{
+				return (
+					<Row type={'flex'}>
+						<Button type={'link'} size={'small'} onClick={()=>{delDisk(r)}}>删除</Button>
+					</Row>
+				)
+			}
 		},
 	]
 
@@ -272,101 +426,104 @@ function PoolDetails() {
 			<Row className={'title'}>查看存储池</Row>
 			<Row className={'sub-title'}>查看存储池详情</Row>
 			<Row type={'flex'} style={{marginTop: '2vh'}}>
-				<Descriptions bordered column={2}>
-					<Descriptions.Item label="名称">{poolInfo['name']}</Descriptions.Item>
-					<Descriptions.Item label="状态">{poolInfo['status']}</Descriptions.Item>
-					<Descriptions.Item label="总容量">{poolInfo['volume']}</Descriptions.Item>
-					<Descriptions.Item label="可用容量">{poolInfo['available']}</Descriptions.Item>
-					<Descriptions.Item label="已用容量">{poolInfo['used']}</Descriptions.Item>
-					<Descriptions.Item label="RAID类型">{poolInfo['raid']}</Descriptions.Item>
-					<Descriptions.Item label="所包含硬盘">{poolInfo['disks']}</Descriptions.Item>
-					<Descriptions.Item label="故障硬盘">{poolInfo['failures']}</Descriptions.Item>
-				</Descriptions>
+				<Col span={13}>
+					<Row type={'flex'} className={'body-title'}>存储池详情</Row>
+					<Descriptions bordered column={2}>
+						<Descriptions.Item label="名称">{poolInfo['name']}</Descriptions.Item>
+						<Descriptions.Item label="状态">{poolInfo['status']}</Descriptions.Item>
+						<Descriptions.Item label="总容量">{poolInfo['volume']}</Descriptions.Item>
+						<Descriptions.Item label="可用容量">{poolInfo['available']}</Descriptions.Item>
+						<Descriptions.Item label="已用容量">{poolInfo['used']}</Descriptions.Item>
+						<Descriptions.Item label="RAID类型">{poolInfo['raid']}</Descriptions.Item>
+						<Descriptions.Item label="所包含硬盘">{poolInfo['disks']}</Descriptions.Item>
+						<Descriptions.Item label="故障硬盘">{poolInfo['failures']}</Descriptions.Item>
+					</Descriptions>
+				</Col>
+				<Col span={1}/>
+				<Col span={9}>
+					<Row type={'flex'} className={'body-title'}>最近一次任务</Row>
+					{
+						isEmpty(scans)?'':(
+							<>
+								<Row type={'flex'}>
+									<Descriptions bordered column={1} style={{width: '400px'}}>
+										<Descriptions.Item label="任务">{scans['function']}</Descriptions.Item>
+										<Descriptions.Item label="状态">{scans['state']}</Descriptions.Item>
+										{
+											scans['state']===PoolScanState.Scanning?(
+												<Descriptions.Item label="进度">
+													<Progress percent={Number(scans['percentage']).toFixed(2)} size="large" status="active"/>
+												</Descriptions.Item>
+											):''
+										}
+										<Descriptions.Item label="错误">{scans['errors']}</Descriptions.Item>
+										<Descriptions.Item label="日期">{isEmpty(scans['start_time'])?'':moment(scans['start_time']['$date']).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+									</Descriptions>
+								</Row>
+							</>
+						)
+					}
+				</Col>
 			</Row>
-			<Row type={'flex'} className={'body-title'}>最近一次任务</Row>
-			{
-				isEmpty(scans)?'':(
-					<>
-						<Row type={'flex'}>
-							<Descriptions bordered column={1} style={{width: '400px'}}>
-								<Descriptions.Item label="任务">{scans['function']}</Descriptions.Item>
-								<Descriptions.Item label="状态">{scans['state']}</Descriptions.Item>
-								{
-									scans['state']===PoolScanState.Scanning?(
-										<Descriptions.Item label="进度">
-											<Progress percent={Number(scans['percentage']).toFixed(2)} size="large" status="active"/>
-										</Descriptions.Item>
-									):''
-								}
-								<Descriptions.Item label="错误">{scans['errors']}</Descriptions.Item>
-								<Descriptions.Item label="日期">{isEmpty(scans['start_time'])?'':moment(scans['start_time']['$date']).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
-							</Descriptions>
-						</Row>
-					</>
-				)
-			}
-			{
-				isEmpty(topology['data'])?'':(
-					<>
-						<Row type={'flex'} className={'body-title'}>
-							数据盘（{topology['data'][0]['type']}）
-						</Row>
-						<Row type={'flex'} style={{width: '600px'}}>
-							<Table
-								style={{width: '100%'}}
-								size={'middle'}
-								childrenColumnName={'notallow'}
-								pagination={false}
-								columns={dataColumns}
-								rowKey={(r) => r.id}
-								dataSource={topology['data'][0]['children']}
-							/>
-						</Row>
-					</>
-				)
-			}
-			{
-				isEmpty(topology['spare'])?'':(
-					<>
-						<Row type={'flex'} className={'body-title'}>
-							热备盘
-						</Row>
-						<Row type={'flex'} style={{width: '350px'}}>
-							<Table
-								style={{width: '100%'}}
-								size={'middle'}
-								childrenColumnName={'notallow'}
-								pagination={false}
-								columns={columns}
-								rowKey={(r) => r.id}
-								dataSource={topology['spare']}
-							/>
-						</Row>
-					</>
-				)
-			}
-
-			{
-				isEmpty(topology['cache'])?'':(
-					<>
-						<Row type={'flex'} className={'body-title'}>
-							缓存盘
-						</Row>
-						<Row type={'flex'} style={{width: '350px'}}>
-							<Table
-								style={{width: '100%'}}
-								size={'middle'}
-								childrenColumnName={'notallow'}
-								pagination={false}
-								columns={columns}
-								rowKey={(r) => r.id}
-								dataSource={topology['cache']}
-							/>
-						</Row>
-					</>
-				)
-			}
-			<Row style={{height: '50px'}} />
+			<Row type={'flex'} style={{marginTop: '3vh'}}>
+				<Col span={8} style={{paddingRight: '1vw'}}>
+					{
+						isEmpty(topology['data'])?'':(
+							<>
+								<Row type={'flex'} className={'body-title'}>
+									数据盘（{topology['data'][0]['type']}）
+								</Row>
+								<Row type={'flex'}>
+									<Table
+										style={{width: '100%'}}
+										size={'middle'}
+										childrenColumnName={'notallow'}
+										pagination={false}
+										columns={dataColumns}
+										rowKey={(r) => r.id}
+										dataSource={topology['data'][0]['children']}
+									/>
+								</Row>
+							</>
+						)
+					}
+				</Col>
+				<Col span={8} style={{paddingRight: '1vw'}}>
+					<Row type={'flex'} className={'body-title'}>
+						缓存盘
+						<Button type={'link'} size={'small'} onClick={()=>{addDisk('缓存盘')}}>添加缓存盘</Button>
+					</Row>
+					<Row type={'flex'}>
+						<Table
+							style={{width: '100%'}}
+							size={'middle'}
+							childrenColumnName={'notallow'}
+							pagination={false}
+							columns={columns}
+							rowKey={(r) => r.id}
+							dataSource={topology['cache']}
+						/>
+					</Row>
+				</Col>
+				<Col span={8} style={{paddingRight: '1vw'}}>
+					<Row type={'flex'} className={'body-title'}>
+						热备盘
+						<Button type={'link'} size={'small'} onClick={()=>{addDisk('热备盘')}}>添加热备盘</Button>
+					</Row>
+					<Row type={'flex'}>
+						<Table
+							style={{width: '100%'}}
+							size={'middle'}
+							childrenColumnName={'notallow'}
+							pagination={false}
+							columns={columns}
+							rowKey={(r) => r.id}
+							dataSource={topology['spare']}
+						/>
+					</Row>
+				</Col>
+			</Row>
+			<Row type={'flex'} style={{width: '800px', marginTop: '4vh', marginBottom: '30px'}}>{box}</Row>
 
 			<Modal
 				title={'确认替换硬盘 '+record['disk']}
@@ -403,6 +560,56 @@ function PoolDetails() {
 						<Progress percent={percent} size="large" status="active"/>
 					</Form.Item>
 				</Form>
+			</Modal>
+
+			<Modal
+				maskClosable={false}
+				title={'添加'+title}
+				open={addOpen}
+				onCancel={onCancel}
+				footer={(
+					<Row type={'flex'} justify={'end'}>
+						<Button onClick={onCancel}>取消</Button>
+						<Button type={'primary'} loading={loading} onClick={confirmAdd}>确定</Button>
+					</Row>
+				)}
+			>
+				<Row type={'flex'} align={'middle'} style={{marginTop: '3vh'}}>
+					选择硬盘：
+					<Select
+						mode="multiple"
+						allowClear
+						style={{width: '75%'}}
+						placeholder="请选择硬盘"
+						options={addOptions}
+						value={disks}
+						disabled={disabled}
+						onChange={value=>setDisk(value)}
+					/>
+				</Row>
+				<Row type={'flex'} align={'middle'} style={{marginTop: '3vh'}}>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;进度：
+					<Progress percent={addPercent} size="large" status="active" style={{width: '75%'}}/>
+				</Row>
+			</Modal>
+
+			<Modal
+				maskClosable={false}
+				title={'确认删除'}
+				open={delOpen}
+				onCancel={onCancel}
+				footer={(
+					<Row type={'flex'} justify={'end'}>
+						<Button onClick={onCancel}>取消</Button>
+						<Button type={'primary'} loading={loading} onClick={confirmDel}>确定</Button>
+					</Row>
+				)}
+			>
+				<Row style={{marginTop: '3vh'}}>确认删除硬盘 {record['disk']}</Row>
+				<Row type={'flex'} align={'middle'} style={{marginTop: '1vh'}}>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;进度：
+					<Progress percent={percent} size="large" status="active" style={{width: '75%'}}/>
+				</Row>
 			</Modal>
 		</div>
 	);

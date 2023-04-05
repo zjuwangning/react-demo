@@ -80,5 +80,78 @@ export function getUUID () {
 	})
 }
 
+/**
+ * 根据字节数计算容量
+ * @returns string
+ */
+export const getVolume = (bytes) => {
+	if (isEmpty(bytes)) return ''
+	else if (bytes+'' === '0') return '0';
+	const units = ['B', 'KB', 'MB', 'GB', 'TB']
+	let flag = 0;
+	while (bytes>1024) {
+		bytes = bytes/1024;
+		flag++;
+		if (flag>=4) break;
+	}
+	return bytes.toFixed(2)+' '+units[flag];
+}
+
+/**
+ * 根据字节数计算带宽
+ * @returns string
+ */
+export const getBandwidth = (bytes) => {
+	if (isEmpty(bytes)) return ''
+	else if (bytes+'' === '0') return '0';
+	const units = ['', 'K', 'M', 'G', 'T']
+	let flag = 0;
+	bytes = Number(bytes);
+	while (bytes>1024) {
+		bytes = bytes/1024;
+		flag++;
+		if (flag>=4) break;
+	}
+	return bytes.toFixed(2)+' '+units[flag];
+}
+
+/**
+ * 根据字节数计算iops
+ * @returns string
+ */
+export const getIops = (bytes) => {
+	if (isEmpty(bytes)) return ''
+	else if (bytes+'' === '0') return '0';
+	const units = ['', 'K', 'M', 'G', 'T']
+	let flag = 0;
+	bytes = Number(bytes);
+	while (bytes>=1000) {
+		bytes = bytes/1000;
+		flag++;
+		if (flag>=4) break;
+	}
+	return bytes.toFixed(2)+' '+units[flag];
+}
+
+
+/**
+ * form体尾部布局 一般用于按钮
+ * @returns {}
+ */
+export const tailFormItemLayout = offset => {
+	return {
+		wrapperCol: {
+			xs: {
+				span: 24,
+				offset: 0,
+			},
+			sm: {
+				span: 20-offset,
+				offset,
+			},
+		}
+	}
+};
+
 
 

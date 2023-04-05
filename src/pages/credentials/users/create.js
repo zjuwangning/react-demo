@@ -24,11 +24,11 @@ function UserCreate() {
 	useEffect(() => {
 		if (WebSocketService) {
 			let uuid = getUUID();
-			uidSub = PubSub.subscribe(uuid, (_, result)=>{form.setFieldsValue({uid: result})})
+			uidSub = PubSub.subscribe(uuid, (_, {result})=>{form.setFieldsValue({uid: result})})
 			WebSocketService.call(uuid, URL.USER_UID_QUERY);
 
 			uuid = getUUID();
-			groupSub = PubSub.subscribe(uuid, (_, result)=>{
+			groupSub = PubSub.subscribe(uuid, (_, {result})=>{
 				if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
 				else {
 					let options = [];
@@ -41,7 +41,7 @@ function UserCreate() {
 			WebSocketService.call(uuid, URL.GROUP_QUERY);
 
 			uuid = getUUID();
-			userSub = PubSub.subscribe(uuid, (_, result)=>{
+			userSub = PubSub.subscribe(uuid, (_, {result})=>{
 				let temp = [];
 				result.map(item=>{
 					if (!isEmpty(item) && !isEmpty(item['username'])) temp.push(item['username'])
@@ -64,7 +64,7 @@ function UserCreate() {
 			delete values['confirmPassword'];
 			const uuid = getUUID();
 			setLoading(true);
-			createSub = PubSub.subscribe(uuid, (_, result)=>{createCallback(result)})
+			createSub = PubSub.subscribe(uuid, (_, {result})=>{createCallback(result)})
 			WebSocketService.call(uuid, URL.USER_CREATE, [values]);
 		}
 	}

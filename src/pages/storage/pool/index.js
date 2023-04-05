@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import { useNavigate } from "react-router-dom";
-import {Row, Col, Button, Progress, Tag, Modal, Checkbox, notification} from "antd";
+import {Row, Col, Button, Progress, Tag, Modal, Checkbox, notification, Table} from "antd";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import BaseTablePage from "../../../component/TablePage";
@@ -8,13 +8,26 @@ import { isEmpty, cpy, getUUID } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 
 let attachSub = null,
+	poolSub = null,
+	datasetSub = null,
 	delSub = null,
 	delProgressSub = null;
 
+let dataset = [], poolInfo = null;
 
 function Pool() {
 	const navigate = useNavigate();
-	const cRef = useRef(null)
+
+	const [data, setData] = useState([]);   // 存储池列表
+	const [tableParams, setTableParams] = useState({
+		pagination: {
+			current: 1,
+			pageSize: 10,
+		},
+	});
+	const [loading, setLoading] = useState(false);
+
+
 	const [record, setRecord] = useState({})
 	const [visible, setVisible] = useState(false)
 	const [deleting, setDelVisible] = useState(false)
@@ -25,30 +38,90 @@ function Pool() {
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
-		// cRef.current.fetchData()
+		getData();
+
 		return () => {
 			PubSub.unsubscribe(attachSub);
 			PubSub.unsubscribe(delSub);
+			PubSub.unsubscribe(poolSub);
+			PubSub.unsubscribe(datasetSub);
 			PubSub.unsubscribe(delProgressSub);
 		}
 	}, []);
+
+	// 获取所有存储池 及 数据集内存使用情况
+	const getData = () => {
+		setLoading(true);
+		dataset = [];
+		poolInfo = null;
+
+		let uuid = getUUID();
+		poolSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '数据获取失败'});
+				setLoading(false);
+				setData([]);
+			}
+			else {
+				if (!isEmpty(dataset)) {
+					generateData(dataset, result);
+				}
+				else {
+					poolInfo = result
+				}
+			}
+		})
+		WebSocketService.call(uuid, URL.POOL_QUERY);
+
+		uuid = getUUID();
+		datasetSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '数据获取失败'});
+				setLoading(false);
+				setData([]);
+			}
+			else {
+				if (!isEmpty(poolInfo)) {
+					generateData(result, poolInfo);
+				}
+				else {
+					dataset = result
+				}
+			}
+		})
+		WebSocketService.call(uuid, URL.DATASET_QUERY, [[], {extra: {properties: ['used', 'available']}}]);
+	}
+
+	// 表格数据重组
+	const generateData = (set, pool) => {
+		for (let k in pool) {
+			for (let m in set) {
+				if (set[m]['id']+'' === pool[k]['name']) {
+					pool[k]['used'] = set[m]['used']
+					pool[k]['available'] = set[m]['available']
+				}
+			}
+		}
+		setLoading(false);
+		setData(pool);
+	}
 
 	// 确认删除
 	const confirmDel = () => {
 		if (WebSocketService) {
 			let uuid = getUUID();
-			delSub = PubSub.subscribe(uuid, (_, result)=>{
+			delSub = PubSub.subscribe(uuid, (_, {result})=>{
 				if (!isEmpty(result)) {
 					setVisible(false);
 					setDelVisible(true);
-					delProgressSub = PubSub.subscribe('pool.export-'+record['id'], (_, data) => {
-						setPercent(data['progress']['percent'])
-						if (data['state'] === 'SUCCESS') {
+					delProgressSub = PubSub.subscribe('pool.export-'+record['id'], (_, {result}) => {
+						setPercent(result['progress']['percent'])
+						if (result['state'] === 'SUCCESS') {
 							notification.success({message: '删除存储池完成'});
-							cRef.current.mergeData([URL.POOL_QUERY, URL.DATASET_QUERY])
 							onCancel();
+							getData();
 						}
-						else if (data['state'] === 'FAILED') {
+						else if (result['state'] === 'FAILED') {
 							notification.success({message: '删除存储池失败'});
 							onCancel();
 						}
@@ -65,12 +138,10 @@ function Pool() {
 
 		if (WebSocketService) {
 			let uuid = getUUID();
-			attachSub = PubSub.subscribe(uuid, (_, result)=>{
+			attachSub = PubSub.subscribe(uuid, (_, {result})=>{
 				setAttach(result);
 			})
 			WebSocketService.call(uuid, URL.POOL_ATTACH, [r['id']]);
-
-
 		}
 	}
 
@@ -90,6 +161,18 @@ function Pool() {
 		temp[key] = value;
 		setParams(temp)
 	}
+
+	const handleTableChange = (pagination, filters, sorter) => {
+		setTableParams({
+			pagination,
+			filters,
+			...sorter,
+		});
+
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			setData([]);
+		}
+	};
 
 	const columns = [
 		{
@@ -155,9 +238,8 @@ function Pool() {
 			render: (t, r)=>{
 				return (
 					<Row type={'flex'}>
-						<Button type={'link'} size={'small'} onClick={()=>{navigate('/storage/pools/details?id='+r['id'])}}>查看</Button>
+						<Button type={'link'} size={'small'} onClick={()=>{navigate('/storage/pools/details?id='+r['id'])}}>详情</Button>
 						<Button type={'link'} size={'small'} onClick={()=>{navigate('/storage/pools/scrub?id='+r['id'])}}>校验</Button>
-						<Button type={'link'} size={'small'} onClick={()=>{navigate('/storage/pools/edit?id='+r['id'])}}>修改</Button>
 						<Button type={'link'} size={'small'} onClick={()=>{deletePool(r)}}>删除</Button>
 					</Row>
 				)
@@ -169,18 +251,31 @@ function Pool() {
 
 
 	return (
-		<>
-			<BaseTablePage
-				ref={cRef}
-				title={'存储池列表'}
-				subTitle={'显示所有磁盘池的摘要，删除或者定位特定磁盘池。'}
-				url={[URL.POOL_QUERY, URL.DATASET_QUERY]}
-				match={['name', 'id']}
-				merge={['used', 'available']}
+		<div className={'full-page'}>
+			<Row className={'title'}>存储池列表</Row>
+			<Row className={'sub-title'}>显示所有磁盘池的摘要，删除或者定位特定磁盘池。</Row>
+			<Row className={'actions'}>{actions}</Row>
+			<Table
+				size={'middle'}
 				columns={columns}
-				actions={actions}
-				// filters={filters}
+				rowKey={(record) => record.id || record.name}
+				dataSource={data}
+				pagination={tableParams.pagination}
+				loading={loading}
+				onChange={handleTableChange}
+				childrenColumnName={'notallow'}
 			/>
+			{/*<BaseTablePage*/}
+			{/*	ref={cRef}*/}
+			{/*	title={'存储池列表'}*/}
+			{/*	subTitle={'显示所有磁盘池的摘要，删除或者定位特定磁盘池。'}*/}
+			{/*	url={[URL.POOL_QUERY, URL.DATASET_QUERY]}*/}
+			{/*	match={['name', 'id']}*/}
+			{/*	merge={['used', 'available']}*/}
+			{/*	columns={columns}*/}
+			{/*	actions={actions}*/}
+			{/*	// filters={filters}*/}
+			{/*/>*/}
 			<Modal
 				title={'删除池 '+record['name']}
 				open={visible}
@@ -225,7 +320,7 @@ function Pool() {
 					进度： <Col span={18}><Progress percent={percent} size="small" status="active" /></Col>
 				</Row>
 			</Modal>
-		</>
+		</div>
 	);
 }
 

@@ -1,176 +1,177 @@
-import React, {useEffect} from 'react';
-import { Chart, Line, Point, Legend } from 'bizcharts';
-import Panel from '../../component/Panel'
+import React, {useEffect, useState} from 'react';
 import { Row, Col } from 'antd'
+import { Chart, Line, Axis, Legend, Geom, Guide, Tooltip } from 'bizcharts';
+import PubSub from "pubsub-js";
+import moment from 'moment'
+import SysInfo from "./SysInfo";
+import Volume from "./Volume";
+import Panel from '../../component/Panel'
+import { getUUID, getBandwidth, getIops } from "../../utils/cmn";
+import { WebSocketService } from "../../server";
+import { URL } from "../../server/enum";
+import './index.less'
+
+let sysSub = null,
+	querySub = null;
+
+let timer = null
+
+const nameArr = {bandWidthWrite: '写带宽', bandWidthRead: '读带宽', ioWrite: '写IOPS', ioRead: '读IOPS'}
 
 function Dashboard() {
+	const [bandwidth, setBandwidth] = useState([])
+	const [io, setIO] = useState([])
 
-	// 数据源
-	const data = [
-		{
-			month: "Jan",
-			city: "Tokyo",
-			temperature: 7
-		},
-		{
-			month: "Jan",
-			city: "London",
-			temperature: 3.9
-		},
-		{
-			month: "Feb",
-			city: "Tokyo",
-			temperature: 6.9
-		},
-		{
-			month: "Feb",
-			city: "London",
-			temperature: 4.2
-		},
-		{
-			month: "Mar",
-			city: "Tokyo",
-			temperature: 9.5
-		},
-		{
-			month: "Mar",
-			city: "London",
-			temperature: 5.7
-		},
-		{
-			month: "Apr",
-			city: "Tokyo",
-			temperature: 14.5
-		},
-		{
-			month: "Apr",
-			city: "London",
-			temperature: 8.5
-		},
-		{
-			month: "May",
-			city: "Tokyo",
-			temperature: 18.4
-		},
-		{
-			month: "May",
-			city: "London",
-			temperature: 11.9
-		},
-		{
-			month: "Jun",
-			city: "Tokyo",
-			temperature: 21.5
-		},
-		{
-			month: "Jun",
-			city: "London",
-			temperature: 15.2
-		},
-		{
-			month: "Jul",
-			city: "Tokyo",
-			temperature: 25.2
-		},
-		{
-			month: "Jul",
-			city: "London",
-			temperature: 17
-		},
-		{
-			month: "Aug",
-			city: "Tokyo",
-			temperature: 26.5
-		},
-		{
-			month: "Aug",
-			city: "London",
-			temperature: 16.6
-		},
-		{
-			month: "Sep",
-			city: "Tokyo",
-			temperature: 23.3
-		},
-		{
-			month: "Sep",
-			city: "London",
-			temperature: 14.2
-		},
-		{
-			month: "Oct",
-			city: "Tokyo",
-			temperature: 18.3
-		},
-		{
-			month: "Oct",
-			city: "London",
-			temperature: 10.3
-		},
-		{
-			month: "Nov",
-			city: "Tokyo",
-			temperature: 13.9
-		},
-		{
-			month: "Nov",
-			city: "London",
-			temperature: 6.6
-		},
-		{
-			month: "Dec",
-			city: "Tokyo",
-			temperature: 9.6
-		},
-		{
-			month: "Dec",
-			city: "London",
-			temperature: 4.8
+	// componentDidMount componentWillUnmount
+	useEffect(() => {
+		getData();
+		getInterval();
+
+		return () => {
+			PubSub.unsubscribe(sysSub);
+			PubSub.unsubscribe(querySub);
+			if (timer !== null) {
+				clearInterval(timer);
+			}
 		}
-	];
+	}, []);
 
-	const scale = {
-		temperature: { min: 0 },
-		city: {
+	// 轮询表格数据
+	const getInterval = () => {
+		if (timer !== null) {
+			clearInterval(timer)
+		}
+		timer = setInterval(getData, 10000);
+	}
+
+	// 获取带宽/io信息
+	const getData = () => {
+		let date = new Date();
+		date = Number((date.getTime()/1000).toFixed(0))-20
+		let uuid = getUUID();
+		querySub = PubSub.subscribe(uuid, (_, {result})=>{
+			let bandwidthData = [], ioData = [];
+			let bandwidthReadIndex = result[0]['legend'].indexOf('bandwidth_iops_br')
+			let bandwidthWriteIndex = result[0]['legend'].indexOf('bandwidth_iops_bw')
+			let ioReadIndex = result[0]['legend'].indexOf('bandwidth_iops_iopsr')
+			let ioWriteIndex = result[0]['legend'].indexOf('bandwidth_iops_iopsw')
+			for (let k in result[0]['data']) {
+				bandwidthData.push({
+					time: moment.unix(result[0]['start']+(Number(k)*result[0]['step'])).format('HH:mm:ss'),
+					rwType: "bandWidthRead",
+					rwValue: result[0]['data'][k][bandwidthReadIndex]
+				})
+				bandwidthData.push({
+					time: moment.unix(result[0]['start']+(Number(k)*result[0]['step'])).format('HH:mm:ss'),
+					rwType: "bandWidthWrite",
+					rwValue: result[0]['data'][k][bandwidthWriteIndex]
+				})
+				ioData.push({
+					time: moment.unix(result[0]['start']+(Number(k)*result[0]['step'])).format('HH:mm:ss'),
+					rwType: "ioRead",
+					rwValue: result[0]['data'][k][ioReadIndex]
+				})
+				ioData.push({
+					time: moment.unix(result[0]['start']+(Number(k)*result[0]['step'])).format('HH:mm:ss'),
+					rwType: "ioWrite",
+					rwValue: result[0]['data'][k][ioWriteIndex]
+				})
+			}
+			setBandwidth(bandwidthData)
+			setIO(ioData)
+		})
+		WebSocketService.call(uuid, URL.REPORT_GET, [[{name: "bandwidth_iops"}], {start: date-3600, end: date}]);
+	}
+
+	const bandwidthScale = {
+		rwValue: { min: 0 },
+		rwType: {
 			formatter: v => {
 				return {
-					London: '伦敦',
-					Tokyo: '东京'
+					bandWidthWrite: '写带宽',
+					bandWidthRead: '读带宽'
 				}[v]
 			}
 		}
 	}
+	const ioScale = {
+		rwValue: { min: 0 },
+		rwType: {
+			formatter: v => {
+				return {
+					ioWrite: '写IOPS',
+					ioRead: '读IOPS'
+				}[v]
+			}
+		}
+	}
+	const label = {
+		formatter(text, item, index) {
+			return getBandwidth(text);
+		}
+	}
+	const ioLabel = {
+		formatter(text, item, index) {
+			return getIops(text);
+		}
+	}
 
-	// componentDidMount componentWillUnmount
-	useEffect(() => {
-
-	}, []);
 
 	return (
 		<div className={'full-page'}>
 			<Row type={'flex'} style={{width: '100%'}}>
-				<Panel title="系统状态" height={'350px'} width={'100%'}>
-
+				<Panel title="系统信息" height={'25vh'} width={'100%'}>
+					<SysInfo />
 				</Panel>
 			</Row>
 			<Row type={'flex'} style={{width: '100%'}}>
-				<Panel title="容量使用率" height={'200px'} width={'100%'}>
-
+				<Panel title="容量使用率" height={'125px'} width={'100%'}>
+					<Volume />
 				</Panel>
 			</Row>
 			<Row type={'flex'}>
 				<Col span={12} style={{paddingRight: '1vw'}}>
 					<Panel title="带宽" height={'350px'}>
-						<Chart scale={scale} padding={[30, 20, 60, 40]} autoFit height={320} data={data} interactions={['element-active']}>
-							<Point position="month*temperature" color="city" shape='circle' />
-							<Line shape="smooth" position="month*temperature" color="city" label="temperature"/>
-							<Legend background={{padding:[5,100,5,36], style: {fill: '#eaeaea', stroke: '#fff'}}}/>
+						<Chart
+							scale={bandwidthScale}
+							padding={[30, 20, 60, 80]}
+							autoFit height={320}
+							data={bandwidth}
+							interactions={['element-active']}
+						>
+							<Legend />
+							<Axis name="time" />
+							<Axis name="rwValue" label={label}/>
+							<Tooltip shared showCrosshairs/>
+							<Geom type="line" tooltip={['rwValue*rwType', (value, name) => {
+								return {
+									value: `${getBandwidth(value)}`,
+									name: nameArr[name]
+								}
+							}]} position="time*rwValue" size={2} color={'rwType'} />
 						</Chart>
 					</Panel>
 				</Col>
 				<Col span={12} style={{paddingLeft: '1vw'}}>
 					<Panel title="IOPS" height={'350px'}>
-
+						<Chart
+							scale={ioScale}
+							padding={[30, 20, 60, 80]}
+							autoFit height={320}
+							data={io}
+							interactions={['element-active']}
+						>
+							<Legend />
+							<Axis name="time" />
+							<Axis name="rwValue" label={ioLabel}/>
+							<Tooltip shared showCrosshairs/>
+							<Geom type="line" tooltip={['rwValue*rwType', (value, name) => {
+								return {
+									value: `${getIops(value)}`,
+									name: nameArr[name]
+								}
+							}]} position="time*rwValue" size={2} color={'rwType'} />
+						</Chart>
 					</Panel>
 				</Col>
 			</Row>

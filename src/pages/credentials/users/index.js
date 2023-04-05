@@ -26,7 +26,7 @@ function User() {
 		const next = () => {
 			if (WebSocketService) {
 				const uuid = getUUID();
-				deleteSub = PubSub.subscribe(uuid, (_, result)=>{
+				deleteSub = PubSub.subscribe(uuid, (_, {result})=>{
 					if (result && result>0) {
 						notification.success({message: '删除用户', description: '删除NAS用户成功'});
 						cRef.current.fetchData(URL.USER_QUERY)

@@ -16,7 +16,6 @@ const BaseTablePage = forwardRef((
 	// 暴露给父节点的方法
 	useImperativeHandle(ref, () => ({
 		fetchData: fetchData,
-		mergeData: mergeData,
 		setTableLoading: setLoading,
 	}))
 
@@ -33,15 +32,8 @@ const BaseTablePage = forwardRef((
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
-		if (typeof url === 'string') {
-			fetchData(url);
-		}
-		else if (url.length === 1) {
-			fetchData(url[0]);
-		}
-		else {
-			mergeData(url)
-		}
+		fetchData(url);
+
 	}, [JSON.stringify(tableParams)]);
 
 	useEffect(() => {
@@ -54,17 +46,17 @@ const BaseTablePage = forwardRef((
 	const fetchData = fetchUrl => {
 		setLoading(true);
 		const uuid = getUUID();
-		fetchSub = PubSub.subscribe(uuid, (_, data)=>{
+		fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
 			setLoading(false);
 			let temp = [];
 			if (filters) {
-				for (let k in data) {
-					if (filters(data[k])) {
-						temp.push(data[k])
+				for (let k in result) {
+					if (filters(result[k])) {
+						temp.push(result[k])
 					}
 				}
 			}
-			else temp = data || [];
+			else temp = result || [];
 			setData(temp);
 			setTableParams({
 				...tableParams,
@@ -76,46 +68,6 @@ const BaseTablePage = forwardRef((
 		})
 		if (isEmpty(params)) WebSocketService.call(uuid, fetchUrl);
 		else WebSocketService.call(uuid, fetchUrl, params);
-	}
-
-	const mergeData = fetchUrl => {
-		setLoading(true);
-		const uuid = getUUID();
-		fetchSub = PubSub.subscribe(uuid, (_, data)=>{
-			let temp = [];
-			if (filters) {
-				for (let k in data) {
-					if (filters(data[k])) {
-						temp.push(data[k])
-					}
-				}
-			}
-			else temp = data || [];
-			const newUUID = getUUID();
-			WebSocketService.call(newUUID, fetchUrl[1]);
-			fetchSub = PubSub.subscribe(newUUID, (_, data)=>{
-				for (let k in temp) {
-					for (let m in data) {
-						if (temp[k][match[0]]+'' === data[m][match[1]]) {
-							for (let n in merge) {
-								temp[k][merge[n]] = data[m][merge[n]]
-							}
-						}
-					}
-				}
-				setLoading(false);
-				setData(temp);
-				setTableParams({
-					...tableParams,
-					pagination: {
-						...tableParams.pagination,
-						total: temp.length,
-					},
-				});
-			})
-		})
-		if (isEmpty(params)) WebSocketService.call(uuid, fetchUrl[0]);
-		else WebSocketService.call(uuid, fetchUrl[0], params);
 	}
 
 	const handleTableChange = (pagination, filters, sorter) => {

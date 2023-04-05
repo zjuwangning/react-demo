@@ -63,7 +63,7 @@ class Socket {
 		}
 
 		if (data.msg === EventMessage.Result) {
-			PubSub.publish(data.id+'', data.result, data.error);
+			PubSub.publish(data.id+'', {result: data.result, error: data.error});
 		}
 		else if (data.msg === EventMessage.Connected) {
 			this.connected = true;
@@ -80,28 +80,33 @@ class Socket {
 				if (!isEmpty(data['fields']) && !isEmpty(data['fields']['arguments']) && !isEmpty(data['fields']['method'])) {
 					if (data['fields']['method'] === URL.POOL_EXPORT
 						|| data['fields']['method'] === URL.POOL_REPLACE
-						|| data['fields']['method'] === URL.POOL_UPDATE) {
-						PubSub.publish(data['fields']['method']+ '-'+ data['fields']['arguments'][0], data['fields']);
+						|| data['fields']['method'] === URL.POOL_UPDATE
+						|| data['fields']['method'] === URL.POOL_REMOVE ) {
+						PubSub.publish(data['fields']['method']+ '-'+ data['fields']['arguments'][0], {result: data['fields']});
 					}
 					else if (data['fields']['method'] === URL.POOL_CREATE) {
-						PubSub.publish(data['fields']['method']+ '-' + data['fields']['id'], data['fields']);
-						PubSub.publish(data['fields']['method'], data['fields']);
+						PubSub.publish(data['fields']['method']+ '-' + data['fields']['id'], {result: data['fields']});
+						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
-					else if (data['fields']['method'] === URL.POOL_SCRUB) {
+					else if (data['fields']['method'] === URL.FILE_ACL_SET) {
+						PubSub.publish(data['fields']['method'], {result: data['fields']});
+					}
+					// 存储池校验 硬盘初始化
+					else {
 						PubSub.publish(
 							data['fields']['method']+ '-'+
 							data['fields']['arguments'][1]+'-'+
-							data['fields']['arguments'][0], data['fields']
+							data['fields']['arguments'][0], {result: data['fields']}
 						);
 					}
 				}
 			}
 			else if (data['collection'] === URL.POOL_QUERY) {
-				PubSub.publish(data['collection']+ '-'+ data['fields']['id'], data['fields']);
+				PubSub.publish(data['collection']+ '-'+ data['fields']['id'], {result: data['fields']});
 			}
 			else if (data['collection'] === URL.ZFS_POOL_SCAN) {
 				if (data['fields']['scan']) {
-					PubSub.publish(data['collection']+ '-'+ data['fields']['name'], data['fields']['scan']);
+					PubSub.publish(data['collection']+ '-'+ data['fields']['name'], {result: data['fields']['scan']});
 				}
 			}
 		}
@@ -147,19 +152,19 @@ class Socket {
 		const id = getUUID();
 		const payload = {id, msg: EventMessage.Method, method: URL.AUTH, params: [this.token]};
 		this.socket.send(JSON.stringify(payload))
-		PubSub.subscribe(id, (_, result)=>{this.loginTokenCallback(result)})
+		PubSub.subscribe(id, (_, {result})=>{this.loginTokenCallback(result)})
 	}
 
 	// loginTokenCallback
-	loginTokenCallback(result) {
+	loginTokenCallback(callback) {
 		this.onToken = false;
 		this.token = null;
-		if (result) {
+		if (callback) {
 			this.onConnect();
 			const uuid = getUUID();
-			PubSub.subscribe(uuid, (_, token)=>{
+			PubSub.subscribe(uuid, (_, {result})=>{
 				let userInfo = Cache.getUserInfo();
-				userInfo['token'] = token;
+				userInfo['token'] = result;
 				Cache.saveUserInfo(userInfo);
 			})
 			this.call(uuid, URL.GET_TOKEN, [300]);

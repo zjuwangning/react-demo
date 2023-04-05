@@ -46,35 +46,35 @@ function Initial() {
 	// 获取硬盘基本信息
 	const getDiskInfo = identifier => {
 		let uuid = getUUID();
-		diskSub = PubSub.subscribe(uuid, (_, data)=>{
-			if (!isEmpty(data) && !isEmpty(data[0])) {
-				let temp = data[0]
+		diskSub = PubSub.subscribe(uuid, (_, {result})=>{
+			if (!isEmpty(result) && !isEmpty(result[0])) {
+				let temp = result[0]
 				setItem(temp)
 				getJobsList(temp['name'])
 
 				// 开启上报数据订阅 快速擦除及填充擦除分开订阅
-				quickSub = PubSub.subscribe("disk.wipe-QUICK-"+data[0]['name'], (_, data)=>{
-					if (data['progress']) {
-						let percent = data['progress']['percent'];
-						if (data['state'] === 'SUCCESS') {
+				quickSub = PubSub.subscribe("disk.wipe-QUICK-"+result[0]['name'], (_, {result})=>{
+					if (result['progress']) {
+						let percent = result['progress']['percent'];
+						if (result['state'] === 'SUCCESS') {
 							setFlag(false);
 							getJobsList(temp['name']);
 						}
-						setJob(data['id']);
+						setJob(result['id']);
 						setPercent(percent.toFixed(3))
 						if (form.getFieldValue('method') !== 'QUICK') {
 							form.setFieldsValue({method: 'QUICK'})
 						}
 					}
 				})
-				fullSub = PubSub.subscribe("disk.wipe-FULL-"+data[0]['name'], (_, data)=>{
-					if (data['progress']) {
-						let percent = data['progress']['percent'];
-						if (data['state'] === 'SUCCESS') {
+				fullSub = PubSub.subscribe("disk.wipe-FULL-"+result[0]['name'], (_, {result})=>{
+					if (result['progress']) {
+						let percent = result['progress']['percent'];
+						if (result['state'] === 'SUCCESS') {
 							setFlag(false);
 							getJobsList(temp['name']);
 						}
-						setJob(data['id']);
+						setJob(result['id']);
 						setPercent(percent.toFixed(3))
 						if (form.getFieldValue('method') !== 'FULL') {
 							form.setFieldsValue({method: 'FULL'})
@@ -89,14 +89,14 @@ function Initial() {
 	// 获取近期全部任务 至多显示10条
 	const getJobsList = diskName => {
 		const uuid = getUUID();
-		jobListSub = PubSub.subscribe(uuid, (_, data)=>{
-			let flag = false, temp=data;
-			if (data && data[0] && data[0]['state']==='RUNNING') flag = true;
+		jobListSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let flag, temp=result;
+			if (result && result[0] && result[0]['state']==='RUNNING') flag = true;
 			else {
 				flag = false;
 				setPercent(0)
 			}
-			if (data.length>10) temp = temp.slice(0, 10);
+			if (result.length>10) temp = temp.slice(0, 10);
 			setJobList(temp);
 			setFlag(flag);
 		})
@@ -108,11 +108,11 @@ function Initial() {
 		const next = () => {
 			setLoading(true);
 			let uuid = getUUID();
-			wipeSub = PubSub.subscribe(uuid, (_, data)=>{
+			wipeSub = PubSub.subscribe(uuid, (_, {result})=>{
 				setLoading(false);
-				if (!isEmpty(data)) {
+				if (!isEmpty(result)) {
 					setFlag(true);
-					setJob(data);
+					setJob(result);
 					getJobsList(item['name']);
 				}
 			})
