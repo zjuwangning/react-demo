@@ -31,6 +31,11 @@ const BreadcrumbData = {
 	'create': {name: '新建', isPage: true},
 	'edit': {name: '编辑', isPage: true},
 	'member': {name: '成员', isPage: true},
+
+	'smb': {name: 'SMB设置', isPage: true},
+	'nfs': {name: 'NFS设置', isPage: true},
+	'ftp': {name: 'FTP设置', isPage: true},
+	'webdav': {name: 'WebDAV设置', isPage: true},
 }
 
 export { SubEvent, BreadcrumbData }

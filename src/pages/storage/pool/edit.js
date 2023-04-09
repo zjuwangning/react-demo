@@ -68,7 +68,6 @@ function PoolEdit() {
 					label: `${result[k]['name']}（slot-${result[k]['enclosure']['slot']}）`,
 					value: result[k]['name']
 				})
-				slotList.push(result[k]['enclosure']['slot']);
 			}
 			if (isEmpty(temp)) {
 				notification.warning({message: '暂无可用硬盘'})
@@ -104,8 +103,6 @@ function PoolEdit() {
 
 	// confirmAdd
 	const confirmAdd = () => {
-		console.log('disks', disks)
-		console.log('title', title)
 		let params = [];
 		if (title === '热备盘') {
 			params = [poolInfo['id'], {topology: {spares: disks}}]
@@ -118,7 +115,6 @@ function PoolEdit() {
 		setLoading(true);
 		setDisabled(true);
 		addSub = PubSub.subscribe(uuid, (_, result)=>{
-			console.log('result', result);
 			if (result) {
 
 			}
@@ -130,6 +126,8 @@ function PoolEdit() {
 		})
 		WebSocketService.call(uuid, URL.POOL_UPDATE, params);
 	}
+
+	// delDisk
 
 	// onCancel
 	const onCancel = () => {

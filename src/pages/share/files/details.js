@@ -7,7 +7,11 @@ import { isEmpty, getUUID } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 
 let datasetSub = null,
-	shareSub = null;
+	shareSub = null,
+	nfsSub = null,
+	smbSub = null,
+	davSub = null;
+
 const SYNC = {STANDARD: '标准', ALWAYS: '总是', DISABLED: '禁用'}
 
 
@@ -15,6 +19,10 @@ function FileDetails() {
 	const [search] = useSearchParams();
 	const [dataset, setDataset] = useState({})        // 共享文件
 	const [shareInfo, setShare] = useState('')        // 共享文件
+
+	const [nfsName, setNfs] = useState('')        // nfs挂载路径
+	const [smbName, setSmb] = useState('')        // smb挂载路径
+	const [davName, setDav] = useState('')        // dav挂载路径
 
 
 	// componentDidMount componentWillUnmount
@@ -31,6 +39,9 @@ function FileDetails() {
 		return () => {
 			PubSub.unsubscribe(datasetSub);
 			PubSub.unsubscribe(shareSub);
+			PubSub.unsubscribe(nfsSub);
+			PubSub.unsubscribe(smbSub);
+			PubSub.unsubscribe(davSub);
 		}
 	}, []);
 
@@ -61,6 +72,9 @@ function FileDetails() {
 				for (let k in result) {
 					if (result[k]) {
 						temp+=k+'+'
+						if (k === 'nfs') getNfs(result[k]);
+						else if (k === 'smb') getSmb(result[k]);
+						else if (k === 'webdav') getDav(result[k]);
 					}
 				}
 				if (temp.length>0) temp = temp.slice(0, temp.length-1);
@@ -70,6 +84,50 @@ function FileDetails() {
 		WebSocketService.call(uuid, URL.DATASET_SHARE_ITEM, [data['mountpoint']]);
 	}
 
+	// 获取nfs协议内容
+	const getNfs = id => {
+		PubSub.unsubscribe(smbSub);
+		let uuid = getUUID();
+		nfsSub = PubSub.subscribe(uuid, (_, {error, result})=>{
+			if (error) {
+				notification.error({message: 'NFS共享获取错误'})
+			}
+			else {
+				setNfs(result[0]['paths'][0])
+			}
+		})
+		WebSocketService.call(uuid, URL.SHARE_NFS_QUERY, [[["id", "=", id]]]);
+	}
+
+	// 获取smb协议内容
+	const getSmb = id => {
+		PubSub.unsubscribe(smbSub);
+		let uuid = getUUID();
+		smbSub = PubSub.subscribe(uuid, (_, {error, result})=>{
+			if (error) {
+				notification.error({message: 'SMB共享获取错误'})
+			}
+			else {
+				setSmb(result[0]['name'])
+			}
+		})
+		WebSocketService.call(uuid, URL.SHARE_SMB_QUERY, [[["id", "=", id]]]);
+	}
+
+	// 获取webdav协议内容
+	const getDav = id => {
+		PubSub.unsubscribe(davSub);
+		let uuid = getUUID();
+		davSub = PubSub.subscribe(uuid, (_, {error, result})=>{
+			if (error) {
+				notification.error({message: 'WEBDAV共享获取错误'})
+			}
+			else {
+				setDav(result[0]['name'])
+			}
+		})
+		WebSocketService.call(uuid, URL.SHARE_DAV_QUERY, [[["id", "=", id]]]);
+	}
 
 
 	return (
@@ -84,10 +142,11 @@ function FileDetails() {
 							<Descriptions.Item label="磁盘池名">{dataset['pool']}</Descriptions.Item>
 							<Descriptions.Item label="已用容量">{dataset['used']['value']}</Descriptions.Item>
 							<Descriptions.Item label="可用容量">{dataset['available']['value']}</Descriptions.Item>
-							<Descriptions.Item label="启用协议">{shareInfo}</Descriptions.Item>
+							<Descriptions.Item label="启用协议">{isEmpty(shareInfo)?'N/A':shareInfo}</Descriptions.Item>
 							<Descriptions.Item label="同步模式">{SYNC[dataset['sync']['value']]}</Descriptions.Item>
-							<Descriptions.Item label="NFS挂载路径"></Descriptions.Item>
-							<Descriptions.Item label="SMB挂载路径"></Descriptions.Item>
+							<Descriptions.Item label="SMB挂载路径">{isEmpty(smbName)?'N/A':smbName}</Descriptions.Item>
+							<Descriptions.Item label="WEBDAV挂载路径">{isEmpty(davName)?'N/A':davName}</Descriptions.Item>
+							<Descriptions.Item label="NFS挂载路径">{isEmpty(nfsName)?'N/A':nfsName}</Descriptions.Item>
 						</Descriptions>
 					</Row>
 				)

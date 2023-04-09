@@ -63,7 +63,7 @@ function NFSAuth() {
 				form.setFieldsValue(params)
 			}
 		})
-		WebSocketService.call(uuid, URL.SHARE_QUERY, [[["id", "=", Number(search.get('id'))]]]);
+		WebSocketService.call(uuid, URL.SHARE_NFS_QUERY, [[["id", "=", Number(search.get('id'))]]]);
 	}
 
 	//
@@ -94,7 +94,7 @@ function NFSAuth() {
 							navigate('/share/files');
 						}
 					})
-					WebSocketService.call(uuid, URL.SHARE_UPDATE, [Number(search.get('id')), params]);
+					WebSocketService.call(uuid, URL.SHARE_NFS_UPDATE, [Number(search.get('id')), params]);
 				}).catch(() => console.log('Oops errors!'));
 			}
 		})

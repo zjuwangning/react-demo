@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Button, Select, Input, InputNumber, Form, Radio, notification, Modal, Checkbox, Spin } from 'antd'
+import { Row, Col, Button, Select, Input, InputNumber, Form, Radio, notification, Modal, Checkbox, Spin, Tooltip } from 'antd'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
-import { getUUID, isEmpty, tailFormItemLayout } from "../../../utils/cmn";
+import { getUUID, isEmpty, tailFormItemLayout, cpy } from "../../../utils/cmn";
 
 let poolSub = null,         // 获取所有池 用于生成选项
 	datasetSub = null,      // 获取数据集 用于去重判断
 	createSub = null,       // 创建数据集
+	smbSub = null,          // 获取现有smb列表 用于去重
+	davSub = null,          // 获取现有webdav列表 用于去重
 	protocolSub = null;     // 为数据集添加协议
 
 let protocolNum = 0;
@@ -23,19 +26,56 @@ function PoolCreate() {
 	const [options, setOptions] = useState([])      // 存储池选项
 	const [usedName, setUsed] = useState([])        // 已使用名字列表
 	const [quotaDisabled, setQuota] = useState(false)   // 是否设定配额
+	const [protocolList, setProtocol] = useState({smb: false, webdav: false, nfs: false}) // 设定要开启的共享协议
+	const [smbName, setSmb] = useState('')  // smb协议名称
+	const [davName, setDav] = useState('')  // webdav协议名称
+	const [smbList, setSmbList] = useState([])  // smb协议列表 用于去重判断
+	const [davList, setDavList] = useState([])  // webdav协议列表 用于去重判断
 
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		getPoolInfo();
-
+		getSmb();
+		getDav();
 
 		return () => {
 			PubSub.unsubscribe(poolSub);
 			PubSub.unsubscribe(datasetSub);
 			PubSub.unsubscribe(createSub);
+			PubSub.unsubscribe(smbSub);
+			PubSub.unsubscribe(davSub);
+			PubSub.unsubscribe(protocolSub);
 		}
 	}, []);
+
+	// 获取smb协议列表 用于去重判断
+	const getSmb = () => {
+		PubSub.unsubscribe(smbSub);
+		let uuid = getUUID();
+		smbSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [];
+			for (let k in result) {
+				temp.push(result[k]['name'])
+			}
+			setSmbList(temp);
+		})
+		WebSocketService.call(uuid, URL.SHARE_SMB_QUERY);
+	}
+
+	// 获取webdav协议列表 用于去重判断
+	const getDav = () => {
+		PubSub.unsubscribe(davSub);
+		let uuid = getUUID();
+		davSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [];
+			for (let k in result) {
+				temp.push(result[k]['name'])
+			}
+			setDavList(temp);
+		})
+		WebSocketService.call(uuid, URL.SHARE_DAV_QUERY);
+	}
 
 	// 获取存储池 生成选项
 	const getPoolInfo = () => {
@@ -72,6 +112,42 @@ function PoolCreate() {
 
 	//
 	const handleSubmit = values => {
+		let temp = [];
+		if (protocolList['smb']) {
+			temp.push(createProtocol['smb'])
+			if (isEmpty(smbName)) {
+				notification.error({message: '请输入SMB名称'});
+				return ;
+			}
+			else if (smbList.includes(smbName)) {
+				notification.error({message: 'SMB名称重复'});
+				return ;
+			}
+			else if (/[^/a-zA-Z0-9]/g.test(smbName)) {
+				notification.error({message: 'SMB名称只能输入英文和数字'});
+				return ;
+			}
+		}
+		if (protocolList['webdav']) {
+			temp.push(createProtocol['webdav'])
+			if (isEmpty(davName)) {
+				notification.error({message: '请输入WEBDAV名称'});
+				return ;
+			}
+			else if (davList.includes(davName)) {
+				notification.error({message: 'WEBDAV名称重复'});
+				return ;
+			}
+			else if (/[^/a-zA-Z0-9]/g.test(davName)) {
+				notification.error({message: 'WEBDAV名称只能输入英文和数字'});
+				return ;
+			}
+		}
+		if (protocolList['nfs']) {
+			temp.push(createProtocol['nfs'])
+		}
+
+
 		let params = {}
 		params['name'] = values['pool']+'/'+values['name'];
 		params['compression'] = values['compression'];
@@ -93,12 +169,12 @@ function PoolCreate() {
 					createSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 						if (result) {
 							resolve();
-							if (isEmpty(values['protocol'])){
+							if (temp.length === 0){
 								notification.success({message: '创建成功'});
 								navigate('/share/files');
 							}
 							else {
-								addProtocol(result, values['protocol'])
+								addProtocol(result, temp)
 							}
 						}
 						else if (error) {
@@ -139,13 +215,13 @@ function PoolCreate() {
 		for (let k in protocol) {
 			let params = {}
 			if (protocol[k] === 'sharing.smb.create') {
-				params = {path: data['mountpoint'], name: data['name'].slice(data['pool'].length+1), purpose: "DEFAULT_SHARE", enabled: true}
+				params = {path: data['mountpoint'], name: smbName, purpose: "DEFAULT_SHARE", enabled: true}
 			}
 			else if (protocol[k] === 'sharing.nfs.create') {
 				params = {paths: [data['mountpoint']], enabled: true}
 			}
 			else if (protocol[k] === 'sharing.webdav.create') {
-				params = {name: data['name'].replace('/', ''), path: data['mountpoint'], perm: true, enabled: true}
+				params = {name: davName, path: data['mountpoint'], perm: true, enabled: true}
 			}
 
 			setTimeout(()=>{
@@ -160,6 +236,13 @@ function PoolCreate() {
 		if (changeKey === 'pool') {
 			form.validateFields(['name']).then()
 		}
+	}
+
+	// 协议数据变化
+	const onProtocolChange = (key, checked) => {
+		let temp = cpy(protocolList);
+		temp[key] = checked
+		setProtocol(temp);
 	}
 
 	const suffixSelector = (
@@ -223,22 +306,56 @@ function PoolCreate() {
 							):''
 						}
 
-
-						<Row>
-							<Col span={6}><Row type={'flex'} justify={'end'}>启用协议<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span></Row></Col>
-							<Col span={18}></Col>
+						<Row type={'flex'} align={'middle'}>
+							<Col span={6}>
+								<Row type={'flex'} justify={'end'}>
+									启用协议<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
+								</Row>
+							</Col>
+							<Col>
+								<Checkbox checked={protocolList['smb']} onChange={e => onProtocolChange('smb', e.target.checked)}>SMB</Checkbox>
+							</Col>
+							<Col style={{marginLeft: '20px'}}>
+								SMB名称
+								<Tooltip title="勾选SMB协议后，名称为必填。SMB名称只能输入英文和数字">
+									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
+								</Tooltip>
+								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
+								<Input
+									style={{width: '120px'}}
+									disabled={!protocolList['smb']}
+									value={smbName}
+									onChange={e => setSmb(e.target.value)}
+								/>
+							</Col>
+						</Row>
+						<Row type={'flex'} align={'middle'}>
+							<Col span={6} />
+							<Col>
+								<Checkbox checked={protocolList['nfs']} onChange={e => onProtocolChange('nfs', e.target.checked)}>NFS</Checkbox>
+							</Col>
+						</Row>
+						<Row type={'flex'} align={'middle'} style={{marginBottom: '20px'}}>
+							<Col span={6} />
+							<Col>
+								<Checkbox checked={protocolList['webdav']} onChange={e => onProtocolChange('webdav', e.target.checked)}>WEBDAV</Checkbox>
+							</Col>
+							<Col style={{marginLeft: '20px'}}>
+								WEBDAV名称
+								<Tooltip title="勾选WEBDAV协议后，名称为必填。WEBDAV名称只能输入英文和数字">
+									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
+								</Tooltip>
+								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
+								<Input
+									style={{width: '120px'}}
+									disabled={!protocolList['webdav']}
+									value={davName}
+									onChange={e => setDav(e.target.value)}
+								/>
+							</Col>
 						</Row>
 
-
-
-						<Form.Item label="启用协议" name="protocol">
-							<Checkbox.Group>
-								<Checkbox value="sharing.smb.create">SMB</Checkbox>
-								<Checkbox value="sharing.nfs.create">NFS</Checkbox>
-								<Checkbox value="sharing.webdav.create">WEBDAV</Checkbox>
-							</Checkbox.Group>
-						</Form.Item>
-						<Form.Item label="同步模式" name="sync" rules={[{required: true, message: '请选择同步模式！'}]}>
+						<Form.Item tooltip={'123123'} label="同步模式" name="sync" rules={[{required: true, message: '请选择同步模式！'}]}>
 							<Radio.Group>
 								<Radio value="STANDARD">标准</Radio>
 								<Radio value="ALWAYS">总是</Radio>

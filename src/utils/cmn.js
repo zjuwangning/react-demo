@@ -138,7 +138,7 @@ export const getIops = (bytes) => {
  * form体尾部布局 一般用于按钮
  * @returns {}
  */
-export const tailFormItemLayout = offset => {
+export const tailFormItemLayout = (offset=6) => {
 	return {
 		wrapperCol: {
 			xs: {

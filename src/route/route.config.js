@@ -22,6 +22,10 @@ import SMBAuth from "../pages/share/files/smb"
 import Snapshot from "../pages/share/files/snapshot"
 
 import ShareProtocol from "../pages/share/protocol"
+import Smb from "../pages/share/protocol/smb"
+import Nfs from "../pages/share/protocol/nfs"
+import Ftp from "../pages/share/protocol/ftp"
+import WebDav from "../pages/share/protocol/webdav"
 
 import User from "../pages/credentials/users";
 import UserCreate from "../pages/credentials/users/create";
@@ -69,6 +73,10 @@ export const basicRoutes = [
 	{path: '/share/files/snapshot', element: <Snapshot/>},
 
 	{path: '/share/protocol', element: <ShareProtocol/>},
+	{path: '/share/protocol/smb', element: <Smb/>},
+	{path: '/share/protocol/ftp', element: <Ftp/>},
+	{path: '/share/protocol/nfs', element: <Nfs/>},
+	{path: '/share/protocol/webdav', element: <WebDav/>},
 
 	{path: '/credentials/users', element: <User/>},
 	{path: '/credentials/users/create', element: <UserCreate/>},

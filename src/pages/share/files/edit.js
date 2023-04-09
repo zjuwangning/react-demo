@@ -1,21 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import {useNavigate, useSearchParams} from "react-router-dom";
-import { Row, notification, Form, Select, Col, Checkbox, InputNumber, Radio, Button, Spin, Modal } from "antd";
+import {
+	Row,
+	notification,
+	Form,
+	Select,
+	Col,
+	Checkbox,
+	InputNumber,
+	Radio,
+	Button,
+	Spin,
+	Modal,
+	Tooltip,
+	Input
+} from "antd";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
-import {tailFormItemLayout, getUUID, isEmpty} from "../../../utils/cmn";
+import {tailFormItemLayout, getUUID, isEmpty, cpy} from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
+import {QuestionCircleOutlined} from "@ant-design/icons";
 
 let datasetSub = null,
 	shareSub = null,
 	protocolSub = null,
+	smbSub = null,          // 获取现有smb列表 用于去重
+	davSub = null,          // 获取现有webdav列表 用于去重
 	updateSub = null;
 
 let protocolNum = 0;
 let timer = null;
+let smbInit = '', davInit = '', listInit = {smb: false, webdav: false, nfs: false};
 
 const createProtocol = {nfs: 'sharing.nfs.create', smb: 'sharing.smb.create', webdav: 'sharing.webdav.create'}
 const deleteProtocol = {nfs: 'sharing.nfs.delete', smb: 'sharing.smb.delete', webdav: 'sharing.webdav.delete'}
+const editProtocols = {nfs: 'sharing.nfs.update', smb: 'sharing.smb.update', webdav: 'sharing.webdav.update'}
 
 
 function FileEdit() {
@@ -25,9 +44,14 @@ function FileEdit() {
 
 	const [loading, setLoading] = useState(false)       // 页面加载状态
 	const [dataset, setDataset] = useState({})          // 共享文件
-	const [protocol, setProtocol] = useState({})        // 存储已开启的协议 用于协议的修改
 	const [originData, setOrigin] = useState({})        // 已开启的协议源数据 内含id
 	const [quotaDisabled, setQuota] = useState(false)   // 是否设定配额
+
+	const [protocolList, setProtocol] = useState({smb: false, webdav: false, nfs: false}) // 设定要开启的共享协议
+	const [smbName, setSmb] = useState('')  // smb协议名称
+	const [davName, setDav] = useState('')  // webdav协议名称
+	const [smbList, setSmbList] = useState([])  // smb协议列表 用于去重判断
+	const [davList, setDavList] = useState([])  // webdav协议列表 用于去重判断
 
 
 	// componentDidMount componentWillUnmount
@@ -35,6 +59,8 @@ function FileEdit() {
 		if (WebSocketService) {
 			if (search.get('id')) {
 				getDataset();
+
+				getDav();
 			}
 			else {
 				// 数据没有拿到id 跳转错误
@@ -46,8 +72,46 @@ function FileEdit() {
 			PubSub.unsubscribe(shareSub);
 			PubSub.unsubscribe(protocolSub);
 			PubSub.unsubscribe(updateSub);
+			PubSub.unsubscribe(smbSub);
+			PubSub.unsubscribe(davSub);
 		}
 	}, []);
+
+	// 获取smb协议列表 用于去重判断
+	const getSmb = id => {
+		PubSub.unsubscribe(smbSub);
+		let uuid = getUUID();
+		smbSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [];
+			for (let k in result) {
+				temp.push(result[k]['name'])
+				if (id!==false && result[k]['id']+''===id+'') {
+					smbInit = result[k]['name'];
+					setSmb(result[k]['name']);
+				}
+			}
+			setSmbList(temp);
+		})
+		WebSocketService.call(uuid, URL.SHARE_SMB_QUERY);
+	}
+
+	// 获取webdav协议列表 用于去重判断
+	const getDav = id => {
+		PubSub.unsubscribe(davSub);
+		let uuid = getUUID();
+		davSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [];
+			for (let k in result) {
+				temp.push(result[k]['name'])
+				if (id!==false && result[k]['id']+''===id+'') {
+					davInit = result[k]['name'];
+					setDav(result[k]['name']);
+				}
+			}
+			setDavList(temp);
+		})
+		WebSocketService.call(uuid, URL.SHARE_DAV_QUERY);
+	}
 
 	// 获取共享文件数据
 	const getDataset = () => {
@@ -74,16 +138,17 @@ function FileEdit() {
 				setLoading(false);
 			}
 			else {
-				let temp = []
+				let temp = {}
 				for (let k in result) {
-					if (result[k] !== false) {
-						temp.push(k+'')
-					}
+					temp[k] = result[k]!==false
 				}
 				setDataset(data);
+				listInit = temp;
 				setProtocol(temp);
+				getSmb(result['smb']);
+				getDav(result['webdav']);
 				setOrigin(result);
-				form.setFieldsValue({protocol: temp, sync: data['sync']['value'], compression: data['compression']['value'], })
+				form.setFieldsValue({sync: data['sync']['value'], compression: data['compression']['value'], })
 				setLoading(false);
 			}
 		})
@@ -92,6 +157,39 @@ function FileEdit() {
 
 	//
 	const handleSubmit = values => {
+		if (protocolList['smb']) {
+			if (isEmpty(smbName)) {
+				notification.error({message: '请输入SMB名称'});
+				return ;
+			}
+			else if (smbInit!==smbName && smbList.includes(smbName)) {
+				notification.error({message: 'SMB名称重复'});
+				return ;
+			}
+			else if (/[^/a-zA-Z0-9]/g.test(smbName)) {
+				notification.error({message: 'SMB名称只能输入英文和数字'});
+				return ;
+			}
+		}
+		if (protocolList['webdav']) {
+			if (isEmpty(davName)) {
+				notification.error({message: '请输入WEBDAV名称'});
+				return ;
+			}
+			else if (davInit!==davName && davList.includes(davName)) {
+				notification.error({message: 'WEBDAV名称重复'});
+				return ;
+			}
+			else if (/[^/a-zA-Z0-9]/g.test(davName)) {
+				notification.error({message: 'WEBDAV名称只能输入英文和数字'});
+				return ;
+			}
+		}
+
+		checkProtocol();
+		return;
+
+
 		let params = {}
 		params['compression'] = values['compression'];
 		params['sync'] = values['sync'];
@@ -102,7 +200,6 @@ function FileEdit() {
 			else if (values['suffix'] === 'TB') flag = 4
 			params['refquota'] = params['refquota']*Math.pow(1024, flag);
 		}
-
 
 		Modal.confirm({
 			title: '确认操作',
@@ -116,7 +213,7 @@ function FileEdit() {
 						}
 						else {
 							resolve();
-							checkProtocol(values['protocol'])
+							checkProtocol()
 						}
 					})
 					WebSocketService.call(uuid, URL.DATASET_UPDATE, [dataset['id'], params]);
@@ -125,32 +222,36 @@ function FileEdit() {
 		})
 	}
 
-	// checkProtocol
-	const checkProtocol = nextPro => {
-		let addProtocol = [], delProtocol = [];
-		for (let k in protocol) {
-			if (!nextPro.includes(protocol[k])) {
-				delProtocol.push(protocol[k])
+	// 筛选出新增/修改/删除的共享协议
+	const checkProtocol = () => {
+		const keyList = ['nfs', 'smb', 'webdav'];
+		let addList = [], delList = [], editList = [];
+		for (let k in keyList) {
+			if (listInit[keyList[k]] && !protocolList[keyList[k]]) {
+				delList.push(keyList[k])
+			}
+			else if (!listInit[keyList[k]] && protocolList[keyList[k]]) {
+				addList.push(keyList[k])
+			}
+			else if (listInit[keyList[k]] && protocolList[keyList[k]]) {
+				if (
+					(keyList[k]==='smb' && smbInit!==smbName) || (keyList[k]==='webdav' && davInit!==davName)
+				) {
+					editList.push(keyList[k])
+				}
 			}
 		}
-		for (let k in nextPro) {
-			if (!protocol.includes(nextPro[k])) {
-				addProtocol.push(nextPro[k])
-			}
-		}
-		// 共享协议无变化 直接返回前一页
-		if (isEmpty(addProtocol) && isEmpty(delProtocol)) {
+		if (isEmpty(addList) && isEmpty(delList) && isEmpty(editList)) {
 			notification.success({message: '修改成功'});
-			navigate('/share/files');
+			navigate('/share/files')
 		}
-		// 共享协议发生变化 修改协议
 		else {
-			editProtocol(addProtocol, delProtocol);
+			editProtocol(addList, delList, editList);
 		}
 	}
 
 	// editProtocol
-	const editProtocol = (add, del) => {
+	const editProtocol = (add, del, edit) => {
 		setLoading(true);
 		protocolNum = 0;
 		if (timer !== null) {
@@ -179,13 +280,13 @@ function FileEdit() {
 		for (let k in add) {
 			let params = {}
 			if (add[k] === 'smb') {
-				params = {path: dataset['mountpoint'], name: dataset['name'].slice(dataset['pool'].length+1), purpose: "DEFAULT_SHARE", enabled: true}
+				params = {path: dataset['mountpoint'], name: smbName, purpose: "DEFAULT_SHARE", enabled: true}
 			}
 			else if (add[k] === 'nfs') {
 				params = {paths: [dataset['mountpoint']], enabled: true}
 			}
 			else if (add[k] === 'webdav') {
-				params = {name: dataset['name'].replace('/', ''), path: dataset['mountpoint'], perm: true, enabled: true}
+				params = {name: davName, path: dataset['mountpoint'], perm: true, enabled: true}
 			}
 
 			setTimeout(()=>{
@@ -199,6 +300,27 @@ function FileEdit() {
 			}, (index+1)*500)
 			index++;
 		}
+		for (let k in edit) {
+			let params = {}
+			if (edit[k] === 'smb') {
+				params = {name: smbName}
+			}
+			else if (edit[k] === 'webdav') {
+				params = {name: davName}
+			}
+
+			setTimeout(()=>{
+				WebSocketService.call(uuid, editProtocols[edit[k]], [originData[edit[k]], params]);
+			}, (index+1)*500)
+			index++;
+		}
+	}
+
+	// 协议数据变化
+	const onProtocolChange = (key, checked) => {
+		let temp = cpy(protocolList);
+		temp[key] = checked
+		setProtocol(temp);
 	}
 
 	//
@@ -210,7 +332,7 @@ function FileEdit() {
 
 
 	return (
-		<Spin tip="请稍后..." size="large" spinning={loading} delay={500}>
+		<Spin tip="共享协议修改中，请稍后..." size="large" spinning={loading} delay={500}>
 			<div className={'full-page'}>
 				<Row className={'title'}>修改共享文件</Row>
 				<Row className={'sub-title'}>修改共享文件相关配置。</Row>
@@ -245,13 +367,56 @@ function FileEdit() {
 								</Form.Item>
 							):''
 						}
-						<Form.Item label="启用协议" name="protocol">
-							<Checkbox.Group>
-								<Checkbox value="smb">SMB</Checkbox>
-								<Checkbox value="nfs">NFS</Checkbox>
-								<Checkbox value="webdav">WEBDAV</Checkbox>
-							</Checkbox.Group>
-						</Form.Item>
+
+						<Row type={'flex'} align={'middle'}>
+							<Col span={6}>
+								<Row type={'flex'} justify={'end'}>
+									启用协议<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
+								</Row>
+							</Col>
+							<Col>
+								<Checkbox checked={protocolList['smb']} onChange={e => onProtocolChange('smb', e.target.checked)}>SMB</Checkbox>
+							</Col>
+							<Col style={{marginLeft: '20px'}}>
+								SMB名称
+								<Tooltip title="勾选SMB协议后，名称为必填。SMB名称只能输入英文和数字">
+									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
+								</Tooltip>
+								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
+								<Input
+									style={{width: '120px'}}
+									disabled={!protocolList['smb']}
+									value={smbName}
+									onChange={e => setSmb(e.target.value)}
+								/>
+							</Col>
+						</Row>
+						<Row type={'flex'} align={'middle'}>
+							<Col span={6} />
+							<Col>
+								<Checkbox checked={protocolList['nfs']} onChange={e => onProtocolChange('nfs', e.target.checked)}>NFS</Checkbox>
+							</Col>
+						</Row>
+						<Row type={'flex'} align={'middle'} style={{marginBottom: '20px'}}>
+							<Col span={6} />
+							<Col>
+								<Checkbox checked={protocolList['webdav']} onChange={e => onProtocolChange('webdav', e.target.checked)}>WEBDAV</Checkbox>
+							</Col>
+							<Col style={{marginLeft: '20px'}}>
+								WEBDAV名称
+								<Tooltip title="勾选WEBDAV协议后，名称为必填。WEBDAV名称只能输入英文和数字">
+									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
+								</Tooltip>
+								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
+								<Input
+									style={{width: '120px'}}
+									disabled={!protocolList['webdav']}
+									value={davName}
+									onChange={e => setDav(e.target.value)}
+								/>
+							</Col>
+						</Row>
+
 						<Form.Item label="同步模式" name="sync" rules={[{required: true, message: '请选择同步模式！'}]}>
 							<Radio.Group>
 								<Radio value="STANDARD">标准</Radio>

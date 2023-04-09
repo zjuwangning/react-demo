@@ -58,9 +58,19 @@ const URL = {
 	SNAPSHOT_CLONE: 'zfs.snapshot.clone',       // 快照导出/克隆
 
 	/* 共享 */
-	SHARE_QUERY: 'sharing.nfs.query',   // 共享信息获取
-	SHARE_UPDATE: 'sharing.nfs.update', // 共享信息获取
-	SHARE_PROTOCOL: 'service.query',    // 共享协议
+	SHARE_NFS_QUERY: 'sharing.nfs.query',       // NFS共享信息获取
+	SHARE_NFS_UPDATE: 'sharing.nfs.update',     // NFS共享信息更新
+	SHARE_SMB_QUERY: 'sharing.smb.query',       // smb共享信息获取
+	SHARE_DAV_QUERY: 'sharing.webdav.query',    // webdav共享信息获取
+
+	/* 服务相关 */
+	SERVICE_QUERY: 'service.query',     // 共享服务状态查询
+	SERVICE_START: 'service.start',     // 共享服务开启
+	SERVICE_STOP: 'service.stop',       // 共享服务关闭
+	SMB_CONFIG: 'smb.config',           // 获取smb全局配置
+	SMB_UPDATE: 'smb.update',           // 更新smb全局配置
+	FTP_CONFIG: 'ftp.config',           // 获取ftp全局配置
+	FTP_UPDATE: 'ftp.update',           // 更新ftp全局配置
 
 	/* 文件权限 */
 	FILE_ACL_QUERY: 'filesystem.getacl',      // 获取acl共享信息
@@ -91,8 +101,6 @@ const URL = {
 	CORE_GET_JOBS: 'core.get_jobs',     // 获取任务
 	ZFS_POOL_SCAN: 'zfs.pool.scan',         // scan数据上报
 
-	/* 服务相关 */
-	SERVICE_QUERY: 'service.query',     // 服务状态查询
 
 	/* 性能监控 */
 	REPORT_GET: 'reporting.get_data',   // 获取性能监控数据
