@@ -265,17 +265,6 @@ function Pool() {
 				onChange={handleTableChange}
 				childrenColumnName={'notallow'}
 			/>
-			{/*<BaseTablePage*/}
-			{/*	ref={cRef}*/}
-			{/*	title={'存储池列表'}*/}
-			{/*	subTitle={'显示所有磁盘池的摘要，删除或者定位特定磁盘池。'}*/}
-			{/*	url={[URL.POOL_QUERY, URL.DATASET_QUERY]}*/}
-			{/*	match={['name', 'id']}*/}
-			{/*	merge={['used', 'available']}*/}
-			{/*	columns={columns}*/}
-			{/*	actions={actions}*/}
-			{/*	// filters={filters}*/}
-			{/*/>*/}
 			<Modal
 				title={'删除池 '+record['name']}
 				open={visible}

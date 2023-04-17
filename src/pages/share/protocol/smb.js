@@ -75,52 +75,50 @@ function Smb() {
 	}
 
 	return (
-		<>
-			<div className={'full-page'}>
-				<Row className={'title'}>SMB设置</Row>
-				<Row className={'sub-title'}>修改系统的samba设置</Row>
-				<Row className={'actions'} />
-				<Row type={'flex'}>
-					<Form
-						labelCol={{span: 6,}}
-						wrapperCol={{span: 14,}}
-						layout="horizontal"
-						initialValues={{size: 'default',}}
-						size={'default'}
-						style={{width: 450,}}
-						form={form}
-						onFinish={handleSubmit}
-					>
-						<Form.Item label="工作组" name={'workgroup'} rules={[{ required: true, message: '请填写工作组名称！' }]}>
-							<Input />
-						</Form.Item>
-						<Form.Item label="描述" name={'description'}>
-							<Input />
-						</Form.Item>
-						<Form.Item label="1.0支持" name={'enable_smb1'} rules={[{ required: true, message: '请选择1.0支持！' }]}>
-							<Radio.Group>
-								<Radio value={1}>启用</Radio>
-								<Radio value={0}>禁用</Radio>
-							</Radio.Group>
-						</Form.Item>
-						<Form.Item label="隐藏文件" name={'files'}>
-							{/*<Radio.Group>*/}
-							{/*	<Radio value={1}>启用</Radio>*/}
-							{/*	<Radio value={2}>禁用</Radio>*/}
-							{/*</Radio.Group>*/}
-						</Form.Item>
-						<Form.Item {...tailFormItemLayout(6)}>
-							<Button type="primary" htmlType="submit" loading={loading}>
-								确定
-							</Button>
-							<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/credentials/users')}}>
-								取消
-							</Button>
-						</Form.Item>
-					</Form>
-				</Row>
-			</div>
-		</>
+		<div className={'full-page'}>
+			<Row className={'title'}>SMB设置</Row>
+			<Row className={'sub-title'}>修改系统的samba设置</Row>
+			<Row className={'actions'} />
+			<Row type={'flex'}>
+				<Form
+					labelCol={{span: 6,}}
+					wrapperCol={{span: 14,}}
+					layout="horizontal"
+					initialValues={{size: 'default',}}
+					size={'default'}
+					style={{width: 450,}}
+					form={form}
+					onFinish={handleSubmit}
+				>
+					<Form.Item label="工作组" name={'workgroup'} rules={[{ required: true, message: '请填写工作组名称！' }]}>
+						<Input />
+					</Form.Item>
+					<Form.Item label="描述" name={'description'}>
+						<Input />
+					</Form.Item>
+					<Form.Item label="1.0支持" name={'enable_smb1'} rules={[{ required: true, message: '请选择1.0支持！' }]}>
+						<Radio.Group>
+							<Radio value={1}>启用</Radio>
+							<Radio value={0}>禁用</Radio>
+						</Radio.Group>
+					</Form.Item>
+					<Form.Item label="隐藏文件" name={'files'}>
+						{/*<Radio.Group>*/}
+						{/*	<Radio value={1}>启用</Radio>*/}
+						{/*	<Radio value={2}>禁用</Radio>*/}
+						{/*</Radio.Group>*/}
+					</Form.Item>
+					<Form.Item {...tailFormItemLayout(6)}>
+						<Button type="primary" htmlType="submit" loading={loading}>
+							确定
+						</Button>
+						<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/credentials/users')}}>
+							取消
+						</Button>
+					</Form.Item>
+				</Form>
+			</Row>
+		</div>
 	);
 }
 

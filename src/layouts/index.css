@@ -3,6 +3,39 @@
     height: 100vh;
 }
 
+.reboot-page {
+    width: 100vw;
+    height: 100vh;
+    background-color: skyblue;
+}
+
+.reboot-card {
+    background-color: #000000;
+    width: 400px;
+    height: 200px;
+    margin: auto;
+    border-radius: 15px;
+}
+
+.reboot-title {
+    margin-top: 25px;
+    color: blueviolet;
+    font-size: 35px;
+    font-weight: bold;
+}
+
+.reboot-sub-title {
+    color: whitesmoke;
+    font-size: 25px;
+}
+
+.reboot-foot-title {
+    margin-left: 140px;
+    margin-top: 25px;
+    color: whitesmoke;
+    font-size: 20px;
+}
+
 .trigger {
     font-size: 24px;
 }

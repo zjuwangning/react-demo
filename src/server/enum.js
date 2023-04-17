@@ -48,6 +48,7 @@ const URL = {
 	DATASET_DELETE: 'pool.dataset.delete',      // 删除数据集
 	DATASET_UPDATE: 'pool.dataset.update',      // 删除数据集
 	DATASET_SHARE_ITEM: 'smarcoshare.query_share_status',   // 查询单个数据集共享情况
+	DATASET_SHARE_MULTI: 'smarcoshare.query_multi_share_status',   // 查询多个数据集共享情况
 	DATASET_SHARE: 'smarcoshare.query_all_share_status',    // 查询所有数据集共享情况
 
 	/* 快照相关 */
@@ -56,6 +57,12 @@ const URL = {
 	SNAPSHOT_DELETE: 'zfs.snapshot.delete',     // 快照删除
 	SNAPSHOT_ROLLBACK: 'zfs.snapshot.rollback', // 快照回滚
 	SNAPSHOT_CLONE: 'zfs.snapshot.clone',       // 快照导出/克隆
+
+	SNAP_TASK_QUERY: 'pool.snapshottask.query',     // 快照任务查询
+	SNAP_TASK_CREATE: 'pool.snapshottask.create',   // 快照任务查询
+	SNAP_TASK_UPDATE: 'pool.snapshottask.update',   // 快照任务编辑
+	SNAP_TASK_DELETE: 'pool.snapshottask.delete',   // 快照任务编辑
+
 
 	/* 共享 */
 	SHARE_NFS_QUERY: 'sharing.nfs.query',       // NFS共享信息获取
@@ -71,6 +78,10 @@ const URL = {
 	SMB_UPDATE: 'smb.update',           // 更新smb全局配置
 	FTP_CONFIG: 'ftp.config',           // 获取ftp全局配置
 	FTP_UPDATE: 'ftp.update',           // 更新ftp全局配置
+	NFS_CONFIG: 'nfs.config',           // 获取nfs全局配置
+	NFS_UPDATE: 'nfs.update',           // 更新nfs全局配置
+	DAV_CONFIG: 'webdav.config',        // 获取dav全局配置
+	DAV_UPDATE: 'webdav.update',        // 更新dav全局配置
 
 	/* 文件权限 */
 	FILE_ACL_QUERY: 'filesystem.getacl',      // 获取acl共享信息
@@ -82,6 +93,7 @@ const URL = {
 	/* 任务相关 */
 	JOBS_QUERY: 'core.get_jobs',        // 获取任务
 	JOBS_ABORT: 'core.job_abort',       // 中止任务
+	UPDATE_FILE: 'update.file',         // 手动更新
 
 	/* 用户相关 */
 	USER_QUERY: 'user.query',           // 获取用户
@@ -97,9 +109,20 @@ const URL = {
 	GROUP_DELETE: 'group.delete',       // 删除群组
 	GROUP_GID_QUERY: 'group.get_next_gid',  // 新建用户群组时 获取默认gid
 
+	/* 网络相关 */
+	NETWORK_QUERY: 'interface.query',   // 网络管理
+	NETWORK_GLOBAL_CONFIG: 'network.configuration.config',   // 获取全局配置
+	NETWORK_GLOBAL_UPDATE: 'network.configuration.update',   // 更新全局配置
+
 	/* 内核相关 */
 	CORE_GET_JOBS: 'core.get_jobs',     // 获取任务
+	CORE_DOWNLOAD: 'core.download',     // 获取下载
 	ZFS_POOL_SCAN: 'zfs.pool.scan',         // scan数据上报
+
+	/* 系统相关 */
+	SYSTEM_INFO: 'system.info',         // 系统信息
+	SYSTEM_REBOOT: 'system.reboot',     // 系统重启
+
 
 
 	/* 性能监控 */

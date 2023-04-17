@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { DashboardOutlined, UploadOutlined, ShareAltOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from "pubsub-js";
 import { SubEvent } from '../enum'
 import '../index.css'
@@ -60,7 +60,7 @@ const MenuList = () => {
 				{key: '/share/files', label: '共享文件'},
 				{key: '/share/protocol', label: '共享协议'},
 				{key: '/share/snapshot-manage', label: '快照管理'},
-				{key: '/share/snapshot-lists', label: '定期快照'}
+				{key: '/share/snapshot-task', label: '定期快照'}
 			]
 		},
 		{
@@ -73,7 +73,7 @@ const MenuList = () => {
 		{
 			key: '/system', icon: <SettingOutlined style={{fontSize: '20px'}}/>, label: '系统设置',
 			children: [
-				{key: '/system/network', label: '网络设置'},
+				{key: '/system/network', label: '网络管理'},
 				{key: '/system/update', label: '系统升级'}
 			]
 		},

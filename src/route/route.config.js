@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, Link } from 'react-router-dom'
 import LoginLayouts from "../layouts/LoginLayouts";
 import IndexLayouts from "../layouts/IndexLayouts";
+import RebootLayouts from "../layouts/RebootLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
 
 import Dashboard from "../pages/dashboard";
@@ -20,6 +21,11 @@ import FileEdit from "../pages/share/files/edit"
 import NFSAuth from "../pages/share/files/nfs"
 import SMBAuth from "../pages/share/files/smb"
 import Snapshot from "../pages/share/files/snapshot"
+import SnapshotManage from "../pages/share/snapshot"
+import SnapshotCreate from "../pages/share/snapshot/create"
+import SnapshotTask from "../pages/share/task"
+import TaskCreate from "../pages/share/task/create"
+import TaskEdit from "../pages/share/task/edit"
 
 import ShareProtocol from "../pages/share/protocol"
 import Smb from "../pages/share/protocol/smb"
@@ -36,6 +42,11 @@ import GroupCreate from "../pages/credentials/groups/create";
 import GroupEdit from "../pages/credentials/groups/edit";
 import GroupMember from "../pages/credentials/groups/member";
 
+import Update from "../pages/system/update";
+import Network from "../pages/system/network";
+import GlobalConfig from "../pages/system/network/global";
+import BindNet from "../pages/system/network/bond";
+
 const NoMatch = () => (
 	<div style={{margin: "50px"}}>
 		<h3>404 NOT FOUND</h3>
@@ -48,6 +59,7 @@ const NoMatch = () => (
 export const routes = [
 	{path: '/', element: <Navigate to={'/index'}/>},
 	{path: '/login', element: <LoginLayouts/>},
+	{path: '/reboot', element: <RebootLayouts/>},
 	{path: '/index', element: <IndexLayouts/>},
 	{path: '/*', element: <BasicLayouts/>}
 ];
@@ -78,6 +90,13 @@ export const basicRoutes = [
 	{path: '/share/protocol/nfs', element: <Nfs/>},
 	{path: '/share/protocol/webdav', element: <WebDav/>},
 
+	{path: '/share/snapshot-manage', element: <SnapshotManage/>},
+	{path: '/share/snapshot-manage/create', element: <SnapshotCreate/>},
+
+	{path: '/share/snapshot-task', element: <SnapshotTask/>},
+	{path: '/share/snapshot-task/create', element: <TaskCreate/>},
+	{path: '/share/snapshot-task/edit', element: <TaskEdit/>},
+
 	{path: '/credentials/users', element: <User/>},
 	{path: '/credentials/users/create', element: <UserCreate/>},
 	{path: '/credentials/users/edit', element: <UserEdit/>},
@@ -86,6 +105,11 @@ export const basicRoutes = [
 	{path: '/credentials/groups/create', element: <GroupCreate/>},
 	{path: '/credentials/groups/edit', element: <GroupEdit/>},
 	{path: '/credentials/groups/member', element: <GroupMember/>},
+
+	{path: '/system/update', element: <Update/>},
+	{path: '/system/network', element: <Network/>},
+	{path: '/system/network/global-config', element: <GlobalConfig/>},
+	{path: '/system/network/bond', element: <BindNet/>},
 
 	{path: '*', element: <NoMatch/>}
 ];

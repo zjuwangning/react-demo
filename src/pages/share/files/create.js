@@ -112,7 +112,7 @@ function PoolCreate() {
 
 	//
 	const handleSubmit = values => {
-		let temp = [];
+		let temp = [], content='';
 		if (protocolList['smb']) {
 			temp.push(createProtocol['smb'])
 			if (isEmpty(smbName)) {
@@ -123,8 +123,8 @@ function PoolCreate() {
 				notification.error({message: 'SMB名称重复'});
 				return ;
 			}
-			else if (/[^/a-zA-Z0-9]/g.test(smbName)) {
-				notification.error({message: 'SMB名称只能输入英文和数字'});
+			else if (/[%<>*?|/\\+=;:]/g.test(smbName)) {
+				notification.error({message: 'SMB名称中不得包含 %<>*?|/\\+=;: 等特殊字符'});
 				return ;
 			}
 		}
@@ -142,6 +142,7 @@ function PoolCreate() {
 				notification.error({message: 'WEBDAV名称只能输入英文和数字'});
 				return ;
 			}
+			content = '开启WebDAV后，该共享中所有文件的所有权将更改为用户 webdav 和组 webdav 。此操作无法撤消！'
 		}
 		if (protocolList['nfs']) {
 			temp.push(createProtocol['nfs'])
@@ -162,7 +163,12 @@ function PoolCreate() {
 
 		Modal.confirm({
 			title: '确认操作',
-			content: '是否确认创建 '+params['name'],
+			content: (
+				<div>
+					<Row>是否确认创建 {params['name']}</Row>
+					<Row style={{marginTop: '1vh'}}>{content}</Row>
+				</div>
+			),
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();
@@ -317,7 +323,7 @@ function PoolCreate() {
 							</Col>
 							<Col style={{marginLeft: '20px'}}>
 								SMB名称
-								<Tooltip title="勾选SMB协议后，名称为必填。SMB名称只能输入英文和数字">
+								<Tooltip title="勾选SMB协议后，名称为必填。SMB名称中不得包含 %<>*?|/\+=;: 等特殊字符">
 									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
 								</Tooltip>
 								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
@@ -355,7 +361,7 @@ function PoolCreate() {
 							</Col>
 						</Row>
 
-						<Form.Item tooltip={'123123'} label="同步模式" name="sync" rules={[{required: true, message: '请选择同步模式！'}]}>
+						<Form.Item label="同步模式" name="sync" rules={[{required: true, message: '请选择同步模式！'}]}>
 							<Radio.Group>
 								<Radio value="STANDARD">标准</Radio>
 								<Radio value="ALWAYS">总是</Radio>

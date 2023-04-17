@@ -88,6 +88,10 @@ class Socket {
 						PubSub.publish(data['fields']['method']+ '-' + data['fields']['id'], {result: data['fields']});
 						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
+					// 手动更新上传文件
+					else if (data['fields']['method'] === URL.UPDATE_FILE) {
+						PubSub.publish(data['fields']['id'], {result: data['fields']});
+					}
 					else if (data['fields']['method'] === URL.FILE_ACL_SET) {
 						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
@@ -179,6 +183,16 @@ class Socket {
 		else {
 			window.location = '/login?type=expired'
 		}
+	}
+
+
+	clearCredentials() {
+		this.token = null;
+	}
+
+	prepareShutdown() {
+		this.shuttingdown = true;
+		this.clearCredentials();
 	}
 }
 

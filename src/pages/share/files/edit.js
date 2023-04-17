@@ -157,6 +157,7 @@ function FileEdit() {
 
 	//
 	const handleSubmit = values => {
+		let content='';
 		if (protocolList['smb']) {
 			if (isEmpty(smbName)) {
 				notification.error({message: '请输入SMB名称'});
@@ -166,8 +167,8 @@ function FileEdit() {
 				notification.error({message: 'SMB名称重复'});
 				return ;
 			}
-			else if (/[^/a-zA-Z0-9]/g.test(smbName)) {
-				notification.error({message: 'SMB名称只能输入英文和数字'});
+			else if (/[%<>*?|/\\+=;:]/g.test(smbName)) {
+				notification.error({message: 'SMB名称中不得包含 %<>*?|/\\+=;: 等特殊字符'});
 				return ;
 			}
 		}
@@ -184,10 +185,8 @@ function FileEdit() {
 				notification.error({message: 'WEBDAV名称只能输入英文和数字'});
 				return ;
 			}
+			content = '开启WebDAV后，该共享文件如有原始所有者，则共享中所有文件的所有权将更改为用户 webdav 和组 webdav 。现有权限不会更改，但原始所有者可能无法访问。此操作无法撤消！如果未设置，则必须将要通过WebDAV访问的文件的所有权手动设置为 webdav 或 www 用户/组。'
 		}
-
-		checkProtocol();
-		return;
 
 
 		let params = {}
@@ -203,7 +202,12 @@ function FileEdit() {
 
 		Modal.confirm({
 			title: '确认操作',
-			content: '是否确认修改 '+dataset['id'],
+			content: (
+				<div>
+					<Row>是否确认创建 {params['name']}</Row>
+					<Row style={{marginTop: '1vh'}}>{content}</Row>
+				</div>
+			),
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();
@@ -379,7 +383,7 @@ function FileEdit() {
 							</Col>
 							<Col style={{marginLeft: '20px'}}>
 								SMB名称
-								<Tooltip title="勾选SMB协议后，名称为必填。SMB名称只能输入英文和数字">
+								<Tooltip title="勾选SMB协议后，名称为必填。SMB名称中不得包含 %<>*?|/\+=;: 等特殊字符">
 									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
 								</Tooltip>
 								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>

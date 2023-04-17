@@ -9,7 +9,7 @@ function Router() {
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
-		notification.config({maxCount: 1});
+		notification.config({maxCount: 1, placement: 'top'});
 	}, []);
 
 	return (

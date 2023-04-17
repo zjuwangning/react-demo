@@ -82,6 +82,7 @@ function FileDetails() {
 			}
 		})
 		WebSocketService.call(uuid, URL.DATASET_SHARE_ITEM, [data['mountpoint']]);
+		// WebSocketService.call(uuid, URL.DATASET_SHARE_MULTI, [1, 2]);
 	}
 
 	// 获取nfs协议内容

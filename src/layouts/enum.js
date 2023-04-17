@@ -13,7 +13,7 @@ const BreadcrumbData = {
 	'files': {name: '共享文件', isPage: true},
 	'protocol': {name: '共享协议', isPage: true},
 	'snapshot-manage': {name: '快照管理', isPage: true},
-	'snapshot-lists': {name: '定期快照', isPage: true},
+	'snapshot-task': {name: '定期快照', isPage: true},
 
 	'smb-auth': {name: 'SMB授权', isPage: true},
 	'nfs-auth': {name: 'NFS授权', isPage: true},
@@ -24,8 +24,10 @@ const BreadcrumbData = {
 	'groups': {name: 'NAS群组', isPage: true},
 
 	'system': {name: '系统设置', isPage: false},
-	'network': {name: '网络设置', isPage: true},
+	'network': {name: '网络管理', isPage: true},
 	'update': {name: '系统升级', isPage: true},
+	'global-config': {name: '全局配置', isPage: true},
+	'bond': {name: '网卡绑定', isPage: true},
 
 	'details': {name: '查看详情', isPage: true},
 	'create': {name: '新建', isPage: true},
