@@ -10,21 +10,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: 增加面包屑导航 菜单功能完善 增加socket类">
-      <change afterPath="$PROJECT_DIR$/config/env.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/getHttpsConfig.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/jest/babelTransform.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/jest/cssTransform.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/jest/fileTransform.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/modules.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/paths.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/webpack.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/webpack/persistentCache/createEnvironmentHash.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/webpackDevServer.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/build.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/start.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/test.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: 暴露webpack配置 增加less文件支持">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -82,7 +70,7 @@
       <workItem from="1677556765122" duration="630000" />
       <workItem from="1677577264873" duration="686000" />
       <workItem from="1678954631798" duration="844000" />
-      <workItem from="1682238360576" duration="185000" />
+      <workItem from="1682238360576" duration="352000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
@@ -105,7 +93,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677598165977</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="feat: 暴露webpack配置 增加less文件支持">
+      <created>1682238573440</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1682238573440</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -127,7 +122,8 @@
     <MESSAGE value="feat: react-router-dom v6 路由功能添加" />
     <MESSAGE value="feat: 路由功能完善; 增加useEffect hooks" />
     <MESSAGE value="feat: 增加面包屑导航 菜单功能完善 增加socket类" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: 增加面包屑导航 菜单功能完善 增加socket类" />
+    <MESSAGE value="feat: 暴露webpack配置 增加less文件支持" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: 暴露webpack配置 增加less文件支持" />
   </component>
   <component name="WindowStateProjectService">
     <state x="968" y="431" key="#ESLint" timestamp="1675221539898">
@@ -146,10 +142,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="654" y="166" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1675044860726" />
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1677598167236">
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1682238575372">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1677598167236" />
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1682238575372" />
     <state x="692" y="102" width="1130" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1675043497996">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

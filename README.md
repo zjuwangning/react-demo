@@ -1,70 +1,53 @@
-# Getting Started with Create React App
+# Smart Store NAS  v1.0.0
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
+## 本地运行及编译打包
+使用react-scripts插件 该插件已有完整的webpack配置文件 无需自己再编写构建脚本
 
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+本地运行代码 执行完npm start后 打开[http://localhost:3000](http://localhost:3000)
 
 ### `npm run build`
+打包命令 会将所有内容打包到build目录 包含完整系统运行所需内容 只需部署build目录
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 代码目录结构
+所有需要修改的代码都在src中 public部分可以不管
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+###src目录如下:
+```text
+src
+├─component         公共通用组件 例如tablepage 通用列表页面
+│  └─tablepage
+├─images            图片目录
+├─layouts           主页面 包括登录页/跳转页/后台页
+│  └─component      主页面用到的组件
+├─pages             各个页面代码
+│  ├─credentials    
+│  │  ├─groups
+│  │  └─users
+│  ├─dashboard
+│  └─storage
+│      ├─disks
+│      └─pool
+├─route             路由控制模块
+├─server            通信模块
+└─utils             额外功能
+```
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 通信模块用法
+在页面打开就已经尝试创建了websocket链接  
+使用pubsub-js插件做消息的订阅与发布 以实现socket通信  
+使用时只需要从server目录下的index.js中引入websocket实例WebSocketService 以及 PubSub对象  
+```js
+import { WebSocketService } from '/server/index'
+import PubSub from 'pubsub-js'
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+let Sub = null;         // 初始化订阅对象 用于创建及释放订阅
+const uuid = getUUID(); // 生成uuid用于订阅功能
+Sub = PubSub.subscribe(uuid, (_, result)=>{})   // 开启订阅 callback函数中进行订阅结果的处理 即接口返回的处理
+WebSocketService.call(uuid, URL.LOGIN, {});     // call函数即接口的发送 传入uuid url params
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+PubSub.unsubscribe(Sub);        // 释放订阅 通常在组件销毁时 需要将所有订阅统一释放
+```
