@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Button, Select, Input, Form, Radio, notification, Modal, Progress } from 'antd'
+import {Row, Col, Button, Select, Input, Form, Radio, notification, Modal, Progress, Popover} from 'antd'
 import { useNavigate } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
-import { getUUID, isEmpty, cpy } from "../../../utils/cmn";
+import { getUUID, isEmpty, cpy, getVolume } from "../../../utils/cmn";
 import './index.less'
 
 let poolSub = null,     // 获取所有池 判断新建的池名称是否重复
@@ -18,9 +18,12 @@ function PoolCreate() {
 	const [loading, setLoading] = useState(false)
 	const [type, setType] = useState(1)             // 机壳图类型 1为24*1  2为3*4
 	const [poolList, setPool] = useState([])        // 全部存储池
+	const [hddList, setHdd] = useState([])        // 全部存储池
+	const [ssdList, setSsd] = useState([])        // 全部存储池
 	const [dataOptions, setDataOption] = useState([])       // 数据盘选项
 	const [cacheOptions, setCacheOption] = useState([])     // 缓存盘选项
 	const [sparesOptions, setSparesOption] = useState([])   // 热备盘选项
+	const [raidOptions, setRaidOption] = useState([])       // RAID级别选项
 	const [cacheDisabled, setDisabled] = useState(true)     // 缓存盘是否可选
 	const [opened, setModal] = useState(false)  // 创建确认弹窗
 	const [box, setBox] = useState([])    // 显示机壳图
@@ -31,32 +34,8 @@ function PoolCreate() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		if (WebSocketService) {
-			let uuid = getUUID();
-			poolSub = PubSub.subscribe(uuid, (_, {result})=>{
-				let temp = [];
-				for (let k in result) {
-					temp.push(result[k]['name'])
-				}
-				setPool(temp);
-			})
-			WebSocketService.call(uuid, URL.POOL_QUERY);
-
-			uuid = getUUID();
-			diskSub = PubSub.subscribe(uuid, (_, {result})=>{
-				let temp = [], slotList=[];
-				for (let k in result) {
-					temp.push({label: '位置-'+result[k]['enclosure']['slot'], value: result[k]['name']})
-					slotList.push(result[k]['enclosure']['slot']);
-				}
-				if (isEmpty(temp)) {
-					notification.warning({message: '暂无可用硬盘'})
-				}
-				setDataOption(temp);
-				setCacheOption(temp);
-				setSparesOption(temp);
-				generateBox(1, slotList);
-			})
-			WebSocketService.call(uuid, URL.DISK_UNUSED);
+			getPool();
+			getDisk();
 		}
 
 		return () => {
@@ -67,13 +46,66 @@ function PoolCreate() {
 		}
 	}, []);
 
+	// 获取数据池信息
+	const getPool = () => {
+		let uuid = getUUID();
+		poolSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [];
+			for (let k in result) {
+				temp.push(result[k]['name'])
+			}
+			setPool(temp);
+		})
+		WebSocketService.call(uuid, URL.POOL_QUERY);
+	}
+
+	// 获取可用硬盘
+	const getDisk = () => {
+		let uuid = getUUID();
+		diskSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [], slotList=[], disks={}, ssd=[], hdd=[];
+			for (let k in result) {
+				if (result[k]['type'] === 'SSD') {
+					ssd.push(result[k]['name'])
+				}
+				else if (result[k]['type'] === 'HDD') {
+					hdd.push(result[k]['name'])
+				}
+				temp.push({label: '位置-'+result[k]['enclosure']['slot']+'; '+result[k]['type']+'; '+getVolume(result[k]['size'], 0), value: result[k]['name']})
+				slotList.push(result[k]['enclosure']['slot']);
+				disks[result[k]['enclosure']['slot']] = result[k]
+			}
+			if (isEmpty(temp)) {
+				notification.warning({message: '暂无可用硬盘'})
+			}
+			setHdd(hdd);
+			setSsd(ssd);
+			setDataOption(temp);
+			setCacheOption(temp);
+			setSparesOption(temp);
+			generateBox(1, slotList, disks);
+		})
+		WebSocketService.call(uuid, URL.DISK_UNUSED);
+	}
+
 	// 页面首次加载时 渲染机壳图
-	const generateBox = (boxType, canUse) => {
+	const generateBox = (boxType, canUse, disks) => {
 		let temp = []
 		if (boxType === 1) {
 			for (let k=1; k<25; k++) {
 				if (canUse.includes(Number(k))) {
-					temp.push((<Col span={1}><div id={'disk-'+Number(k)} className={'disk-use-item'}>{k}</div></Col>))
+					const content = (
+						<div>
+							<p>名称：{disks[k]['name']}</p>
+							<p>介质类型：{disks[k]['type']}</p>
+							<p>容量：{getVolume(disks[k]['size'], 0)}</p>
+						</div>
+					);
+					temp.push((
+						<Popover content={content} title={'可用硬盘'}>
+							<Col span={1}><div id={'disk-'+Number(k)} className={'disk-use-item'}>{k}</div></Col>
+						</Popover>
+					))
 				}
 				else {
 					temp.push((<Col span={1}><div id={'disk-'+Number(k)} className={'disk-disabled-item'}>{k}</div></Col>))
@@ -87,8 +119,23 @@ function PoolCreate() {
 	// 确认创建存储池
 	const confirmCreate = () => {
 		let temp = form.getFieldsValue();
-		// let topology = {data: [{type: temp['raid'], disks: temp['data']}]};
-		let topology = {data: [{type: 'MIRROR', disks: temp['data']}]};
+		let topology = {data: [{type: temp['raid'], disks: temp['data']}]};
+		if (temp['raid'] === 'RAID1E') {
+			topology = {data: [{type: 'MIRROR', disks: temp['data']}]};
+		}
+		else if (temp['raid'] === 'RAID10') {
+			let data=[], disks = [], index = 0;
+			for (let k in temp['data']) {
+				disks.push(temp['data'][k]);
+				index++
+				if (index===2) {
+					index = 0;
+					data.push({type: 'MIRROR', disks});
+					disks = []
+				}
+			}
+			topology={data}
+		}
 		if (!isEmpty(temp['cache'])) topology['cache'] = [{type: 'STRIPE', disks: temp['cache']}];
 		if (!isEmpty(temp['spares'])) topology['spares'] = temp['spares'];
 
@@ -96,16 +143,7 @@ function PoolCreate() {
 		setLoading(true);
 		createSub = PubSub.subscribe(uuid, (_, {result})=>{
 			if (!isEmpty(result)) {     // 开启创建流程监听
-				percentSub = PubSub.subscribe('pool.create-'+result, (_, {result}) => {
-					setPercent(result['progress']['percent'])
-					if (result['state'] === 'SUCCESS') {
-						notification.success({message: '创建存储池完成'});
-						navigate('/storage/pools')
-					}
-					else if (result['state'] === 'FAILED') {
-						setLoading(false);
-					}
-				})
+				getProgress(result);
 			}
 			else {
 				setLoading(false);
@@ -114,7 +152,26 @@ function PoolCreate() {
 		WebSocketService.call(uuid, URL.POOL_CREATE, [{encryption: false, name: temp['name'], topology}])
 	}
 
-	const handleSubmit = values => {
+	// 开启创建流程监听
+	const getProgress = id => {
+		PubSub.unsubscribe(percentSub);
+
+		percentSub = PubSub.subscribe('pool.create-'+id, (_, {result}) => {
+			setPercent(result['progress']['percent'])
+			if (result['state'] === 'SUCCESS') {
+				notification.success({message: '创建存储池完成'});
+				navigate('/storage/pools')
+			}
+			else if (result['state'] === 'FAILED') {
+				setLoading(false);
+				setModal(false);
+				setPercent(0);
+				Modal.error({title: '创建存储池失败', content: result['error']})
+			}
+		})
+	}
+
+	const handleSubmit = (values) => {
 		setModal(true)
 	}
 
@@ -124,7 +181,6 @@ function PoolCreate() {
 		}
 		return Promise.resolve();
 	}
-
 
 	// form数据变化
 	const onDataChange = (changedValues, allValues) => {
@@ -155,6 +211,31 @@ function PoolCreate() {
 			}
 		}
 		else if (changeKey === 'data') {    // 三种盘选择任一种 就要将另外两种盘内选项置不可选
+			form.setFieldValue('raid', '');
+			let disksNum = changedValues[changeKey].length;
+			let temp = [];
+			if (disksNum>0) {
+				temp.push({label: 'RAID0', value: 'STRIPE'})
+				if (disksNum === 2) {
+					temp.push({label: 'RAID1', value: 'MIRROR'})
+				}
+				else if (disksNum>2) {
+					temp.push({label: 'RAID1E', value: 'RAID1E'})
+					if (disksNum%2===0) {
+						temp.push({label: 'RAID10', value: 'RAID10'})
+					}
+					temp.push({label: 'RAID5', value: 'RAIDZ1'})
+					if (disksNum>3) {
+						temp.push({label: 'RAID6', value: 'RAIDZ2'})
+						if (disksNum>4) {
+							temp.push({label: 'RAIDZ3', value: 'RAIDZ3'})
+						}
+					}
+				}
+			}
+
+			setRaidOption(temp)
+
 			let cacheTemp = cpy(cacheOptions);
 			let sparesTemp = cpy(sparesOptions);
 			for (let k in cacheTemp) {
@@ -241,7 +322,27 @@ function PoolCreate() {
 							<Radio value="ssd">SSD</Radio>
 						</Radio.Group>
 					</Form.Item>
-					<Form.Item label="数据盘选择" name="data" rules={[{required: true, message: '请选择数据盘！'}]}>
+					<Form.Item
+						label="数据盘选择" name="data"
+						rules={[
+							{required: true, message: '请选择数据盘！'},
+							({ getFieldValue }) => ({
+								validator(_, value) {
+									if (!isEmpty(value)) {
+										for (let k in value) {
+											if (getFieldValue('type') === 'hdd' && ssdList.includes(value[k])) {
+												return Promise.reject(new Error('请选择类型为HDD的硬盘！'));
+											}
+											else if (getFieldValue('type') === 'ssd' && hddList.includes(value[k])) {
+												return Promise.reject(new Error('请选择类型为SSD的硬盘！'));
+											}
+										}
+									}
+									return Promise.resolve();
+								},
+							}),
+						]}
+					>
 						<Select
 							mode="multiple"
 							allowClear
@@ -254,12 +355,7 @@ function PoolCreate() {
 						<Select
 							style={{width: '300px'}}
 							placeholder="请选择RAID级别"
-							options={[
-								{label: 'RAID0', value: 'RAID0'}, {label: 'RAID1', value: 'RAID1'},
-								{label: 'RAID1E', value: 'RAID1E'}, {label: 'RAID10', value: 'RAID10'},
-								{label: 'RAID5', value: 'RAID5'}, {label: 'RAID6', value: 'RAID6'},
-								{label: 'RAIDZ3', value: 'RAIDZ3'},
-							]}
+							options={raidOptions}
 						/>
 					</Form.Item>
 					<Form.Item label="缓存盘选择" name="cache">
@@ -272,7 +368,27 @@ function PoolCreate() {
 							options={cacheOptions}
 						/>
 					</Form.Item>
-					<Form.Item label="热备盘选择" name="spares">
+					{/*<Form.Item label="热备盘选择" name="spares">*/}
+					<Form.Item
+						label="热备盘选择" name="spares"
+						rules={[
+							({ getFieldValue }) => ({
+								validator(_, value) {
+									if (!isEmpty(value)) {
+										for (let k in value) {
+											if (getFieldValue('type') === 'hdd' && ssdList.includes(value[k])) {
+												return Promise.reject(new Error('请选择类型为HDD的硬盘！'));
+											}
+											else if (getFieldValue('type') === 'ssd' && hddList.includes(value[k])) {
+												return Promise.reject(new Error('请选择类型为SSD的硬盘！'));
+											}
+										}
+									}
+									return Promise.resolve();
+								},
+							}),
+						]}
+					>
 						<Select
 							mode="multiple"
 							allowClear
@@ -298,7 +414,7 @@ function PoolCreate() {
 				onCancel={()=>{setModal(false)}}
 				footer={(
 					<Row type={'flex'} justify={'end'}>
-						<Button>取消</Button>
+						<Button onClick={()=>{setModal(false)}}>取消</Button>
 						<Button type={'primary'} onClick={confirmCreate} loading={loading}>确认</Button>
 					</Row>
 				)}

@@ -18,7 +18,6 @@ function GroupCreate() {
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate();
 
-
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		if (WebSocketService) {
@@ -46,11 +45,13 @@ function GroupCreate() {
 	}, []);
 
 	const handleSubmit = values => {
+		let temp = values;
+		temp['smb'] = false
 		if (WebSocketService) {
 			const uuid = getUUID();
 			setLoading(true);
 			createSub = PubSub.subscribe(uuid, (_, {result})=>{createCallback(result)})
-			WebSocketService.call(uuid, URL.GROUP_CREATE, [values]);
+			WebSocketService.call(uuid, URL.GROUP_CREATE, [temp]);
 		}
 	}
 

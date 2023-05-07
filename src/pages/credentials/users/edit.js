@@ -3,13 +3,14 @@ import { Row, Button, Form, Input, Select, notification } from 'antd'
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
-import { getUUID, isEmpty } from "../../../utils/cmn";
+import { getUUID, isEmpty, tailFormItemLayout } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 import { passwordValidator, tipsText } from "./helptext";
 
 let editSub = null,
 	fetchSub = null,
 	groupSub = null;
+let extraGroup = [];
 
 function UserEdit() {
 	const [form] = Form.useForm();
@@ -21,28 +22,8 @@ function UserEdit() {
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
-		let uuid = getUUID();
-		groupSub = PubSub.subscribe(uuid, (_, {result})=>{
-			if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
-			else {
-				let options = [];
-				for (let k in result) {
-					options.push({label: result[k]['group'], value: result[k]['id']})
-				}
-				setOptions(options);
-			}
-		})
-		WebSocketService.call(uuid, URL.GROUP_QUERY);
-
 		if (search.get('id')) {
-			uuid = getUUID();
-			WebSocketService.call(uuid, URL.USER_QUERY, [[["id", "=", Number(search.get('id'))]]]);
-			fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
-				if (!isEmpty(result) && !isEmpty(result[0])) {
-					setItem(result[0])
-					form.setFieldsValue({group: result[0]['group']['id']})
-				}
-			})
+			getGroups();
 		}
 		else {
 			// 数据没有拿到id 跳转错误
@@ -55,11 +36,67 @@ function UserEdit() {
 		}
 	}, []);
 
+	// 获取用户数据
+	const getUser = (builtin, builtinGroup) => {
+		let uuid = getUUID();
+		fetchSub = PubSub.subscribe(uuid, (_, {result})=>{
+			if (!isEmpty(result) && !isEmpty(result[0])) {
+				setItem(result[0])
+				let temp = {};
+				temp['group'] = result[0]['group']['id'];
+				if (builtin.includes(result[0]['group']['id'])) {
+					temp['group'] = result[0]['group']['bsdgrp_group'];
+				}
+				temp['groups'] = []
+				extraGroup = []
+				for (let k in result[0]['groups']) {
+					if (builtin.includes(result[0]['groups'][k])) {
+						extraGroup.push(result[0]['groups'][k])
+					}
+					else {
+						temp['groups'].push(result[0]['groups'][k])
+					}
+				}
+				form.setFieldsValue(temp)
+			}
+		})
+		WebSocketService.call(uuid, URL.USER_QUERY, [[["id", "=", Number(search.get('id'))]]]);
+	}
+
+	// 获取全部组数据 生成选项
+	const getGroups = () => {
+		let uuid = getUUID();
+		groupSub = PubSub.subscribe(uuid, (_, {result})=>{
+			if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
+			else {
+				let options = [], temp = {}, builtin = [];
+				for (let k in result) {
+					if (result[k]['builtin']) {
+						temp[result[k]['id']] = result[k]['group'];
+						builtin.push(result[k]['id']);
+					}
+					else {
+						options.push({label: result[k]['group'], value: result[k]['id']})
+					}
+				}
+				setOptions(options);
+				getUser(builtin, temp);
+			}
+		})
+		WebSocketService.call(uuid, URL.GROUP_QUERY);
+	}
+
 	// handleSubmit
 	const handleSubmit = values => {
 		if (WebSocketService) {
 			let temp = {}
-			temp['group'] = values['group'];
+			if (typeof values['group'] === 'number') {
+				temp['group'] = values['group'];
+			}
+			temp['groups'] = values['groups'];
+			if (extraGroup.length>0) {
+				temp['groups'] = temp['groups'].concat(extraGroup)
+			}
 			if (!isEmpty(values['password'])) temp['password'] = values['password'];
 
 			const uuid = getUUID();
@@ -75,25 +112,11 @@ function UserEdit() {
 		}
 	}
 
-	// 提交按钮行样式
-	const tailFormItemLayout = {
-		wrapperCol: {
-			xs: {
-				span: 24,
-				offset: 0,
-			},
-			sm: {
-				span: 14,
-				offset: 6,
-			},
-		},
-	};
-
 	return (
 		<div className={'full-page'}>
 			<Row className={'title'}>修改NAS用户</Row>
 			<Row className={'sub-title'}>修改NAS用户</Row>
-			<Row type={'flex'} justify={'center'}>
+			<Row type={'flex'} style={{width: '480px', marginTop: '20px'}}>
 				<Form
 					labelCol={{span: 6,}}
 					wrapperCol={{span: 14,}}
@@ -108,8 +131,11 @@ function UserEdit() {
 					<Form.Item label="用户名">
 						{item['username']}
 					</Form.Item>
-					<Form.Item label="分配组" name={'group'} rules={[{ required: true, message: '请选择要分配的用户组！' }]}>
+					<Form.Item label="主用户组" name={'group'} rules={[{ required: true, message: '请选择要分配的用户组！' }]}>
 						<Select options={groupOptions}/>
+					</Form.Item>
+					<Form.Item label="附加组" name={'groups'}>
+						<Select mode={'multiple'} options={groupOptions}/>
 					</Form.Item>
 					<Form.Item
 						label="修改密码" name="password"
@@ -129,7 +155,7 @@ function UserEdit() {
 					]}>
 						<Input.Password/>
 					</Form.Item>
-					<Form.Item {...tailFormItemLayout}>
+					<Form.Item {...tailFormItemLayout(6)}>
 						<Button type="primary" htmlType="submit" loading={loading}>
 							确定
 						</Button>

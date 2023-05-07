@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {Row, Col, Button, Progress, Tag, Modal, Checkbox, notification, Table} from "antd";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
-import BaseTablePage from "../../../component/TablePage";
-import { isEmpty, cpy, getUUID } from "../../../utils/cmn";
+import { isEmpty, cpy, getUUID, getRaid } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 
 let attachSub = null,
@@ -13,7 +12,7 @@ let attachSub = null,
 	delSub = null,
 	delProgressSub = null;
 
-let dataset = [], poolInfo = null;
+let dataset = null, poolInfo = null;
 
 function Pool() {
 	const navigate = useNavigate();
@@ -52,7 +51,7 @@ function Pool() {
 	// 获取所有存储池 及 数据集内存使用情况
 	const getData = () => {
 		setLoading(true);
-		dataset = [];
+		dataset = null;
 		poolInfo = null;
 
 		let uuid = getUUID();
@@ -63,7 +62,7 @@ function Pool() {
 				setData([]);
 			}
 			else {
-				if (!isEmpty(dataset)) {
+				if (dataset !== null) {
 					generateData(dataset, result);
 				}
 				else {
@@ -81,7 +80,7 @@ function Pool() {
 				setData([]);
 			}
 			else {
-				if (!isEmpty(poolInfo)) {
+				if (poolInfo !== null) {
 					generateData(result, poolInfo);
 				}
 				else {
@@ -225,11 +224,7 @@ function Pool() {
 			title: 'RAID类型',
 			dataIndex: 'topology',
 			width: '10%',
-			render: t => {
-				if (!isEmpty(t) && !isEmpty(t['data'])) {
-					return t['data'][0]['type']
-				}
-			}
+			render: t => getRaid(t)
 		},
 		{
 			title: '操作',

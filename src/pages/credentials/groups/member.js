@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Button, Transfer, notification } from 'antd'
+import { Row, Col, Button, Transfer, notification, Modal } from 'antd'
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
@@ -15,7 +15,7 @@ let fetchSub = null,    // 获取当前群组信息
 
 function GroupMember() {
 	const [loading, setLoading] = useState(false)
-	const [item, setItem] = useState({});           // 当前群组信息
+	const [item, setItem] = useState({name: ''});           // 当前群组信息
 	const [userList, setUser] = useState([]);       // 全部user列表
 	const [memberList, setMember] = useState([]);   // 当前组内user列表
 	const navigate = useNavigate();
@@ -68,9 +68,15 @@ function GroupMember() {
 	const handleSubmit = () => {
 		const uuid = getUUID();
 		setLoading(true);
-		editSub = PubSub.subscribe(uuid, (_, {result})=>{
+		editSub = PubSub.subscribe(uuid, (_, {error})=>{
 			setLoading(false);
-			if (result && result>0) {
+			if (error) {
+				Modal.error({
+					title: '保存错误',
+					content: error.reason
+				})
+			}
+			else {
 				notification.success({message: 'NAS群组成员', description: '保存NAS群组成员成功'});
 				navigate('/credentials/groups')
 			}
@@ -86,19 +92,20 @@ function GroupMember() {
 		<div className={'full-page'}>
 			<Row className={'title'}>NAS群组成员</Row>
 			<Row className={'sub-title'}>编辑NAS群组成员</Row>
-			<Row type={'flex'} justify={'center'}>
+			<Row type={'flex'} >
 				群组名称：{item['name']}
 			</Row>
-			<Row type={'flex'} justify={'center'} style={{marginTop: '2vh'}}>
+			<div style={{marginTop: '1vh'}}>
 				<Transfer
+					direction={'left'}
 					dataSource={userList}
-					titles={['所有用户', '组成员']}
+					titles={['系统所有用户', `${item['name']}组成员`]}
 					targetKeys={memberList}
 					onChange={onChange}
 					render={(item) => item.username}
 				/>
-			</Row>
-			<Row type={'flex'} justify={'center'} style={{marginTop: '2vh'}}>
+			</div>
+			<Row type={'flex'} style={{marginTop: '2vh'}}>
 				<Button type={'primary'} onClick={handleSubmit} loading={loading}>保存</Button>
 				<Button style={{marginLeft: '40px'}} onClick={()=>{navigate('/credentials/groups')}}>取消</Button>
 			</Row>

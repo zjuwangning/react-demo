@@ -58,17 +58,28 @@ const URL = {
 	SNAPSHOT_ROLLBACK: 'zfs.snapshot.rollback', // 快照回滚
 	SNAPSHOT_CLONE: 'zfs.snapshot.clone',       // 快照导出/克隆
 
+	/* 任务管理 */
 	SNAP_TASK_QUERY: 'pool.snapshottask.query',     // 快照任务查询
-	SNAP_TASK_CREATE: 'pool.snapshottask.create',   // 快照任务查询
+	SNAP_TASK_CREATE: 'pool.snapshottask.create',   // 快照任务创建
 	SNAP_TASK_UPDATE: 'pool.snapshottask.update',   // 快照任务编辑
-	SNAP_TASK_DELETE: 'pool.snapshottask.delete',   // 快照任务编辑
-
+	SNAP_TASK_DELETE: 'pool.snapshottask.delete',   // 快照任务删除
+	SCRUB_TASK_QUERY: 'pool.scrub.query',           // 校验任务查询
+	SCRUB_TASK_CREATE: 'pool.scrub.create',         // 校验任务创建
+	SCRUB_TASK_UPDATE: 'pool.scrub.update',         // 校验任务编辑
+	SCRUB_TASK_DELETE: 'pool.scrub.delete',         // 校验任务删除
 
 	/* 共享 */
 	SHARE_NFS_QUERY: 'sharing.nfs.query',       // NFS共享信息获取
 	SHARE_NFS_UPDATE: 'sharing.nfs.update',     // NFS共享信息更新
 	SHARE_SMB_QUERY: 'sharing.smb.query',       // smb共享信息获取
 	SHARE_DAV_QUERY: 'sharing.webdav.query',    // webdav共享信息获取
+	SHARE_DAV_CREATE: 'sharing.webdav.create',  // webdav共享信息新建
+	SHARE_DAV_EDIT: 'sharing.webdav.update',    // webdav共享信息编辑
+	SHARE_DAV_DELETE: 'sharing.webdav.delete',  // webdav共享信息删除
+	SHARE_FTP_CREATE: 'sharing.ftp.create',     // 创建ftp共享数据
+	SHARE_FTP_QUERY: 'sharing.ftp.query',       // 查询ftp共享数据
+	SHARE_FTP_DELETE: 'sharing.ftp.delete',     // 删除ftp共享数据
+	SHARE_FTP_UPDATE: 'sharing.ftp.update',     // 修改ftp共享数据
 
 	/* 服务相关 */
 	SERVICE_QUERY: 'service.query',     // 共享服务状态查询
@@ -110,9 +121,17 @@ const URL = {
 	GROUP_GID_QUERY: 'group.get_next_gid',  // 新建用户群组时 获取默认gid
 
 	/* 网络相关 */
-	NETWORK_QUERY: 'interface.query',   // 网络管理
-	NETWORK_GLOBAL_CONFIG: 'network.configuration.config',   // 获取全局配置
-	NETWORK_GLOBAL_UPDATE: 'network.configuration.update',   // 更新全局配置
+	NETWORK_QUERY: 'interface.query',       // 网卡接口获取
+	NETWORK_CREATE: 'interface.create',     // 网卡接口创建(聚合)
+	NETWORK_UPDATE: 'interface.update',     // 网卡接口数据更新
+	NETWORK_PENDING: 'interface.has_pending_changes',       // 查询是否有需要测试的修改
+	NETWORK_WAITING: 'interface.checkin_waiting',       // 查询是否等待的数据
+	NETWORK_ROLLBACK: 'interface.rollback', // 还原更改
+	NETWORK_TEST: 'interface.commit',       // 测试更改
+	NETWORK_SAVE: 'interface.checkin',       // 保存更改
+
+	NETWORK_GLOBAL_CONFIG: 'network.configuration.config',  // 获取全局配置
+	NETWORK_GLOBAL_UPDATE: 'network.configuration.update',  // 更新全局配置
 
 	/* 内核相关 */
 	CORE_GET_JOBS: 'core.get_jobs',     // 获取任务
@@ -123,7 +142,16 @@ const URL = {
 	SYSTEM_INFO: 'system.info',         // 系统信息
 	SYSTEM_REBOOT: 'system.reboot',     // 系统重启
 
-
+	/* 报警相关 */
+	LOGS_QUERY: 'alert.list',   // 报警列表
+	MAIL_CONFIG: 'mail.config', // 获取配置
+	MAIL_SEND: 'mail.send',     // 发送测试邮件
+	MAIL_UPDATE: 'mail.update', // 邮件功能保存
+	ALERT_QUERY: 'alertservice.query',      // 查询邮件预警
+	ALERT_CREATE: 'alertservice.create',    // 创建邮件预警
+	ALERT_UPDATE: 'alertservice.update',    // 修改邮件预警
+	ALERT_DELETE: 'alertservice.delete',    // 删除邮件预警
+	ALERT_TEST: 'alertservice.test',        // 测试邮件预警
 
 	/* 性能监控 */
 	REPORT_GET: 'reporting.get_data',   // 获取性能监控数据

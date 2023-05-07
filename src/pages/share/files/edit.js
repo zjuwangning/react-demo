@@ -395,31 +395,31 @@ function FileEdit() {
 								/>
 							</Col>
 						</Row>
-						<Row type={'flex'} align={'middle'}>
+						<Row type={'flex'} align={'middle'} style={{marginBottom: '20px'}}>
 							<Col span={6} />
 							<Col>
 								<Checkbox checked={protocolList['nfs']} onChange={e => onProtocolChange('nfs', e.target.checked)}>NFS</Checkbox>
 							</Col>
 						</Row>
-						<Row type={'flex'} align={'middle'} style={{marginBottom: '20px'}}>
-							<Col span={6} />
-							<Col>
-								<Checkbox checked={protocolList['webdav']} onChange={e => onProtocolChange('webdav', e.target.checked)}>WEBDAV</Checkbox>
-							</Col>
-							<Col style={{marginLeft: '20px'}}>
-								WEBDAV名称
-								<Tooltip title="勾选WEBDAV协议后，名称为必填。WEBDAV名称只能输入英文和数字">
-									<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>
-								</Tooltip>
-								<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>
-								<Input
-									style={{width: '120px'}}
-									disabled={!protocolList['webdav']}
-									value={davName}
-									onChange={e => setDav(e.target.value)}
-								/>
-							</Col>
-						</Row>
+						{/*<Row type={'flex'} align={'middle'} style={{marginBottom: '20px'}}>*/}
+						{/*	<Col span={6} />*/}
+						{/*	<Col>*/}
+						{/*		<Checkbox checked={protocolList['webdav']} onChange={e => onProtocolChange('webdav', e.target.checked)}>WEBDAV</Checkbox>*/}
+						{/*	</Col>*/}
+						{/*	<Col style={{marginLeft: '20px'}}>*/}
+						{/*		WEBDAV名称*/}
+						{/*		<Tooltip title="勾选WEBDAV协议后，名称为必填。WEBDAV名称只能输入英文和数字">*/}
+						{/*			<QuestionCircleOutlined style={{color: 'rgba(0, 0, 0, 0.45)', marginLeft: '4px'}}/>*/}
+						{/*		</Tooltip>*/}
+						{/*		<span style={{marginLeft: '2px', marginRight: '8px'}}>:</span>*/}
+						{/*		<Input*/}
+						{/*			style={{width: '120px'}}*/}
+						{/*			disabled={!protocolList['webdav']}*/}
+						{/*			value={davName}*/}
+						{/*			onChange={e => setDav(e.target.value)}*/}
+						{/*		/>*/}
+						{/*	</Col>*/}
+						{/*</Row>*/}
 
 						<Form.Item label="同步模式" name="sync" rules={[{required: true, message: '请选择同步模式！'}]}>
 							<Radio.Group>

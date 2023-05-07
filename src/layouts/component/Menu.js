@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DashboardOutlined, UploadOutlined, ShareAltOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
+import { DashboardOutlined, UploadOutlined, ShareAltOutlined, UserOutlined, SettingOutlined, SnippetsOutlined, ApartmentOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from "pubsub-js";
@@ -33,7 +33,7 @@ const MenuList = () => {
 	}
 
 
-	const rootSubmenuKeys = ['/storage', '/share', '/credentials', '/system'];
+	const rootSubmenuKeys = ['/storage', '/share', '/task', '/credentials', '/system'];
 	const onOpenChange = (keys) => {
 		const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
 		if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
@@ -55,12 +55,22 @@ const MenuList = () => {
 			]
 		},
 		{
+			key: '/network', icon: <ApartmentOutlined style={{fontSize: '20px'}}/>, label: '网络管理'
+		},
+		{
 			key: '/share', icon: <ShareAltOutlined style={{fontSize: '20px'}}/>, label: 'NAS共享',
 			children: [
 				{key: '/share/files', label: '共享文件'},
 				{key: '/share/protocol', label: '共享协议'},
-				{key: '/share/snapshot-manage', label: '快照管理'},
-				{key: '/share/snapshot-task', label: '定期快照'}
+				{key: '/share/snapshot-manage', label: '快照管理'}
+			]
+		},
+		{
+			key: '/task', icon: <SnippetsOutlined style={{fontSize: '20px'}}/>, label: '任务管理',
+			children: [
+				{key: '/task/snapshot-task', label: '定期快照'},
+				{key: '/task/scrub-task', label: '校验任务'},
+				{key: '/task/rsync-task', label: '同步任务'}
 			]
 		},
 		{
@@ -73,7 +83,8 @@ const MenuList = () => {
 		{
 			key: '/system', icon: <SettingOutlined style={{fontSize: '20px'}}/>, label: '系统设置',
 			children: [
-				{key: '/system/network', label: '网络管理'},
+				{key: '/system/logs', label: '系统日志'},
+				{key: '/system/mailservice', label: '邮件预警'},
 				{key: '/system/update', label: '系统升级'}
 			]
 		},

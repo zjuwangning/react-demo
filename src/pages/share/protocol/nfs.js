@@ -100,7 +100,7 @@ function Nfs() {
 						<Button type="primary" htmlType="submit" loading={loading}>
 							确定
 						</Button>
-						<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/credentials/users')}}>
+						<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/share/protocol')}}>
 							取消
 						</Button>
 					</Form.Item>

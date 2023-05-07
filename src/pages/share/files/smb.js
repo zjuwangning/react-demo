@@ -25,7 +25,6 @@ function SMBAuth() {
 	const [groupAuth, setGroupAuth] = useState([]);     // smb授权组
 	const [userOption, setUserOption] = useState([]);       // 用户选项
 	const [groupOption, setGroupOption] = useState([]);     // 组选项
-	const [loading, setLoading] = useState(false);
 	const [btnLoading, setBtn] = useState(false);
 	const [title, setTitle] = useState('');
 	const [open, setOpen] = useState(false);
@@ -157,7 +156,7 @@ function SMBAuth() {
 				if (flag) {
 					let userTemp = [], groupTemp = [], aclTemp = [];
 					for (let k in result['acl']) {
-						if (result['acl'][k]['tag'] === 'USER') {
+						if (result['acl'][k]['tag'] === 'USER' && result['acl'][k]['who']!=='ftp') {
 							userTemp.push(result['acl'][k])
 						}
 						else if (result['acl'][k]['tag'] === 'GROUP') {
@@ -203,7 +202,7 @@ function SMBAuth() {
 			else {
 				notification.success({message: '暂无SMB相关权限数据，请添加'})
 				let temp = result;
-				result.push({default: false, id: -1, perms: {READ: true, WRITE: true, EXECUTE: true}, tag: "MASK"})
+				temp.push({default: false, id: -1, perms: {READ: true, WRITE: true, EXECUTE: true}, tag: "MASK"})
 				setAcl(temp);
 			}
 		})
@@ -416,7 +415,6 @@ function SMBAuth() {
 							columns={userColumns}
 							rowKey={(record) => record.id || record.name}
 							dataSource={userAuth}
-							loading={loading}
 						/>
 					</Row>
 				</Col>
@@ -431,7 +429,6 @@ function SMBAuth() {
 							columns={groupColumns}
 							rowKey={(record) => record.id || record.name}
 							dataSource={groupAuth}
-							loading={loading}
 						/>
 					</Row>
 				</Col>

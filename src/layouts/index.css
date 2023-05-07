@@ -85,4 +85,12 @@
     text-align: center;
 }
 
+.connect {
+    margin-top: 40vh;
+    padding: 40px;
+    background-color: lightgray;
+    border-radius: 10px;
+    font-size: 20px;
+}
+
 

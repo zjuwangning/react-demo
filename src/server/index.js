@@ -11,6 +11,7 @@ class Socket {
 		this.remote = environment.remote;
 		this.pendingMessages = [];
 		this.shuttingdown = false;      // 准备关闭socket 后续会用到
+		this.connected = false;         // socket连接状态
 		this.onToken = false;
 		this.token = null;
 		const userInfo = Cache.getUserInfo();
@@ -58,7 +59,9 @@ class Socket {
 		}
 		// Not Authenticated
 		if (data.error && data.error.error && data.error.error+'' ==='13') {
-			window.location = '/login?type=expired';
+			if (window.location.pathname.indexOf('/login/expired')<0) {
+				window.location.href = '/login/expired';
+			}
 			return ;
 		}
 
@@ -92,7 +95,7 @@ class Socket {
 					else if (data['fields']['method'] === URL.UPDATE_FILE) {
 						PubSub.publish(data['fields']['id'], {result: data['fields']});
 					}
-					else if (data['fields']['method'] === URL.FILE_ACL_SET) {
+					else if (data['fields']['method'] === URL.FILE_ACL_SET || data['fields']['method'] === URL.MAIL_SEND) {
 						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
 					// 存储池校验 硬盘初始化
@@ -120,8 +123,8 @@ class Socket {
 	onClose() {
 		this.connected = false;
 		setTimeout(() => this.connect(), 5000);
-		if (!this.shuttingdown) {
-
+		if (!this.shuttingdown && window.location.pathname.indexOf('/login')<0) {
+			window.location.href = '/login';
 		}
 	}
 
@@ -181,7 +184,9 @@ class Socket {
 			});
 		}
 		else {
-			window.location = '/login?type=expired'
+			if (window.location.pathname.indexOf('/login/expired')<0) {
+				window.location.href = '/login/expired';
+			}
 		}
 	}
 

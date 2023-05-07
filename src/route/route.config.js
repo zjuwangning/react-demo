@@ -14,6 +14,11 @@ import PoolCreate from "../pages/storage/pool/create";
 import PoolScrub from "../pages/storage/pool/scrub";
 import PoolDetails from "../pages/storage/pool/details";
 
+import Network from "../pages/network";
+import GlobalConfig from "../pages/network/global";
+import BindNet from "../pages/network/bond";
+import NetConfig from "../pages/network/config";
+
 import ShareFiles from "../pages/share/files"
 import FileCreate from "../pages/share/files/create"
 import FileDetails from "../pages/share/files/details"
@@ -23,15 +28,22 @@ import SMBAuth from "../pages/share/files/smb"
 import Snapshot from "../pages/share/files/snapshot"
 import SnapshotManage from "../pages/share/snapshot"
 import SnapshotCreate from "../pages/share/snapshot/create"
-import SnapshotTask from "../pages/share/task"
-import TaskCreate from "../pages/share/task/create"
-import TaskEdit from "../pages/share/task/edit"
 
 import ShareProtocol from "../pages/share/protocol"
 import Smb from "../pages/share/protocol/smb"
 import Nfs from "../pages/share/protocol/nfs"
 import Ftp from "../pages/share/protocol/ftp"
 import WebDav from "../pages/share/protocol/webdav"
+
+import SnapshotTask from "../pages/task/snapshot"
+import SnapshotTaskCreate from "../pages/task/snapshot/create"
+import SnapshotTaskEdit from "../pages/task/snapshot/edit"
+
+import ScrubTask from "../pages/task/scrub"
+import ScrubTaskCreate from "../pages/task/scrub/create"
+import ScrubTaskEdit from "../pages/task/scrub/edit"
+
+import Rsync from "../pages/task/rsync"
 
 import User from "../pages/credentials/users";
 import UserCreate from "../pages/credentials/users/create";
@@ -42,10 +54,10 @@ import GroupCreate from "../pages/credentials/groups/create";
 import GroupEdit from "../pages/credentials/groups/edit";
 import GroupMember from "../pages/credentials/groups/member";
 
+import Logs from "../pages/system/logs";
+import Mail from "../pages/system/mail";
 import Update from "../pages/system/update";
-import Network from "../pages/system/network";
-import GlobalConfig from "../pages/system/network/global";
-import BindNet from "../pages/system/network/bond";
+
 
 const NoMatch = () => (
 	<div style={{margin: "50px"}}>
@@ -58,9 +70,10 @@ const NoMatch = () => (
 // 包括 登录页 索引页 后台页
 export const routes = [
 	{path: '/', element: <Navigate to={'/index'}/>},
-	{path: '/login', element: <LoginLayouts/>},
-	{path: '/reboot', element: <RebootLayouts/>},
 	{path: '/index', element: <IndexLayouts/>},
+	{path: '/login', element: <LoginLayouts/>},
+	{path: '/login/*', element: <LoginLayouts/>},
+	{path: '/reboot', element: <RebootLayouts/>},
 	{path: '/*', element: <BasicLayouts/>}
 ];
 
@@ -75,6 +88,11 @@ export const basicRoutes = [
 	{path: '/storage/pools/create', element: <PoolCreate/>},
 	{path: '/storage/pools/scrub', element: <PoolScrub/>},
 	{path: '/storage/pools/details', element: <PoolDetails/>},
+
+	{path: '/network', element: <Network/>},
+	{path: '/network/global-config', element: <GlobalConfig/>},
+	{path: '/network/bond', element: <BindNet/>},
+	{path: '/network/config', element: <NetConfig/>},
 
 	{path: '/share/files', element: <ShareFiles/>},
 	{path: '/share/files/create', element: <FileCreate/>},
@@ -93,9 +111,16 @@ export const basicRoutes = [
 	{path: '/share/snapshot-manage', element: <SnapshotManage/>},
 	{path: '/share/snapshot-manage/create', element: <SnapshotCreate/>},
 
-	{path: '/share/snapshot-task', element: <SnapshotTask/>},
-	{path: '/share/snapshot-task/create', element: <TaskCreate/>},
-	{path: '/share/snapshot-task/edit', element: <TaskEdit/>},
+
+	{path: '/task/snapshot-task', element: <SnapshotTask/>},
+	{path: '/task/snapshot-task/create', element: <SnapshotTaskCreate/>},
+	{path: '/task/snapshot-task/edit', element: <SnapshotTaskEdit/>},
+
+	{path: '/task/scrub-task', element: <ScrubTask/>},
+	{path: '/task/scrub-task/create', element: <ScrubTaskCreate/>},
+	{path: '/task/scrub-task/edit', element: <ScrubTaskEdit/>},
+
+	{path: '/task/rsync-task', element: <Rsync/>},
 
 	{path: '/credentials/users', element: <User/>},
 	{path: '/credentials/users/create', element: <UserCreate/>},
@@ -106,10 +131,9 @@ export const basicRoutes = [
 	{path: '/credentials/groups/edit', element: <GroupEdit/>},
 	{path: '/credentials/groups/member', element: <GroupMember/>},
 
+	{path: '/system/logs', element: <Logs/>},
+	{path: '/system/mailservice', element: <Mail/>},
 	{path: '/system/update', element: <Update/>},
-	{path: '/system/network', element: <Network/>},
-	{path: '/system/network/global-config', element: <GlobalConfig/>},
-	{path: '/system/network/bond', element: <BindNet/>},
 
 	{path: '*', element: <NoMatch/>}
 ];

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Layout, Spin, Form, Input, Button, notification } from 'antd';
+import { LockOutlined, UserOutlined, WarningOutlined } from '@ant-design/icons';
+import { Row, Layout, Spin, Form, Input, Button, notification } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from 'pubsub-js'
 import { WebSocketService } from '../server'
-import {EventMessage, URL} from '../server/enum'
+import { EventMessage, URL } from '../server/enum'
 import { isEmpty, getUUID } from "../utils/cmn";
 import { usernameValidator, passwordValidator, tipsText } from '../pages/credentials/users/helptext'
 import Cache from "../utils/Cache";
@@ -12,11 +12,12 @@ import './index.css'
 
 const { Content } = Layout;
 const FormItem = Form.Item;
-
+let timer = null;
 
 const LoginLayout = () => {
 	Cache.removeUserInfo();
 	const [loading, setSpin] = useState(false);
+	const [connect, setConnect] = useState(true);
 	const navigate = useNavigate();
 	const location = useLocation();
 	let loginSub = null, tokenSub = null;
@@ -24,14 +25,18 @@ const LoginLayout = () => {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		Cache.removeUserInfo();
-		if (location.search && location.search.indexOf('expired')) {
+		if (location.pathname && location.pathname==='/login/expired') {
 			notification.warning({message: '令牌已过期，请重新登录。'});
 		}
-		PubSub.unsubscribe(loginSub);
-		PubSub.unsubscribe(tokenSub);
+		connected();
+
+		// 轮询判断当前 connected连接双胎
 		return () => {
 			PubSub.unsubscribe(loginSub);
 			PubSub.unsubscribe(tokenSub);
+			if (timer!==null) {
+				clearInterval(timer)
+			}
 		}
 	}, []);
 
@@ -78,43 +83,64 @@ const LoginLayout = () => {
 		});
 	}
 
+	// 判断socket连接状态
+	const connected = () => {
+		if (timer!==null) {
+			clearInterval(timer)
+		}
+		timer = setInterval(()=>{
+			let temp = WebSocketService.connected;
+			setConnect(temp);
+		}, 300)
+	}
+
 
 	return (
 		<Layout className="full-layout login-page">
 			<Content>
-				<Spin tip="登录中..." spinning={!!loading}>
-					<Form onFinish={handleSubmit} className="login-form">
-						<div className="user-img">
-							<b>Smart Store</b>
-							<span> - 登录</span>
-						</div>
-						{/*<div className="login-title">*/}
-						{/*	<b>Storage Manager</b>*/}
-						{/*</div>*/}
-						<FormItem name="username" rules={[{ validator: usernameValidator, message: tipsText.usernameMsg }, { required: true, message: tipsText.usernameRequire }]}>
-							<Input
-								size="large"
-								prefix={<UserOutlined />}
-								placeholder="用户名"
-							/>
-						</FormItem>
-						<FormItem name="password" rules={[{ validator: passwordValidator, message: tipsText.passwordMsg }, { required: true, message: tipsText.passwordRequire }]}>
-							<Input.Password
-								size="large"
-								prefix={<LockOutlined />}
-								placeholder="密码"
-							/>
-						</FormItem>
-						<Button
-							size="large"
-							type="primary"
-							htmlType="submit"
-							className="login-form-button"
-						>
-							登录
-						</Button>
-					</Form>
-				</Spin>
+				{
+					connect?(
+						<Spin tip="登录中..." spinning={!!loading}>
+							<Form onFinish={handleSubmit} className="login-form">
+								<div className="user-img">
+									<b>Smart Store</b>
+									<span> - 登录</span>
+								</div>
+								{/*<div className="login-title">*/}
+								{/*	<b>Storage Manager</b>*/}
+								{/*</div>*/}
+								<FormItem name="username" rules={[{ validator: usernameValidator, message: tipsText.usernameMsg }, { required: true, message: tipsText.usernameRequire }]}>
+									<Input
+										size="large"
+										prefix={<UserOutlined />}
+										placeholder="用户名"
+									/>
+								</FormItem>
+								<FormItem name="password" rules={[{ validator: passwordValidator, message: tipsText.passwordMsg }, { required: true, message: tipsText.passwordRequire }]}>
+									<Input.Password
+										size="large"
+										prefix={<LockOutlined />}
+										placeholder="密码"
+									/>
+								</FormItem>
+								<Button
+									size="large"
+									type="primary"
+									htmlType="submit"
+									className="login-form-button"
+								>
+									登录
+								</Button>
+							</Form>
+						</Spin>
+					):(
+						<Row type={'flex'} justify={'center'}>
+							<Row type={'flex'} align={'middle'} className={'connect'}>
+								<WarningOutlined style={{fontSize: '28px'}}/>&nbsp; 请确保系统已接通电源并连接到网络。
+							</Row>
+						</Row>
+					)
+				}
 			</Content>
 		</Layout>
 	);

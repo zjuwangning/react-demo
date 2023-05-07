@@ -5,7 +5,7 @@ import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { usernameValidator, passwordValidator, tipsText } from "./helptext";
 import { WebSocketService } from "../../../server";
-import { getUUID, isEmpty } from "../../../utils/cmn";
+import { getUUID, isEmpty, tailFormItemLayout } from "../../../utils/cmn";
 
 let createSub = null,
 	uidSub = null,
@@ -23,32 +23,9 @@ function UserCreate() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		if (WebSocketService) {
-			let uuid = getUUID();
-			uidSub = PubSub.subscribe(uuid, (_, {result})=>{form.setFieldsValue({uid: result})})
-			WebSocketService.call(uuid, URL.USER_UID_QUERY);
-
-			uuid = getUUID();
-			groupSub = PubSub.subscribe(uuid, (_, {result})=>{
-				if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
-				else {
-					let options = [];
-					for (let k in result) {
-						options.push({label: result[k]['group'], value: result[k]['id']})
-					}
-					setOptions(options);
-				}
-			})
-			WebSocketService.call(uuid, URL.GROUP_QUERY);
-
-			uuid = getUUID();
-			userSub = PubSub.subscribe(uuid, (_, {result})=>{
-				let temp = [];
-				result.map(item=>{
-					if (!isEmpty(item) && !isEmpty(item['username'])) temp.push(item['username'])
-				})
-				setUserList(temp);
-			})
-			WebSocketService.call(uuid, URL.USER_QUERY);
+			getGroups();
+			getUID();
+			getUser();
 		}
 
 		return () => {
@@ -59,9 +36,51 @@ function UserCreate() {
 		}
 	}, []);
 
+	// 获取下一个可用uid
+	const getUID = () => {
+		let uuid = getUUID();
+		uidSub = PubSub.subscribe(uuid, (_, {result})=>{form.setFieldsValue({uid: result})})
+		WebSocketService.call(uuid, URL.USER_UID_QUERY);
+	}
+
+	// 获取全部组数据 生成选项
+	const getGroups = () => {
+		let uuid = getUUID();
+		groupSub = PubSub.subscribe(uuid, (_, {result})=>{
+			if (isEmpty(result)) notification.warning({message: '暂无用户分组，请先创建用户分组！'})
+			else {
+				let options = [];
+				for (let k in result) {
+					if (!result[k]['builtin']) {
+						options.push({label: result[k]['group'], value: result[k]['id']})
+					}
+				}
+				setOptions(options);
+			}
+		})
+		WebSocketService.call(uuid, URL.GROUP_QUERY);
+	}
+
+	// 获取已有用户 用于去重
+	const getUser = () => {
+		let uuid = getUUID();
+		userSub = PubSub.subscribe(uuid, (_, {result})=>{
+			let temp = [];
+			result.map(item=>{
+				if (!isEmpty(item) && !isEmpty(item['username'])) temp.push(item['username'])
+			})
+			setUserList(temp);
+		})
+		WebSocketService.call(uuid, URL.USER_QUERY);
+	}
+
+	// 提交数据
 	const handleSubmit = values => {
 		if (WebSocketService) {
 			delete values['confirmPassword'];
+			if (isEmpty(values['groups'])) {
+				delete values['groups'];
+			}
 			const uuid = getUUID();
 			setLoading(true);
 			createSub = PubSub.subscribe(uuid, (_, {result})=>{createCallback(result)})
@@ -84,25 +103,12 @@ function UserCreate() {
 		return Promise.resolve();
 	}
 
-	// 提交按钮行样式
-	const tailFormItemLayout = {
-		wrapperCol: {
-			xs: {
-				span: 24,
-				offset: 0,
-			},
-			sm: {
-				span: 14,
-				offset: 6,
-			},
-		},
-	};
 
 	return (
 		<div className={'full-page'}>
 			<Row className={'title'}>新建NAS用户</Row>
 			<Row className={'sub-title'}>创建新的NAS用户</Row>
-			<Row type={'flex'} justify={'center'}>
+			<Row type={'flex'} style={{width: '480px', marginTop: '20px'}}>
 				<Form
 					labelCol={{span: 6,}}
 					wrapperCol={{span: 14,}}
@@ -149,10 +155,13 @@ function UserCreate() {
 					<Form.Item label="UID" name={'uid'} rules={[{ required: true, message: '请输入UID！' }]}>
 						<InputNumber style={{width: '100%'}}/>
 					</Form.Item>
-					<Form.Item label="分配组" name={'group'} rules={[{ required: true, message: '请选择要分配的用户组！' }]}>
+					<Form.Item label="主用户组" name={'group'} rules={[{ required: true, message: '请选择要分配的用户组！' }]}>
 						<Select options={groupOptions}/>
 					</Form.Item>
-					<Form.Item {...tailFormItemLayout}>
+					<Form.Item label="附加组" name={'groups'}>
+						<Select mode="multiple" options={groupOptions}/>
+					</Form.Item>
+					<Form.Item {...tailFormItemLayout(6)}>
 						<Button type="primary" htmlType="submit" loading={loading}>
 							确定
 						</Button>

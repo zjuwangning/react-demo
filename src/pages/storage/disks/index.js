@@ -49,11 +49,17 @@ function Disk() {
 
 	// 点击查找按钮
 	const locateDisk = r => {
-		setOpen(true);
-		setRecord(r);
-		getLocateState(r['enclosure']['number'], r['enclosure']['slot']);
-		getRemainOnce(r['enclosure']['number'], r['enclosure']['slot']);
-		getRemainTime(r['enclosure']['number'], r['enclosure']['slot']);
+		if (r && r['enclosure'] && r['enclosure']['number'] && r['enclosure']['slot']) {
+			setOpen(true);
+			setRecord(r);
+			getLocateState(r['enclosure']['number'], r['enclosure']['slot']);
+			getRemainOnce(r['enclosure']['number'], r['enclosure']['slot']);
+			getRemainTime(r['enclosure']['number'], r['enclosure']['slot']);
+		}
+		else {
+			notification.error({message: '该硬盘没有位置信息'});
+		}
+
 	}
 
 	// 发送定位命令
@@ -138,10 +144,19 @@ function Disk() {
 			title: '位置(Enc-Slot)',
 			dataIndex: 'enclosure',
 			width: '9%',
-			sorter: (a, b) => a.number - b.number,
+			sorter: (a, b) => {
+				if (a && b && a.number && b.number) {
+					return a.number - b.number
+				}
+			},
 			sortDirections: ['ascend'],
 			defaultSortOrder: 'ascend',
-			render: (t) => t.number+'-'+t.slot
+			render: (t) => {
+				if (isEmpty(t) || isEmpty(t['number'])) {
+					return 'N/A'
+				}
+				return t.number+'-'+t.slot
+			}
 		},
 		{
 			title: '类型',

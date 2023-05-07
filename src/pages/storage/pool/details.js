@@ -4,7 +4,7 @@ import { Row, Col, Descriptions, Progress, Tag, Modal, notification, Table, Butt
 import PubSub from "pubsub-js";
 import moment from "moment";
 import { URL } from "../../../server/enum";
-import { isEmpty, getUUID } from "../../../utils/cmn";
+import { isEmpty, getUUID, getRaid } from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 import { PoolScanState, renderState, renderDisk } from "./enum";
 
@@ -17,6 +17,7 @@ function PoolDetails() {
 	const [form] = Form.useForm();
 	const [search] = useSearchParams();
 	const [poolInfo, setPool] = useState({})        // 池数据
+	const [dataDisk, setData] = useState([])        // 池数据
 	const [topology, setTopology] = useState({})    // topology数据 所有盘使用情况
 	const [percent, setPercent] = useState(0)       // 替换进度
 	const [replace, setReplace] = useState(false)   // 替换进度Modal窗
@@ -32,8 +33,8 @@ function PoolDetails() {
 	const [addPercent, setAddPercent] = useState(0) // 添加进度
 	const [disks, setDisk] = useState([])           // 选择添加的磁盘
 	const [disabled, setDisabled] = useState(false) // 添加窗口选择框disabled
-	// 删除硬盘
-	const [delOpen, setDelOpen] = useState(false)      // 弹窗open
+
+	const [delOpen, setDelOpen] = useState(false)   // 删除硬盘弹窗open
 
 
 	// componentDidMount componentWillUnmount
@@ -179,7 +180,7 @@ function PoolDetails() {
 
 	// 数据整理 用于显示
 	const generateData = (pool, dataset) => {
-		let temp = {}
+		let temp = {}, dataTemp = []
 		temp['id'] = pool['id'];
 		temp['name'] = pool['name'];
 		let color = 'red'
@@ -192,13 +193,23 @@ function PoolDetails() {
 		else temp['volume'] = temp['volume'] + 'G'
 		temp['available'] = dataset['available']['value'];
 		temp['used'] = dataset['used']['value'];
-		temp['raid'] = pool['topology']['data'][0]['type']
+		temp['raid'] = getRaid(pool['topology'])
 		temp['disks'] = ''
 		temp['failures'] = ''
-		for (let k in pool['topology']['data'][0]['children']) {
-			if (!isEmpty(pool['topology']['data'][0]['children'][k]['disk'])) {
-				temp['disks'] += pool['topology']['data'][0]['children'][k]['disk']+'、'
-				if (pool['topology']['data'][0]['children'][k]['status'] !== 'ONLINE') temp['failures']+= pool['topology']['data'][0]['children'][k]['disk']+'、'
+		if (pool['topology']['data'][0]['type'] === 'DISK') {
+			for (let k in pool['topology']['data']) {
+				dataTemp.push(pool['topology']['data'][k]);
+				temp['disks'] += pool['topology']['data'][k]['disk']+'、'
+				if (pool['topology']['data'][k]['status'] !== 'ONLINE') temp['failures']+= pool['topology']['data'][k]['disk']+'、'
+			}
+		}
+		else {
+			for (let k in pool['topology']['data']) {
+				for (let m in pool['topology']['data'][k]['children']) {
+					dataTemp.push(pool['topology']['data'][k]['children'][m]);
+					temp['disks'] += pool['topology']['data'][k]['children'][m]['disk']+'、'
+					if (pool['topology']['data'][k]['children'][m]['status'] !== 'ONLINE') temp['failures']+= pool['topology']['data'][k]['children'][m]['disk']+'、'
+				}
 			}
 		}
 		for (let k in pool['topology']['cache']) {
@@ -216,6 +227,7 @@ function PoolDetails() {
 		setScan(pool['scan'])
 		setTopology(pool['topology']);
 		setPool(temp);
+		setData(dataTemp);
 	}
 
 	// 渲染机壳图
@@ -261,13 +273,13 @@ function PoolDetails() {
 					return new Promise((resolve, reject) => {
 						let uuid = getUUID();
 						handleSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+							resolve()
 							if (result) {
 								getPoolInfo(false);
 								getUnusedDisk();
-								resolve()
 							}
 							else if (error) {
-
+								Modal.error({title: '操作错误', content: error.reason})
 							}
 						})
 						WebSocketService.call(uuid, handleUrl[type], [poolInfo['id'], {label: r['guid']}]);
@@ -373,6 +385,7 @@ function PoolDetails() {
 		setDelOpen(false);
 	}
 
+
 	// columns
 	const dataColumns = [
 		{title: '序号', dataIndex: 'index', width: '15%', render: (t,r,i)=>i+1},
@@ -471,7 +484,7 @@ function PoolDetails() {
 						isEmpty(topology['data'])?'':(
 							<>
 								<Row type={'flex'} className={'body-title'}>
-									数据盘（{topology['data'][0]['type']}）
+									数据盘（{getRaid(topology)}）
 								</Row>
 								<Row type={'flex'}>
 									<Table
@@ -481,7 +494,7 @@ function PoolDetails() {
 										pagination={false}
 										columns={dataColumns}
 										rowKey={(r) => r.id}
-										dataSource={topology['data'][0]['children']}
+										dataSource={dataDisk}
 									/>
 								</Row>
 							</>

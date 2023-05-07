@@ -84,7 +84,7 @@ export function getUUID () {
  * 根据字节数计算容量
  * @returns string
  */
-export const getVolume = (bytes) => {
+export const getVolume = (bytes, fix=2) => {
 	if (isEmpty(bytes)) return ''
 	else if (bytes+'' === '0') return '0';
 	const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -94,7 +94,7 @@ export const getVolume = (bytes) => {
 		flag++;
 		if (flag>=4) break;
 	}
-	return bytes.toFixed(2)+' '+units[flag];
+	return bytes.toFixed(fix)+' '+units[flag];
 }
 
 /**
@@ -136,7 +136,7 @@ export const getIops = (bytes) => {
 
 /**
  * form体尾部布局 一般用于按钮
- * @returns {}
+ * @returns object
  */
 export const tailFormItemLayout = (offset=6) => {
 	return {
@@ -146,12 +146,31 @@ export const tailFormItemLayout = (offset=6) => {
 				offset: 0,
 			},
 			sm: {
-				span: 20-offset,
+				span: 24-offset,
 				offset,
 			},
 		}
 	}
 };
+
+
+/**
+ * 通过拓扑结构获取raid类型
+ * @returns string
+ */
+export 	const getRaid = t => {
+	if (t['data'][0]['type'] === 'DISK') return 'RAID0'
+	else if (t['data'][0]['type'] === 'RAIDZ1') return 'RAID5'
+	else if (t['data'][0]['type'] === 'RAIDZ2') return 'RAID6'
+	else if (t['data'][0]['type'] === 'MIRROR') {
+		if (t['data'].length>1)  return 'RAID10'
+		else {
+			if (t['data'][0]['children'].length === 2) return 'RAID1'
+			else if (t['data'][0]['children'].length > 2) return 'RAID1E'
+		}
+	}
+	else return t['data'][0]['type']
+}
 
 
 
