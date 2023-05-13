@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Button, Form, Input, Select, notification } from 'antd'
+import { Row, Button, Form, Input, Select, notification, Modal } from 'antd'
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
@@ -57,6 +57,8 @@ function UserEdit() {
 						temp['groups'].push(result[0]['groups'][k])
 					}
 				}
+				temp['email'] = ''
+				if (result[0]['email']) temp['email'] = result[0]['email']
 				form.setFieldsValue(temp)
 			}
 		})
@@ -99,11 +101,17 @@ function UserEdit() {
 			}
 			if (!isEmpty(values['password'])) temp['password'] = values['password'];
 
+			temp['email'] = null
+			if (values['email']) temp['email'] = values['email'];
+
 			const uuid = getUUID();
 			setLoading(true);
-			editSub = PubSub.subscribe(uuid, (_, {result})=>{
+			editSub = PubSub.subscribe(uuid, (_, {error})=>{
 				setLoading(false);
-				if (result && result>0) {
+				if (error) {
+					Modal.error({title: '保存错误', content: error.reason})
+				}
+				else {
 					notification.success({message: '修改NAS用户', description: '修改NAS用户成功'});
 					navigate('/credentials/users')
 				}
@@ -136,6 +144,9 @@ function UserEdit() {
 					</Form.Item>
 					<Form.Item label="附加组" name={'groups'}>
 						<Select mode={'multiple'} options={groupOptions}/>
+					</Form.Item>
+					<Form.Item label="电子邮件" name={'email'}>
+						<Input />
 					</Form.Item>
 					<Form.Item
 						label="修改密码" name="password"

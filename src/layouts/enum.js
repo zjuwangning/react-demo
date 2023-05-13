@@ -27,6 +27,7 @@ const BreadcrumbData = {
 	'snapshot-task': {name: '定期快照', isPage: true},
 	'scrub-task': {name: '校验任务', isPage: true},
 	'rsync-task': {name: '同步任务', isPage: true},
+	'priority': {name: '优先级', isPage: true},
 
 	'credentials': {name: 'NAS账户', isPage: false},
 	'users': {name: 'NAS用户', isPage: true},

@@ -158,7 +158,12 @@ function ScrubTaskEdit() {
 					</Form.Item>
 					<Form.Item
 						label="阈值天数" name={'threshold'} rules={[{ required: true, message: '请填写快照保存时间！' }]}
-						tooltip={'快照名称格式化字符串，默认值为 auto-%Y-%m-%d_%H-%M，如有修改，必须包含 %Y,、%m、 %d、%H、%M等字符子串。在生成快照文件时，这些子串分别被具体的年、月、日、小时、分钟代替'}
+						tooltip={
+							'校验任务允许再次允许的间隔天数。' +
+							'例如当设置校验任务每天运行，阈值天数为7时，校验任务会尝试每天定点运行直到校验任务全部完成，' +
+							'此时校验任务仍会每天进行检查但不再运行，直到7天后，才会再次运行。' +
+							'阈值设置为7的倍数可以保证校验任务每次重新运行都是相同的周工作日。'
+						}
 					>
 						<InputNumber style={{width: '100%'}}/>
 					</Form.Item>
@@ -191,7 +196,7 @@ function ScrubTaskEdit() {
 					<Form.Item label="启用该校验任务" name="enabled" valuePropName={'checked'}>
 						<Checkbox />
 					</Form.Item>
-					<Form.Item {...tailFormItemLayout(6)}>
+					<Form.Item {...tailFormItemLayout(5)}>
 						<Button type="primary" htmlType="submit">
 							确定
 						</Button>

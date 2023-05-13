@@ -116,6 +116,11 @@ class Socket {
 					PubSub.publish(data['collection']+ '-'+ data['fields']['name'], {result: data['fields']['scan']});
 				}
 			}
+			else if (data['collection'] === URL.CPU_REPORT) {
+				if (data['fields']['cpu']) {
+					PubSub.publish(data['collection'], {result: data['fields']['cpu']});
+				}
+			}
 		}
 	}
 
@@ -126,6 +131,18 @@ class Socket {
 		if (!this.shuttingdown && window.location.pathname.indexOf('/login')<0) {
 			window.location.href = '/login';
 		}
+	}
+
+	// 订阅消息
+	sub(id, url) {
+		let payload = {id, msg: EventMessage.Sub, name: url};
+		this.send(payload);
+	}
+
+	// 关闭定语
+	unsub(id) {
+		let payload = {id, msg: EventMessage.UnSub};
+		this.send(payload);
 	}
 
 	//

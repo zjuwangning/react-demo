@@ -144,7 +144,14 @@ function Ftp() {
 			configSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 				if (error) {
 					setLoading(false);
-					notification.error({message: '数据获取失败，请稍后重试'})
+					if (error.error === 2 && error.reason === '[ENOENT] Path not found.') {
+						notification.warning({message: 'ftp配置的匿名登录路径已被删除，如需匿名登录，请重新配置其他路径'})
+						delete params['anonpath']
+						form.setFieldsValue(params)
+					}
+					else {
+						notification.error({message: '数据获取失败，请稍后重试'})
+					}
 				}
 				else {
 					let anonAuth = '';

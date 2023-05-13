@@ -5,7 +5,7 @@ import '../index.css'
 
 const Footer = () => {
 	return (
-		<Row type={'flex'} justify={'center'} className={'footer'}>Smart NAS</Row>
+		<Row type={'flex'} justify={'center'} className={'footer'} />
 	);
 };
 export default Footer;

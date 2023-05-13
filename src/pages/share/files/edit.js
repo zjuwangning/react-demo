@@ -157,7 +157,7 @@ function FileEdit() {
 
 	//
 	const handleSubmit = values => {
-		let content='';
+		// let content='';
 		if (protocolList['smb']) {
 			if (isEmpty(smbName)) {
 				notification.error({message: '请输入SMB名称'});
@@ -172,21 +172,21 @@ function FileEdit() {
 				return ;
 			}
 		}
-		if (protocolList['webdav']) {
-			if (isEmpty(davName)) {
-				notification.error({message: '请输入WEBDAV名称'});
-				return ;
-			}
-			else if (davInit!==davName && davList.includes(davName)) {
-				notification.error({message: 'WEBDAV名称重复'});
-				return ;
-			}
-			else if (/[^/a-zA-Z0-9]/g.test(davName)) {
-				notification.error({message: 'WEBDAV名称只能输入英文和数字'});
-				return ;
-			}
-			content = '开启WebDAV后，该共享文件如有原始所有者，则共享中所有文件的所有权将更改为用户 webdav 和组 webdav 。现有权限不会更改，但原始所有者可能无法访问。此操作无法撤消！如果未设置，则必须将要通过WebDAV访问的文件的所有权手动设置为 webdav 或 www 用户/组。'
-		}
+		// if (protocolList['webdav']) {
+		// 	if (isEmpty(davName)) {
+		// 		notification.error({message: '请输入WEBDAV名称'});
+		// 		return ;
+		// 	}
+		// 	else if (davInit!==davName && davList.includes(davName)) {
+		// 		notification.error({message: 'WEBDAV名称重复'});
+		// 		return ;
+		// 	}
+		// 	else if (/[^/a-zA-Z0-9]/g.test(davName)) {
+		// 		notification.error({message: 'WEBDAV名称只能输入英文和数字'});
+		// 		return ;
+		// 	}
+		// 	content = '开启WebDAV后，该共享文件如有原始所有者，则共享中所有文件的所有权将更改为用户 webdav 和组 webdav 。现有权限不会更改，但原始所有者可能无法访问。此操作无法撤消！如果未设置，则必须将要通过WebDAV访问的文件的所有权手动设置为 webdav 或 www 用户/组。'
+		// }
 
 
 		let params = {}
@@ -202,12 +202,13 @@ function FileEdit() {
 
 		Modal.confirm({
 			title: '确认操作',
-			content: (
-				<div>
-					<Row>是否确认创建 {params['name']}</Row>
-					<Row style={{marginTop: '1vh'}}>{content}</Row>
-				</div>
-			),
+			content: `是否确认修改 ${dataset['name']}`,
+			// content: (
+			// 	<div>
+			// 		<Row>是否确认修改 {params['name']}</Row>
+			// 		<Row style={{marginTop: '1vh'}}>{content}</Row>
+			// 	</div>
+			// ),
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();

@@ -77,7 +77,7 @@ function ShareFiles() {
 				}
 			}
 		})
-		WebSocketService.call(uuid, URL.DATASET_QUERY, [[], {extra: {properties: ['used', 'available', 'mountpoint']}}]);
+		WebSocketService.call(uuid, URL.DATASET_QUERY, [[], {extra: {properties: ['used', 'available', 'mountpoint', 'compression', 'compressratio']}}]);
 	}
 
 	// 表格数据重组
@@ -116,15 +116,14 @@ function ShareFiles() {
 	}
 
 	const handleTableChange = (pagination, filters, sorter) => {
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			pagination.current = 1;
+		}
 		setTableParams({
 			pagination,
 			filters,
 			...sorter,
 		});
-
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setData([]);
-		}
 	};
 
 	const nfs = r => {
@@ -156,13 +155,13 @@ function ShareFiles() {
 		{
 			title: '共享文件名称',
 			dataIndex: 'name',
-			width: '18%',
+			width: '15%',
 			render: (t, r) => t.slice(r['pool'].length+1)
 		},
 		{
 			title: '共享文件协议类型',
 			dataIndex: 'share',
-			width: '14%',
+			width: '13%',
 			render: t => {
 				let temp = '';
 				for (let k in t) {
@@ -180,25 +179,36 @@ function ShareFiles() {
 		{
 			title: '已用容量',
 			dataIndex: 'used',
-			width: '9%',
+			width: '8%',
 			render: t=>t['value']
 		},
 		{
 			title: '可用容量',
 			dataIndex: 'available',
-			width: '9%',
+			width: '8%',
 			render: t=>t['value']
+		},
+		{
+			title: '压缩',
+			dataIndex: 'compression',
+			width: '8%',
+			render: t=>t['parsed']
+		},
+		{
+			title: '压缩率',
+			dataIndex: 'compressratio',
+			width: '8%',
+			render: t=>t['parsed']
 		},
 		{
 			title: '操作',
 			dataIndex: 'operation',
-			width: '35%',
+			width: '25%',
 			render: (t, r)=>{
 				return (
 					<Row type={'flex'}>
 						<Button type={'link'} size={'small'} onClick={()=>{navigate('/share/files/details?id='+r['id'])}}>查看</Button>
 						<Button type={'link'} size={'small'} onClick={()=>{navigate('/share/files/edit?id='+r['id'])}}>修改</Button>
-						<Button type={'link'} size={'small'} onClick={()=>{navigate('/share/files/snapshot?id='+r['id'])}}>快照</Button>
 						<Button type={'link'} size={'small'} onClick={()=>{deleteDataset(r)}}>删除</Button>
 						<Button type={'link'} size={'small'} onClick={()=>{nfs(r)}}>nfs授权</Button>
 						<Button type={'link'} size={'small'} onClick={()=>{smb(r)}}>smb授权</Button>

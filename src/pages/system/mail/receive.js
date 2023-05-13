@@ -200,15 +200,14 @@ function Receive() {
 
 	//
 	const handleTableChange = (pagination, filters, sorter) => {
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			pagination.current = 1;
+		}
 		setTableParams({
 			pagination,
 			filters,
 			...sorter,
 		});
-
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setData([]);
-		}
 	};
 
 	//

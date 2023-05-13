@@ -221,7 +221,7 @@ function SnapshotTaskEdit() {
 					<Form.Item label="启用该定期快照" name="enabled" valuePropName={'checked'}>
 						<Checkbox />
 					</Form.Item>
-					<Form.Item {...tailFormItemLayout(6)}>
+					<Form.Item {...tailFormItemLayout(5)}>
 						<Button type="primary" htmlType="submit">
 							确定
 						</Button>

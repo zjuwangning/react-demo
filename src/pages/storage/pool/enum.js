@@ -30,6 +30,10 @@ export const renderState = (t, r) => {
 			text='替换中';
 			color='orange';
 		}
+		else if (r['type'] === 'SPARE') {
+			text='在线';
+			color='green';
+		}
 	}
 	else if (t === 'OFFLINE') {
 		text = '离线';
@@ -37,6 +41,10 @@ export const renderState = (t, r) => {
 	}
 	else if (t === 'UNAVAIL') {
 		text = '不可用';
+		color='red';
+	}
+	else if (t === 'DEGRADED') {
+		text = '降级';
 		color='red';
 	}
 	return (<Tag color={color}>{text}</Tag>)
@@ -49,5 +57,8 @@ export const renderDisk = (t, r) => {
 	}
 	else if (r['type'] === 'REPLACING') {
 		return r['children'][0]['disk']+'→'+r['children'][1]['disk']
+	}
+	else if (r['type'] === 'SPARE') {
+		return '热备'
 	}
 }

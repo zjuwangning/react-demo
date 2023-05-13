@@ -161,6 +161,9 @@ function UserCreate() {
 					<Form.Item label="附加组" name={'groups'}>
 						<Select mode="multiple" options={groupOptions}/>
 					</Form.Item>
+					<Form.Item label="电子邮件" name={'email'}>
+						<Input />
+					</Form.Item>
 					<Form.Item {...tailFormItemLayout(6)}>
 						<Button type="primary" htmlType="submit" loading={loading}>
 							确定

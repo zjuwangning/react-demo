@@ -20,7 +20,8 @@ const URL = {
 	GET_TOKEN: 'auth.generate_token',   // 获取token
 
 	/* dashboard */
-	SYS_INFO: 'system.info',        // 获取系统信息
+	SYS_INFO: 'system.info',            // 获取系统信息
+	CPU_REPORT: 'reporting.realtime',   // CPU信息实时上报
 
 	/* 硬盘 */
 	DISK_QUERY: 'disk.query',           // 获取物理硬盘列表
@@ -67,6 +68,13 @@ const URL = {
 	SCRUB_TASK_CREATE: 'pool.scrub.create',         // 校验任务创建
 	SCRUB_TASK_UPDATE: 'pool.scrub.update',         // 校验任务编辑
 	SCRUB_TASK_DELETE: 'pool.scrub.delete',         // 校验任务删除
+	RE_SILVER_CONFIG: 'pool.resilver.config',       // 重排优先级查询
+	RE_SILVER_UPDATE: 'pool.resilver.update',       // 重排优先级编辑
+	RSYNC_TASK_QUERY: 'rsynctask.query',            // 同步任务查询
+	RSYNC_TASK_CREATE: 'rsynctask.create',          // 同步任务创建
+	RSYNC_TASK_UPDATE: 'rsynctask.update',          // 同步任务编辑
+	RSYNC_TASK_DELETE: 'rsynctask.delete',          // 同步任务删除
+	RSYNC_TASK_RUN: 'rsynctask.run',                // 同步任务立即运行一次
 
 	/* 共享 */
 	SHARE_NFS_QUERY: 'sharing.nfs.query',       // NFS共享信息获取

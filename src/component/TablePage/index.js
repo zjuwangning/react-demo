@@ -5,6 +5,8 @@ import {getUUID, isEmpty} from "../../utils/cmn";
 import { WebSocketService } from "../../server";
 import './index.css'
 
+let fetchSub = null;
+
 const BaseTablePage = forwardRef((
 	{
 		title='', subTitle='', url='', columns=[],
@@ -28,15 +30,10 @@ const BaseTablePage = forwardRef((
 		},
 	});
 
-	let fetchSub = null;
-
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		fetchData(url);
 
-	}, [JSON.stringify(tableParams)]);
-
-	useEffect(() => {
 		return () => {
 			PubSub.unsubscribe(fetchSub);
 		}
@@ -71,16 +68,14 @@ const BaseTablePage = forwardRef((
 	}
 
 	const handleTableChange = (pagination, filters, sorter) => {
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			pagination.current = 1;
+		}
 		setTableParams({
 			pagination,
 			filters,
 			...sorter,
 		});
-
-		// `dataSource` is useless since `pageSize` changed
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setData([]);
-		}
 	};
 
 

@@ -42,8 +42,11 @@ import SnapshotTaskEdit from "../pages/task/snapshot/edit"
 import ScrubTask from "../pages/task/scrub"
 import ScrubTaskCreate from "../pages/task/scrub/create"
 import ScrubTaskEdit from "../pages/task/scrub/edit"
+import ScrubTaskPriority from "../pages/task/scrub/priority"
 
 import Rsync from "../pages/task/rsync"
+import RsyncTaskCreate from "../pages/task/rsync/create"
+import RsyncTaskEdit from "../pages/task/rsync/edit"
 
 import User from "../pages/credentials/users";
 import UserCreate from "../pages/credentials/users/create";
@@ -119,8 +122,11 @@ export const basicRoutes = [
 	{path: '/task/scrub-task', element: <ScrubTask/>},
 	{path: '/task/scrub-task/create', element: <ScrubTaskCreate/>},
 	{path: '/task/scrub-task/edit', element: <ScrubTaskEdit/>},
+	{path: '/task/scrub-task/priority', element: <ScrubTaskPriority/>},
 
 	{path: '/task/rsync-task', element: <Rsync/>},
+	{path: '/task/rsync-task/create', element: <RsyncTaskCreate/>},
+	{path: '/task/rsync-task/edit', element: <RsyncTaskEdit/>},
 
 	{path: '/credentials/users', element: <User/>},
 	{path: '/credentials/users/create', element: <UserCreate/>},

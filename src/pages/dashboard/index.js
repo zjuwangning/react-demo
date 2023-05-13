@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import { Row, Col } from 'antd'
-import { Chart, Line, Axis, Legend, Geom, Guide, Tooltip } from 'bizcharts';
+import { Chart, Axis, Legend, Geom, Tooltip } from 'bizcharts';
 import PubSub from "pubsub-js";
 import moment from 'moment'
 import SysInfo from "./SysInfo";
 import Volume from "./Volume";
+import Cpu from "./Cpu";
 import Panel from '../../component/Panel'
 import { getUUID, getBandwidth, getIops } from "../../utils/cmn";
 import { WebSocketService } from "../../server";
@@ -119,19 +120,26 @@ function Dashboard() {
 
 	return (
 		<div className={'full-page'}>
-			<Row type={'flex'} style={{width: '100%'}}>
-				<Panel title="系统信息" height={'25vh'} width={'100%'}>
-					<SysInfo />
-				</Panel>
+			<Row type={'flex'} style={{width: '100%', height: 'calc(45vh - 90px)'}}>
+				<Col span={8} style={{height: '100%', paddingRight: '0.5vw'}}>
+					<Panel title="系统信息" height={'calc(45vh - 150px)'}>
+						<SysInfo />
+					</Panel>
+				</Col>
+				<Col span={8} style={{paddingLeft: '0.5vw', paddingRight: '0.25vw'}}>
+					<Panel title="容量使用率" height={'calc(45vh - 150px)'}>
+						<Volume />
+					</Panel>
+				</Col>
+				<Col span={8} style={{paddingLeft: '0.75vw'}}>
+					<Panel title="处理器占用" height={'calc(45vh - 150px)'}>
+						<Cpu />
+					</Panel>
+				</Col>
 			</Row>
-			<Row type={'flex'} style={{width: '100%'}}>
-				<Panel title="容量使用率" height={'125px'} width={'100%'}>
-					<Volume />
-				</Panel>
-			</Row>
-			<Row type={'flex'}>
-				<Col span={12} style={{paddingRight: '1vw'}}>
-					<Panel title="带宽" height={'350px'}>
+			<Row type={'flex'} style={{width: '100%', height: 'calc(55vh - 90px)'}}>
+				<Col span={12} style={{paddingRight: '0.5vw'}}>
+					<Panel title="带宽" height={'calc(55vh - 150px)'}>
 						<Chart
 							scale={bandwidthScale}
 							padding={[30, 20, 60, 80]}
@@ -152,8 +160,8 @@ function Dashboard() {
 						</Chart>
 					</Panel>
 				</Col>
-				<Col span={12} style={{paddingLeft: '1vw'}}>
-					<Panel title="IOPS" height={'350px'}>
+				<Col span={12} style={{paddingLeft: '0.5vw'}}>
+					<Panel title="IOPS" height={'calc(55vh - 150px)'}>
 						<Chart
 							scale={ioScale}
 							padding={[30, 20, 60, 80]}

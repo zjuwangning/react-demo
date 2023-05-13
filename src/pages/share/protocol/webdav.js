@@ -257,23 +257,23 @@ function WebDav() {
 		{
 			title: '名称',
 			dataIndex: 'name',
-			width: '15%',
+			width: '18%',
 		},
 		{
 			title: '路径',
 			dataIndex: 'path',
-			width: '25%',
+			width: '33%',
 		},
 		{
 			title: '权限',
 			dataIndex: 'ro',
-			width: '30%',
+			width: '15%',
 			render: t=>t?'只读':'读写'
 		},
 		{
 			title: '操作',
 			dataIndex: 'operation',
-			width: '20%',
+			width: '24%',
 			render: (t, r)=>{
 				return (
 					<Row type={'flex'}>

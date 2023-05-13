@@ -112,7 +112,8 @@ function PoolCreate() {
 
 	//
 	const handleSubmit = values => {
-		let temp = [], content='';
+		// let temp = [], content='';
+		let temp = [];
 		if (protocolList['smb']) {
 			temp.push(createProtocol['smb'])
 			if (isEmpty(smbName)) {
@@ -128,22 +129,22 @@ function PoolCreate() {
 				return ;
 			}
 		}
-		if (protocolList['webdav']) {
-			temp.push(createProtocol['webdav'])
-			if (isEmpty(davName)) {
-				notification.error({message: '请输入WEBDAV名称'});
-				return ;
-			}
-			else if (davList.includes(davName)) {
-				notification.error({message: 'WEBDAV名称重复'});
-				return ;
-			}
-			else if (/[^/a-zA-Z0-9]/g.test(davName)) {
-				notification.error({message: 'WEBDAV名称只能输入英文和数字'});
-				return ;
-			}
-			content = '开启WebDAV后，该共享中所有文件的所有权将更改为用户 webdav 和组 webdav 。此操作无法撤消！'
-		}
+		// if (protocolList['webdav']) {
+		// 	temp.push(createProtocol['webdav'])
+		// 	if (isEmpty(davName)) {
+		// 		notification.error({message: '请输入WEBDAV名称'});
+		// 		return ;
+		// 	}
+		// 	else if (davList.includes(davName)) {
+		// 		notification.error({message: 'WEBDAV名称重复'});
+		// 		return ;
+		// 	}
+		// 	else if (/[^/a-zA-Z0-9]/g.test(davName)) {
+		// 		notification.error({message: 'WEBDAV名称只能输入英文和数字'});
+		// 		return ;
+		// 	}
+		// 	content = '开启WebDAV后，该共享中所有文件的所有权将更改为用户 webdav 和组 webdav 。此操作无法撤消！'
+		// }
 		if (protocolList['nfs']) {
 			temp.push(createProtocol['nfs'])
 		}
@@ -163,12 +164,13 @@ function PoolCreate() {
 
 		Modal.confirm({
 			title: '确认操作',
-			content: (
-				<div>
-					<Row>是否确认创建 {params['name']}</Row>
-					<Row style={{marginTop: '1vh'}}>{content}</Row>
-				</div>
-			),
+			content: `是否确认创建 ${params['name']}`,
+			// content: (
+			// 	<div>
+			// 		<Row>是否确认创建 {params['name']}</Row>
+			// 		<Row style={{marginTop: '1vh'}}>{content}</Row>
+			// 	</div>
+			// ),
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();

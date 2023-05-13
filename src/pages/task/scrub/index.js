@@ -40,7 +40,7 @@ function Snapshot() {
 		}
 	}, []);
 
-	// 获取快照列表
+	// 获取任务列表
 	const getData = () => {
 		setLoading(true);
 		let uuid = getUUID();
@@ -99,15 +99,14 @@ function Snapshot() {
 
 	//
 	const handleTableChange = (pagination, filters, sorter) => {
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			pagination.current = 1;
+		}
 		setTableParams({
 			pagination,
 			filters,
 			...sorter,
 		});
-
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setTask([]);
-		}
 	};
 
 	//
@@ -176,6 +175,7 @@ function Snapshot() {
 			<Row className={'sub-title'}>创建，删除，开启或关闭存储池校验任务</Row>
 			<Row className={'actions'}>
 				<Button type={'primary'} onClick={()=>{navigate('/task/scrub-task/create')}}>创建校验任务</Button>
+				<Button type={'primary'} style={{marginLeft: '10px'}} onClick={()=>{navigate('/task/scrub-task/priority')}}>重排优先级</Button>
 			</Row>
 			<Table
 				size={'middle'}

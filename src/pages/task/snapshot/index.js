@@ -40,7 +40,7 @@ function Snapshot() {
 		}
 	}, []);
 
-	// 获取快照列表
+	// 获取任务列表
 	const getData = () => {
 		setLoading(true);
 		let uuid = getUUID();
@@ -103,15 +103,14 @@ function Snapshot() {
 
 	//
 	const handleTableChange = (pagination, filters, sorter) => {
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			pagination.current = 1;
+		}
 		setTableParams({
 			pagination,
 			filters,
 			...sorter,
 		});
-
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setTask([]);
-		}
 	};
 
 	//

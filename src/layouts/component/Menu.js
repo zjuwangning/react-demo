@@ -6,6 +6,7 @@ import PubSub from "pubsub-js";
 import { SubEvent } from '../enum'
 import '../index.css'
 
+const rootSubmenuKeys = ['/storage', '/share', '/task', '/credentials', '/system'];
 
 const MenuList = () => {
 	const [openKeys, setOpenKeys] = useState(['']);
@@ -17,9 +18,23 @@ const MenuList = () => {
 	// componentDidMount
 	useEffect(() => {
 		setSelectedKeys([location.pathname]);
+		// 监听其他页面发布的跳转事件
 		menuSub = PubSub.subscribe(SubEvent.SWITCH_PAGE, (_, url)=>{
 			navigate(url)
 			setSelectedKeys([url])
+			let openKey = '/'+url.split('/')[1]
+			if (rootSubmenuKeys.includes(openKey)) {
+				setOpenKeys([openKey])
+			}
+		})
+		// 监听浏览器前进后退事件
+		window.addEventListener('popstate', (e)=>{
+			setSelectedKeys([e.target['location']['pathname']]);
+
+			let openKey = '/'+e.target['location']['pathname'].split('/')[1]
+			if (rootSubmenuKeys.includes(openKey)) {
+				setOpenKeys([openKey])
+			}
 		})
 
 		return () => {
@@ -32,8 +47,6 @@ const MenuList = () => {
 		setSelectedKeys([item['key']])
 	}
 
-
-	const rootSubmenuKeys = ['/storage', '/share', '/task', '/credentials', '/system'];
 	const onOpenChange = (keys) => {
 		const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
 		if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {

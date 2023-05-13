@@ -17,13 +17,13 @@ let systemSub = null,
 function Update() {
 	const navigate = useNavigate();
 
-	const [next, setNext] = useState(false);
+	const [next, setNext] = useState(true);
 	const [open, setOpen] = useState(false);
 	const [seed, setSeed] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [path, setPath] = useState('');
 	const [system, setSystem] = useState({});
-	const [options, setOptions] = useState({});
+	const [options, setOptions] = useState([]);
 	const [percent, setPercent] = useState(0);
 
 	// componentDidMount componentWillUnmount
@@ -140,10 +140,10 @@ function Update() {
 
 	// 应用更新
 	const onUpload = () => {
-		if (path==='') {
-			notification.warning({message: '尚未选择临时存储位置'});
-			return ;
-		}
+		// if (path==='') {
+		// 	notification.warning({message: '尚未选择临时存储位置'});
+		// 	return ;
+		// }
 		let fileDom = document.getElementById('files');
 		if(fileDom.files[0] === undefined) {
 			notification.warning({message: '尚未选择更新文件'});
@@ -229,12 +229,12 @@ function Update() {
 							<Col span={6}><Row type={'flex'} justify={'end'}>当前系统版本：</Row></Col>
 							<Col span={18}>{system['version']}</Col>
 						</Row>
-						<Row type={'flex'} align={'middle'} style={{marginTop: '3vh'}}>
-							<Col span={6}><Row type={'flex'} justify={'end'}>更新文件临时存储位置：</Row></Col>
-							<Col span={18}>
-								<Select style={{width: '300px'}} options={options} value={path} onChange={path=>{setPath(path)}}/>
-							</Col>
-						</Row>
+						{/*<Row type={'flex'} align={'middle'} style={{marginTop: '3vh'}}>*/}
+						{/*	<Col span={6}><Row type={'flex'} justify={'end'}>更新文件临时存储位置：</Row></Col>*/}
+						{/*	<Col span={18}>*/}
+						{/*		<Select style={{width: '300px'}} options={options} value={path} onChange={path=>{setPath(path)}}/>*/}
+						{/*	</Col>*/}
+						{/*</Row>*/}
 						<Row type={'flex'} align={'middle'} style={{marginTop: '3vh'}}>
 							<Col span={6}><Row type={'flex'} justify={'end'}>更新文件：</Row></Col>
 							<Col span={18}>

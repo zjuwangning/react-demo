@@ -10,7 +10,6 @@ import dayjs from 'dayjs'
 const { RangePicker } = DatePicker;
 let fetchSub = null;  // 获取所有数据
 
-
 function Logs() {
 	const [data, setData] = useState([]);       // 数据集列表
 	const [hostname, setHost] = useState('');   // 获取主机名
@@ -112,15 +111,14 @@ function Logs() {
 
 	//
 	const handleTableChange = (pagination, filters, sorter) => {
+		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+			pagination.current = 1;
+		}
 		setTableParams({
 			pagination,
 			filters,
 			...sorter,
 		});
-
-		if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-			setData([]);
-		}
 	};
 
 	//
