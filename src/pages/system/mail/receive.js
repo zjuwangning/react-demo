@@ -94,7 +94,7 @@ function Receive() {
 						}
 					})
 					WebSocketService.call(uuid, URL.ALERT_DELETE, [r['id']]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

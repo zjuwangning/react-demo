@@ -66,7 +66,7 @@ function Nfs() {
 						}
 					})
 					WebSocketService.call(uuid, URL.NFS_UPDATE, [values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

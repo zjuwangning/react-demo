@@ -1,30 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Row, Button, Input, notification, Table, Tag, DatePicker, Tabs } from "antd";
+import React, { useEffect } from 'react';
+import { Row, Tabs } from "antd";
 import PubSub from "pubsub-js";
-import { URL } from "../../../server/enum";
-import { getUUID, isEmpty, cpy } from "../../../utils/cmn";
-import { WebSocketService } from "../../../server";
 import Send from './send'
 import Receive from './receive'
-
-const { RangePicker } = DatePicker;
 let fetchSub = null;  // 获取所有数据
-const levelValue = {'INFO': '信息', 'WARNING': '警报', 'CRITICAL': '错误'}
 
 
 function Mail() {
-	const [data, setData] = useState([]);       // 数据集列表
-	const [hostname, setHost] = useState('');   // 获取主机名
-	const [dateTime, setDate] = useState('');   // 要检索的时间
-	const [level, setLevel] = useState(undefined);     // 要检索的等级
-	const [content, setContent] = useState(''); // 要检索的内容
-	const [loading, setLoading] = useState(false);
-	const [tableParams, setTableParams] = useState({
-		pagination: {
-			current: 1,
-			pageSize: 10,
-		},
-	});
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {

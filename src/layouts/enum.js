@@ -35,7 +35,8 @@ const BreadcrumbData = {
 
 	'system': {name: '系统设置', isPage: false},
 	'logs': {name: '系统日志', isPage: true},
-	'mailservice': {name: '邮件预警', isPage: true},
+	'email': {name: '邮件预警', isPage: true},
+	'service': {name: '服务设置', isPage: true},
 	'update': {name: '系统升级', isPage: true},
 
 	'details': {name: '查看详情', isPage: true},
@@ -46,6 +47,7 @@ const BreadcrumbData = {
 	'smb': {name: 'SMB设置', isPage: true},
 	'nfs': {name: 'NFS设置', isPage: true},
 	'ftp': {name: 'FTP设置', isPage: true},
+	'ssh': {name: 'SSH设置', isPage: true},
 	'webdav': {name: 'WebDAV设置', isPage: true},
 }
 

@@ -89,7 +89,7 @@ function ScrubTaskCreate() {
 						resolve();
 					})
 					WebSocketService.call(uuid, URL.SCRUB_TASK_CREATE, [values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

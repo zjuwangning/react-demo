@@ -12,11 +12,15 @@ let poolSub = null,         // 获取所有池 用于生成选项
 	createSub = null,       // 创建数据集
 	smbSub = null,          // 获取现有smb列表 用于去重
 	davSub = null,          // 获取现有webdav列表 用于去重
-	protocolSub = null;     // 为数据集添加协议
+	protocolSub = null,     // 为数据集添加协议
+	shareSub = null,        // 获取当前共享协议状态
+	openSmbSub = null,      // 开启smb
+	openNfsSub = null;      // 开启nfs
 
 let protocolNum = 0;
 let timer = null;
 const createProtocol = {nfs: 'sharing.nfs.create', smb: 'sharing.smb.create', webdav: 'sharing.webdav.create'}
+const nameList = {'cifs': 'SMB', 'nfs': 'NFS'}
 
 function PoolCreate() {
 	const [form] = Form.useForm();
@@ -31,6 +35,7 @@ function PoolCreate() {
 	const [davName, setDav] = useState('')  // webdav协议名称
 	const [smbList, setSmbList] = useState([])  // smb协议列表 用于去重判断
 	const [davList, setDavList] = useState([])  // webdav协议列表 用于去重判断
+	const [shareState, setShare] = useState({}) // 共享状态 如果启用了协议但共享是关闭状态要给出提示
 
 
 	// componentDidMount componentWillUnmount
@@ -38,6 +43,7 @@ function PoolCreate() {
 		getPoolInfo();
 		getSmb();
 		getDav();
+		getShare();
 
 		return () => {
 			PubSub.unsubscribe(poolSub);
@@ -46,8 +52,29 @@ function PoolCreate() {
 			PubSub.unsubscribe(smbSub);
 			PubSub.unsubscribe(davSub);
 			PubSub.unsubscribe(protocolSub);
+			PubSub.unsubscribe(shareSub);
+			PubSub.unsubscribe(openSmbSub);
+			PubSub.unsubscribe(openNfsSub);
 		}
 	}, []);
+
+	// 获取共享协议
+	const getShare = () => {
+		let uuid = getUUID();
+		shareSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '数据获取错误，请稍后重试'});
+			}
+			else {
+				let temp = {}
+				for (let k in result) {
+					temp[nameList[result[k]['service']]] = result[k]['state']
+				}
+				setShare(temp);
+			}
+		})
+		WebSocketService.call(uuid, URL.SERVICE_QUERY, [[['service', 'in', ['cifs', 'nfs']]]]);
+	}
 
 	// 获取smb协议列表 用于去重判断
 	const getSmb = () => {
@@ -112,8 +139,7 @@ function PoolCreate() {
 
 	//
 	const handleSubmit = values => {
-		// let temp = [], content='';
-		let temp = [];
+		let temp = [], content='';
 		if (protocolList['smb']) {
 			temp.push(createProtocol['smb'])
 			if (isEmpty(smbName)) {
@@ -149,6 +175,15 @@ function PoolCreate() {
 			temp.push(createProtocol['nfs'])
 		}
 
+		let openArr = []
+		if (protocolList['smb'] && shareState['SMB'] === 'STOPPED') {
+			openArr.push('SMB')
+			content = '共享文件选择了启用协议，但对应共享协议并未开启。保存共享文件创建会同时为您开启对应协议'
+		}
+		if (protocolList['nfs'] && shareState['NFS'] === 'STOPPED') {
+			openArr.push('NFS')
+			content = '共享文件选择了启用协议，但对应共享协议并未开启。保存共享文件创建会同时为您开启对应协议'
+		}
 
 		let params = {}
 		params['name'] = values['pool']+'/'+values['name'];
@@ -164,13 +199,22 @@ function PoolCreate() {
 
 		Modal.confirm({
 			title: '确认操作',
-			content: `是否确认创建 ${params['name']}`,
-			// content: (
-			// 	<div>
-			// 		<Row>是否确认创建 {params['name']}</Row>
-			// 		<Row style={{marginTop: '1vh'}}>{content}</Row>
-			// 	</div>
-			// ),
+			content: (
+				<div>
+					<Row>是否确认创建 {params['name']}</Row>
+					<Row style={{marginTop: '1vh'}}>{content}</Row>
+					{
+						content !== ''?(
+							<Row style={{marginTop: '1vh'}}>需开启的协议：</Row>
+						):''
+					}
+					{
+						openArr.map(item=>{
+							return (<Row>- {item}</Row>)
+						})
+					}
+				</div>
+			),
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();
@@ -182,21 +226,24 @@ function PoolCreate() {
 								navigate('/share/files');
 							}
 							else {
-								addProtocol(result, temp)
+								addProtocol(result, temp, openArr)
 							}
 						}
 						else if (error) {
-
+							Modal.error({
+								title: '操作错误',
+								content: error.reason
+							})
 						}
 					})
 					WebSocketService.call(uuid, URL.DATASET_CREATE, [params]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}
 
 	// 为新创建的共享文件添加协议
-	const addProtocol = (data, protocol) => {
+	const addProtocol = (data, protocol, openArr) => {
 		setLoading(true);
 		protocolNum = 0;
 		if (timer !== null) {
@@ -205,8 +252,13 @@ function PoolCreate() {
 		timer = setInterval(()=>{
 			if (protocolNum === protocol.length) {
 				clearInterval(timer)
-				notification.success({message: '创建成功'});
-				navigate('/share/files');
+				if (openArr.length>0) {
+					openSmb(openArr)
+				}
+				else {
+					notification.success({message: '创建成功'});
+					navigate('/share/files');
+				}
 			}
 		}, 500)
 		let uuid = getUUID();
@@ -236,6 +288,54 @@ function PoolCreate() {
 				WebSocketService.call(uuid, protocol[k], [params]);
 			}, (Number(k)+1)*500)
 		}
+	}
+
+	// 开启smb
+	const openSmb = (openArr) => {
+		if (openArr.includes('SMB')) {
+			setLoading(true);
+			let uuid = getUUID();
+			openSmbSub = PubSub.subscribe(uuid, (_, {error})=>{
+				if (error) {
+					Modal.error({
+						title: '操作错误',
+						content: error.reason
+					})
+				}
+				else {
+					if (openArr.length>1) {
+						openNfs()
+					}
+					else {
+						notification.success({message: '创建成功'});
+						navigate('/share/files');
+					}
+				}
+			})
+			WebSocketService.call(uuid, URL.SERVICE_START, ['cifs']);
+		}
+		else {
+			openNfs()
+		}
+	}
+
+	// 开启nfs
+	const openNfs = () => {
+		setLoading(true);
+		let uuid = getUUID();
+		openNfsSub = PubSub.subscribe(uuid, (_, {error})=>{
+			if (error) {
+				Modal.error({
+					title: '操作错误',
+					content: error.reason
+				})
+			}
+			else {
+				notification.success({message: '创建成功'});
+				navigate('/share/files');
+			}
+		})
+		WebSocketService.call(uuid, URL.SERVICE_START, ['nfs']);
 	}
 
 	// form数据变化

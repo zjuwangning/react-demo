@@ -99,7 +99,7 @@ function SnapshotTaskCreate() {
 						}
 					})
 					WebSocketService.call(uuid, URL.SNAP_TASK_CREATE, [values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

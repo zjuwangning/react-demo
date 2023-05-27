@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import {Row, Col, Button, Select, Input, Form, Radio, notification, Modal, Progress, Popover} from 'antd'
 import { useNavigate } from "react-router-dom";
 import PubSub from "pubsub-js";
+import DisksSlot from "../../../component/DiskSlot";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty, cpy, getVolume } from "../../../utils/cmn";
-import './index.less'
 
 let poolSub = null,     // 获取所有池 判断新建的池名称是否重复
 	diskSub = null,     // 获取空闲可用硬盘
@@ -16,17 +16,16 @@ let poolSub = null,     // 获取所有池 判断新建的池名称是否重复
 function PoolCreate() {
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState(false)
-	const [type, setType] = useState(1)             // 机壳图类型 1为24*1  2为3*4
 	const [poolList, setPool] = useState([])        // 全部存储池
-	const [hddList, setHdd] = useState([])        // 全部存储池
-	const [ssdList, setSsd] = useState([])        // 全部存储池
+
+	const [diskList, setDisk] = useState([])                // 全部可用硬盘列表
 	const [dataOptions, setDataOption] = useState([])       // 数据盘选项
 	const [cacheOptions, setCacheOption] = useState([])     // 缓存盘选项
 	const [sparesOptions, setSparesOption] = useState([])   // 热备盘选项
+
 	const [raidOptions, setRaidOption] = useState([])       // RAID级别选项
 	const [cacheDisabled, setDisabled] = useState(true)     // 缓存盘是否可选
 	const [opened, setModal] = useState(false)  // 创建确认弹窗
-	const [box, setBox] = useState([])    // 显示机壳图
 	const [percent, setPercent] = useState(0)   // 创建进度
 	const navigate = useNavigate();
 
@@ -63,57 +62,23 @@ function PoolCreate() {
 	const getDisk = () => {
 		let uuid = getUUID();
 		diskSub = PubSub.subscribe(uuid, (_, {result})=>{
-			let temp = [], slotList=[], disks={}, ssd=[], hdd=[];
-			for (let k in result) {
-				if (result[k]['type'] === 'SSD') {
-					ssd.push(result[k]['name'])
-				}
-				else if (result[k]['type'] === 'HDD') {
-					hdd.push(result[k]['name'])
-				}
-				temp.push({label: '位置-'+result[k]['enclosure']['slot']+'; '+result[k]['type']+'; '+getVolume(result[k]['size'], 0), value: result[k]['name']})
-				slotList.push(result[k]['enclosure']['slot']);
-				disks[result[k]['enclosure']['slot']] = result[k]
-			}
-			if (isEmpty(temp)) {
+			if (result.length === 0) {
 				notification.warning({message: '暂无可用硬盘'})
 			}
-			setHdd(hdd);
-			setSsd(ssd);
-			setDataOption(temp);
-			setCacheOption(temp);
-			setSparesOption(temp);
-			generateBox(1, slotList, disks);
-		})
-		WebSocketService.call(uuid, URL.DISK_UNUSED);
-	}
-
-	// 页面首次加载时 渲染机壳图
-	const generateBox = (boxType, canUse, disks) => {
-		let temp = []
-		if (boxType === 1) {
-			for (let k=1; k<25; k++) {
-				if (canUse.includes(Number(k))) {
-					const content = (
-						<div>
-							<p>名称：{disks[k]['name']}</p>
-							<p>介质类型：{disks[k]['type']}</p>
-							<p>容量：{getVolume(disks[k]['size'], 0)}</p>
-						</div>
-					);
-					temp.push((
-						<Popover content={content} title={'可用硬盘'}>
-							<Col span={1}><div id={'disk-'+Number(k)} className={'disk-use-item'}>{k}</div></Col>
-						</Popover>
-					))
-				}
-				else {
-					temp.push((<Col span={1}><div id={'disk-'+Number(k)} className={'disk-disabled-item'}>{k}</div></Col>))
+			let temp = [];
+			for (let k in result) {
+				if (result[k]['type'] === 'SSD') {
+					let label = '位置-unknown; '+result[k]['type']+'; '+getVolume(result[k]['size'], 2)
+					if (result[k]['enclosure'] && result[k]['enclosure']['slot']) {
+						label = '位置-'+result[k]['enclosure']['slot']+'; '+result[k]['type']+'; '+getVolume(result[k]['size'], 2)
+					}
+					temp.push({label, value: result[k]['name']})
 				}
 			}
-			temp = (<div className={'box-1'}><Row className={'box-1-row'} type={'flex'}>{temp}</Row></div>)
-		}
-		setBox(temp)
+			setCacheOption(temp);
+			setDisk(result);
+		})
+		WebSocketService.call(uuid, URL.DISK_UNUSED);
 	}
 
 	// 确认创建存储池
@@ -175,8 +140,31 @@ function PoolCreate() {
 		setModal(true)
 	}
 
+	const poolNameHead = (_, value) => {
+		const reg = /^[a-zA-Z]*$/g
+		if (!isEmpty(value) && !reg.test(value[0])) {
+			return Promise.reject();
+		}
+		return Promise.resolve();
+	}
+
+	const poolNameLength = (_, value) => {
+		if (!isEmpty(value) && value.length>16) {
+			return Promise.reject();
+		}
+		return Promise.resolve();
+	}
+
 	const poolNameUsed = (_, value) => {
 		if (!isEmpty(value) && poolList.includes(value)) {
+			return Promise.reject();
+		}
+		return Promise.resolve();
+	}
+
+	const poolNameTest = (_, value) => {
+		const reg = /^[a-zA-Z0-9_\-:.]*$/g
+		if (!isEmpty(value) && !reg.test(value)) {
 			return Promise.reject();
 		}
 		return Promise.resolve();
@@ -186,96 +174,59 @@ function PoolCreate() {
 	const onDataChange = (changedValues, allValues) => {
 		const changeKey = Object.keys(changedValues)[0]
 		if (changeKey === 'type') {
-			if (changedValues['type'] === 'multiple') {
-				setDisabled(false);
-				let cacheTemp = cpy(cacheOptions);
-				for (let k in cacheTemp) {
-					cacheTemp[k]['disabled'] = !!((!isEmpty(allValues['spares']) && allValues['spares'].includes(cacheTemp[k]['value']))
-						|| (!isEmpty(allValues['data']) && allValues['data'].includes(cacheTemp[k]['value'])));
+			form.setFieldsValue({data: undefined, spares: undefined, cache: undefined, raid: undefined})
+			setRaidOption([])
+			setDisabled(changedValues['type'] === 'SSD');
+			let temp = []
+			for (let k in diskList) {
+				if (diskList[k]['type'] === changedValues['type']) {
+					let label = '位置-unknown; '+diskList[k]['type']+'; '+getVolume(diskList[k]['size'], 2)
+					if (diskList[k]['enclosure'] && diskList[k]['enclosure']['slot']) {
+						label = '位置-'+diskList[k]['enclosure']['slot']+'; '+diskList[k]['type']+'; '+getVolume(diskList[k]['size'], 2)
+					}
+					temp.push({label, value: diskList[k]['name']})
 				}
-				setCacheOption(cacheTemp);
 			}
-			else {
-				form.setFieldsValue({cache: undefined})
-				setDisabled(true);
-				let dataTemp = cpy(dataOptions);
-				let sparesTemp = cpy(sparesOptions);
-				for (let k in dataTemp) {
-					dataTemp[k]['disabled'] = !!(!isEmpty(allValues['spares']) && allValues['spares'].includes(dataTemp[k]['value']));
-				}
-				for (let k in sparesTemp) {
-					sparesTemp[k]['disabled'] = !!(!isEmpty(allValues['data']) && allValues['data'].includes(sparesTemp[k]['value']));
-				}
-				setDataOption(dataTemp);
-				setSparesOption(sparesTemp);
-			}
+			setDataOption(temp);
+			setSparesOption(temp);
 		}
 		else if (changeKey === 'data') {    // 三种盘选择任一种 就要将另外两种盘内选项置不可选
 			form.setFieldValue('raid', '');
 			let disksNum = changedValues[changeKey].length;
 			let temp = [];
 			if (disksNum>0) {
-				temp.push({label: 'RAID0', value: 'STRIPE'})
+				temp.push({label: 'RAID 0', value: 'STRIPE'})
 				if (disksNum === 2) {
-					temp.push({label: 'RAID1', value: 'MIRROR'})
+					temp.push({label: 'RAID 1', value: 'MIRROR'})
 				}
 				else if (disksNum>2) {
-					temp.push({label: 'RAID1E', value: 'RAID1E'})
+					temp.push({label: 'RAID 1E', value: 'RAID1E'})
 					if (disksNum%2===0) {
-						temp.push({label: 'RAID10', value: 'RAID10'})
+						temp.push({label: 'RAID 10', value: 'RAID10'})
 					}
-					temp.push({label: 'RAID5', value: 'RAIDZ1'})
+					temp.push({label: 'RAID 5', value: 'RAIDZ1'})
 					if (disksNum>3) {
-						temp.push({label: 'RAID6', value: 'RAIDZ2'})
+						temp.push({label: 'RAID 6', value: 'RAIDZ2'})
 						if (disksNum>4) {
-							temp.push({label: 'RAIDZ3', value: 'RAIDZ3'})
+							temp.push({label: 'RAID-TP', value: 'RAIDZ3'})
 						}
 					}
 				}
 			}
-
 			setRaidOption(temp)
 
-			let cacheTemp = cpy(cacheOptions);
 			let sparesTemp = cpy(sparesOptions);
-			for (let k in cacheTemp) {
-				cacheTemp[k]['disabled'] = !!((!isEmpty(allValues['data']) && allValues['data'].includes(cacheTemp[k]['value']))
-					|| (!isEmpty(allValues['spares']) && allValues['spares'].includes(cacheTemp[k]['value'])));
-			}
 			for (let k in sparesTemp) {
-				sparesTemp[k]['disabled'] = !!((!isEmpty(allValues['data']) && allValues['data'].includes(sparesTemp[k]['value']))
-					|| (!isEmpty(allValues['cache']) && allValues['cache'].includes(sparesTemp[k]['value'])));
+				sparesTemp[k]['disabled'] = !!(!isEmpty(allValues['data']) && allValues['data'].includes(sparesTemp[k]['value']));
 			}
-			setCacheOption(cacheTemp);
 			setSparesOption(sparesTemp);
 		}
 		else if (changeKey === 'spares') {    // 三种盘选择任一种 就要将另外两种盘内选项置不可选
 			let dataTemp = cpy(dataOptions);
-			let cacheTemp = cpy(cacheOptions);
 			for (let k in dataTemp) {
-				dataTemp[k]['disabled'] = !!((!isEmpty(allValues['spares']) && allValues['spares'].includes(dataTemp[k]['value']))
-					|| (!isEmpty(allValues['cache']) && allValues['cache'].includes(dataTemp[k]['value'])));
-			}
-			for (let k in cacheTemp) {
-				cacheTemp[k]['disabled'] = !!((!isEmpty(allValues['spares']) && allValues['spares'].includes(cacheTemp[k]['value']))
-					|| (!isEmpty(allValues['data']) && allValues['data'].includes(cacheTemp[k]['value'])));
+				dataTemp[k]['disabled'] = !!(!isEmpty(allValues['spares']) && allValues['spares'].includes(dataTemp[k]['value']));
 			}
 			setDataOption(dataTemp);
-			setCacheOption(cacheTemp);
-		}
-		else if (changeKey === 'cache') {    // 三种盘选择任一种 就要将另外两种盘内选项置不可选
-			let dataTemp = cpy(dataOptions);
-			let sparesTemp = cpy(sparesOptions);
-			for (let k in dataTemp) {
-				dataTemp[k]['disabled'] = !!((!isEmpty(allValues['spares']) && allValues['spares'].includes(dataTemp[k]['value']))
-					|| (!isEmpty(allValues['cache']) && allValues['cache'].includes(dataTemp[k]['value'])));
-			}
-			for (let k in sparesTemp) {
-				sparesTemp[k]['disabled'] = !!((!isEmpty(allValues['data']) && allValues['data'].includes(sparesTemp[k]['value']))
-					|| (!isEmpty(allValues['cache']) && allValues['cache'].includes(sparesTemp[k]['value'])));
-			}
-			setDataOption(dataTemp);
-			setSparesOption(sparesTemp);
 		}
 	}
 
@@ -309,39 +260,24 @@ function PoolCreate() {
 					onFinish={handleSubmit}
 					onValuesChange={onDataChange}
 				>
-					<Form.Item label="名称" name="name" rules={[
+					<Form.Item label="名称" name="name" tooltip={'名称必须以字母开头且只能输入字母数字及 : . - _'} rules={[
 						{required: true, message: '请输入名称！', whitespace: true},
-						{validator: poolNameUsed, message: '该名称已被使用！'}
+						{validator: poolNameHead, message: '名称必须以字母开头！'},
+						{validator: poolNameLength, message: '名称最长16个字符！'},
+						{validator: poolNameUsed, message: '该名称已被使用！'},
+						{validator: poolNameTest, message: '只能包含字母数字 : . - _ ！'}
 					]}>
 						<Input style={{width: '300px'}}/>
 					</Form.Item>
 					<Form.Item label="介质类型" name="type" rules={[{required: true, message: '请选择介质类型！'}]}>
 						<Radio.Group>
-							<Radio value="multiple">HDD+SSD</Radio>
-							<Radio value="hdd">HDD</Radio>
-							<Radio value="ssd">SSD</Radio>
+							<Radio value="SSD">SSD</Radio>
+							<Radio value="HDD">HDD</Radio>
 						</Radio.Group>
 					</Form.Item>
 					<Form.Item
 						label="数据盘选择" name="data"
-						rules={[
-							{required: true, message: '请选择数据盘！'},
-							({ getFieldValue }) => ({
-								validator(_, value) {
-									if (!isEmpty(value)) {
-										for (let k in value) {
-											if (getFieldValue('type') === 'hdd' && ssdList.includes(value[k])) {
-												return Promise.reject(new Error('请选择类型为HDD的硬盘！'));
-											}
-											else if (getFieldValue('type') === 'ssd' && hddList.includes(value[k])) {
-												return Promise.reject(new Error('请选择类型为SSD的硬盘！'));
-											}
-										}
-									}
-									return Promise.resolve();
-								},
-							}),
-						]}
+						rules={[{required: true, message: '请选择数据盘！'}]}
 					>
 						<Select
 							mode="multiple"
@@ -369,26 +305,7 @@ function PoolCreate() {
 						/>
 					</Form.Item>
 					{/*<Form.Item label="热备盘选择" name="spares">*/}
-					<Form.Item
-						label="热备盘选择" name="spares"
-						rules={[
-							({ getFieldValue }) => ({
-								validator(_, value) {
-									if (!isEmpty(value)) {
-										for (let k in value) {
-											if (getFieldValue('type') === 'hdd' && ssdList.includes(value[k])) {
-												return Promise.reject(new Error('请选择类型为HDD的硬盘！'));
-											}
-											else if (getFieldValue('type') === 'ssd' && hddList.includes(value[k])) {
-												return Promise.reject(new Error('请选择类型为SSD的硬盘！'));
-											}
-										}
-									}
-									return Promise.resolve();
-								},
-							}),
-						]}
-					>
+					<Form.Item label="热备盘选择" name="spares">
 						<Select
 							mode="multiple"
 							allowClear
@@ -397,7 +314,9 @@ function PoolCreate() {
 							options={sparesOptions}
 						/>
 					</Form.Item>
-					<Row type={'flex'} style={{width: '800px', marginBottom: '30px', marginLeft: '133px'}}>{box}</Row>
+					<Row type={'flex'} style={{marginBottom: '30px', marginLeft: '133px'}}>
+						<DisksSlot />
+					</Row>
 					<Form.Item {...tailFormItemLayout}>
 						<Button type="primary" htmlType="submit">
 							确定

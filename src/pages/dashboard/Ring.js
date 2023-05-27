@@ -10,12 +10,10 @@ import {
 	Annotation,
 	getTheme,
 } from "bizcharts";
-import Volume from "./Volume";
 
 
 
-function Ring({ data = [], content = {}, intervalConfig = {} }) {
-	const brandFill = getTheme().colors10[0];
+function Ring({ data = [], content = {}, intervalConfig = {}, color='#5B8FF9' }) {
 	return (
 		<Chart placeholder={false} height={200} padding="auto" autoFit>
 			<Legend visible={false} />
@@ -34,7 +32,7 @@ function Ring({ data = [], content = {}, intervalConfig = {} }) {
 				<Interval
 					position="percent"
 					adjust="stack"
-					color={["type", [brandFill, "#eee"]]}
+					color={["type", [color, "#eee"]]}
 					size={16}
 					{...intervalConfig}
 				/>
@@ -54,7 +52,7 @@ function Ring({ data = [], content = {}, intervalConfig = {} }) {
 					style={{
 						lineHeight: "240px",
 						fontSize: "24",
-						fill: brandFill,
+						fill: color,
 						textAlign: "center",
 					}}
 				/>

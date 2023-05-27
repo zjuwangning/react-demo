@@ -68,7 +68,7 @@ function ScrubTaskEdit() {
 						resolve();
 					})
 					WebSocketService.call(uuid, URL.RE_SILVER_UPDATE, [values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

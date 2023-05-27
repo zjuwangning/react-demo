@@ -80,26 +80,32 @@ class Socket {
 		}
 		else if (data.msg === EventMessage.Changed || data.msg === EventMessage.Added) {
 			if (data['collection'] === URL.CORE_GET_JOBS) {
-				if (!isEmpty(data['fields']) && !isEmpty(data['fields']['arguments']) && !isEmpty(data['fields']['method'])) {
+				if (!isEmpty(data['fields']) && !isEmpty(data['fields']['method'])) {
 					if (data['fields']['method'] === URL.POOL_EXPORT
 						|| data['fields']['method'] === URL.POOL_REPLACE
 						|| data['fields']['method'] === URL.POOL_UPDATE
 						|| data['fields']['method'] === URL.POOL_REMOVE ) {
-						PubSub.publish(data['fields']['method']+ '-'+ data['fields']['arguments'][0], {result: data['fields']});
+						if (!isEmpty(data['fields']['arguments'])) {
+							PubSub.publish(data['fields']['method']+ '-'+ data['fields']['arguments'][0], {result: data['fields']});
+						}
 					}
 					else if (data['fields']['method'] === URL.POOL_CREATE) {
 						PubSub.publish(data['fields']['method']+ '-' + data['fields']['id'], {result: data['fields']});
 						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
-					// 手动更新上传文件
-					else if (data['fields']['method'] === URL.UPDATE_FILE) {
+					// 上传更新文件
+					else if (data['fields']['method'] === URL.UPDATE_FILE ) {
 						PubSub.publish(data['fields']['id'], {result: data['fields']});
+					}
+					// 上传授权文件
+					else if (data['fields']['method'] === URL.FILE_LICENSE ) {
+						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
 					else if (data['fields']['method'] === URL.FILE_ACL_SET || data['fields']['method'] === URL.MAIL_SEND) {
 						PubSub.publish(data['fields']['method'], {result: data['fields']});
 					}
 					// 存储池校验 硬盘初始化
-					else {
+					else if (!isEmpty(data['fields']['arguments'])) {
 						PubSub.publish(
 							data['fields']['method']+ '-'+
 							data['fields']['arguments'][1]+'-'+

@@ -90,9 +90,10 @@ const URL = {
 	SHARE_FTP_UPDATE: 'sharing.ftp.update',     // 修改ftp共享数据
 
 	/* 服务相关 */
-	SERVICE_QUERY: 'service.query',     // 共享服务状态查询
-	SERVICE_START: 'service.start',     // 共享服务开启
-	SERVICE_STOP: 'service.stop',       // 共享服务关闭
+	SERVICE_QUERY: 'service.query',     // 服务状态查询
+	SERVICE_START: 'service.start',     // 服务开启
+	SERVICE_STOP: 'service.stop',       // 服务关闭
+	SERVICE_UPDATE: 'service.update',   // 服务更新
 	SMB_CONFIG: 'smb.config',           // 获取smb全局配置
 	SMB_UPDATE: 'smb.update',           // 更新smb全局配置
 	FTP_CONFIG: 'ftp.config',           // 获取ftp全局配置
@@ -101,6 +102,8 @@ const URL = {
 	NFS_UPDATE: 'nfs.update',           // 更新nfs全局配置
 	DAV_CONFIG: 'webdav.config',        // 获取dav全局配置
 	DAV_UPDATE: 'webdav.update',        // 更新dav全局配置
+	SSH_CONFIG: 'ssh.config',           // 获取ssh全局配置
+	SSH_UPDATE: 'ssh.update',           // 更新ssh全局配置
 
 	/* 文件权限 */
 	FILE_ACL_QUERY: 'filesystem.getacl',      // 获取acl共享信息
@@ -149,6 +152,7 @@ const URL = {
 	/* 系统相关 */
 	SYSTEM_INFO: 'system.info',         // 系统信息
 	SYSTEM_REBOOT: 'system.reboot',     // 系统重启
+	SYSTEM_SHUTDOWN: 'system.shutdown', // 系统关机
 
 	/* 报警相关 */
 	LOGS_QUERY: 'alert.list',   // 报警列表
@@ -161,8 +165,19 @@ const URL = {
 	ALERT_DELETE: 'alertservice.delete',    // 删除邮件预警
 	ALERT_TEST: 'alertservice.test',        // 测试邮件预警
 
+	/* 日志相关 */
+	SMART_LOGS: 'smarcolog.query',    // 查询日志
+
+	/* 授权相关 */
+	LICENSE_VERIFY: 'smarcolicense.license_verify', // 授权检查
+	GET_LICENSE: 'smarcolicense.get_sys_uuid',      // 授权检查
+	FILE_LICENSE: 'update.licensefile',      // 授权文件进度
+
 	/* 性能监控 */
 	REPORT_GET: 'reporting.get_data',   // 获取性能监控数据
+
+	/* 机箱类型 */
+	SLOT_TYPE: 'smarcoslotmap.get_slot_bitmap',   // 获取机箱槽位图
 }
 
 

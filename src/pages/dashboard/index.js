@@ -22,6 +22,8 @@ const nameArr = {bandWidthWrite: '写带宽', bandWidthRead: '读带宽', ioWrit
 function Dashboard() {
 	const [bandwidth, setBandwidth] = useState([])
 	const [io, setIO] = useState([])
+	const [bwMax, setBwMax] = useState(524288000)
+	const [ioMax, setIoMax] = useState(5000)
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -50,13 +52,18 @@ function Dashboard() {
 		let date = new Date();
 		date = Number((date.getTime()/1000).toFixed(0))-20
 		let uuid = getUUID();
-		querySub = PubSub.subscribe(uuid, (_, {result})=>{
-			let bandwidthData = [], ioData = [];
+		querySub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if(error) return;
+			let bandwidthData = [], ioData = [], bwMaxTemp = 524288000, ioMaxTemp = 5000;
 			let bandwidthReadIndex = result[0]['legend'].indexOf('bandwidth_iops_br')
 			let bandwidthWriteIndex = result[0]['legend'].indexOf('bandwidth_iops_bw')
 			let ioReadIndex = result[0]['legend'].indexOf('bandwidth_iops_iopsr')
 			let ioWriteIndex = result[0]['legend'].indexOf('bandwidth_iops_iopsw')
 			for (let k in result[0]['data']) {
+				if (result[0]['data'][k][bandwidthReadIndex] > bwMaxTemp) bwMaxTemp = result[0]['data'][k][bandwidthReadIndex]
+				if (result[0]['data'][k][bandwidthWriteIndex] > bwMaxTemp) bwMaxTemp = result[0]['data'][k][bandwidthWriteIndex]
+				if (result[0]['data'][k][ioReadIndex] > ioMaxTemp) ioMaxTemp = result[0]['data'][k][ioReadIndex]
+				if (result[0]['data'][k][ioWriteIndex] > ioMaxTemp) ioMaxTemp = result[0]['data'][k][ioWriteIndex]
 				bandwidthData.push({
 					time: moment.unix(result[0]['start']+(Number(k)*result[0]['step'])).format('HH:mm:ss'),
 					rwType: "bandWidthRead",
@@ -78,34 +85,16 @@ function Dashboard() {
 					rwValue: result[0]['data'][k][ioWriteIndex]
 				})
 			}
+			bwMaxTemp = Math.ceil(bwMaxTemp/500/1024/1024)*500*1024*1024
+			ioMaxTemp = Math.ceil(ioMaxTemp/5000)*5000
+			setBwMax(bwMaxTemp)
+			setIoMax(ioMaxTemp)
 			setBandwidth(bandwidthData)
 			setIO(ioData)
 		})
 		WebSocketService.call(uuid, URL.REPORT_GET, [[{name: "bandwidth_iops"}], {start: date-3600, end: date}]);
 	}
 
-	const bandwidthScale = {
-		rwValue: { min: 0 },
-		rwType: {
-			formatter: v => {
-				return {
-					bandWidthWrite: '写带宽',
-					bandWidthRead: '读带宽'
-				}[v]
-			}
-		}
-	}
-	const ioScale = {
-		rwValue: { min: 0 },
-		rwType: {
-			formatter: v => {
-				return {
-					ioWrite: '写IOPS',
-					ioRead: '读IOPS'
-				}[v]
-			}
-		}
-	}
 	const label = {
 		formatter(text, item, index) {
 			return getBandwidth(text);
@@ -132,7 +121,7 @@ function Dashboard() {
 					</Panel>
 				</Col>
 				<Col span={8} style={{paddingLeft: '0.75vw'}}>
-					<Panel title="处理器占用" height={'calc(45vh - 150px)'}>
+					<Panel title="处理器状态" height={'calc(45vh - 150px)'}>
 						<Cpu />
 					</Panel>
 				</Col>
@@ -141,7 +130,10 @@ function Dashboard() {
 				<Col span={12} style={{paddingRight: '0.5vw'}}>
 					<Panel title="带宽" height={'calc(55vh - 150px)'}>
 						<Chart
-							scale={bandwidthScale}
+							scale={{
+								rwValue: { type:"linear", min: 0, max: bwMax, tickInterval: bwMax/5 },
+								rwType: {formatter: v => {return {bandWidthWrite: '写带宽', bandWidthRead: '读带宽'}[v]}}
+							}}
 							padding={[30, 20, 60, 80]}
 							autoFit height={320}
 							data={bandwidth}
@@ -163,7 +155,10 @@ function Dashboard() {
 				<Col span={12} style={{paddingLeft: '0.5vw'}}>
 					<Panel title="IOPS" height={'calc(55vh - 150px)'}>
 						<Chart
-							scale={ioScale}
+							scale={{
+								rwValue: {  type:"linear", min: 0, max: ioMax, tickInterval: ioMax/5  },
+								rwType: {formatter: v => {return {ioWrite: '写IOPS', ioRead: '读IOPS'}[v]}}
+							}}
 							padding={[30, 20, 60, 80]}
 							autoFit height={320}
 							data={io}

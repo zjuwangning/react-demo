@@ -128,7 +128,7 @@ function WebDav() {
 						}
 					})
 					WebSocketService.call(uuid, URL.DAV_UPDATE, [values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}
@@ -169,7 +169,7 @@ function WebDav() {
 						resolve();
 					})
 					WebSocketService.call(uuid, URL.SHARE_DAV_DELETE, [r['id']]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

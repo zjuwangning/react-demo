@@ -1,9 +1,11 @@
 import React from 'react';
 import { Navigate, Link } from 'react-router-dom'
 import LoginLayouts from "../layouts/LoginLayouts";
+import LicenseLayouts from "../layouts/LicenseLayouts";
 import IndexLayouts from "../layouts/IndexLayouts";
-import RebootLayouts from "../layouts/RebootLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
+import RebootLayouts from "../layouts/RebootLayouts";
+import ShutdownLayouts from "../layouts/ShutdownLayouts";
 
 import Dashboard from "../pages/dashboard";
 
@@ -59,6 +61,8 @@ import GroupMember from "../pages/credentials/groups/member";
 
 import Logs from "../pages/system/logs";
 import Mail from "../pages/system/mail";
+import SystemService from "../pages/system/service";
+import SSH from "../pages/system/service/ssh";
 import Update from "../pages/system/update";
 
 
@@ -74,9 +78,11 @@ const NoMatch = () => (
 export const routes = [
 	{path: '/', element: <Navigate to={'/index'}/>},
 	{path: '/index', element: <IndexLayouts/>},
+	{path: '/license', element: <LicenseLayouts/>},
 	{path: '/login', element: <LoginLayouts/>},
 	{path: '/login/*', element: <LoginLayouts/>},
 	{path: '/reboot', element: <RebootLayouts/>},
+	{path: '/shutdown', element: <ShutdownLayouts/>},
 	{path: '/*', element: <BasicLayouts/>}
 ];
 
@@ -138,7 +144,9 @@ export const basicRoutes = [
 	{path: '/credentials/groups/member', element: <GroupMember/>},
 
 	{path: '/system/logs', element: <Logs/>},
-	{path: '/system/mailservice', element: <Mail/>},
+	{path: '/system/email', element: <Mail/>},
+	{path: '/system/service', element: <SystemService/>},
+	{path: '/system/service/ssh', element: <SSH/>},
 	{path: '/system/update', element: <Update/>},
 
 	{path: '*', element: <NoMatch/>}

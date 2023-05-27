@@ -49,19 +49,19 @@ function Logs() {
 					for (let k in result) {
 						let au = true;
 						if (dateTime) {
-							if (result[k]['datetime']['$date']<dayjs(dateTime[0]).hour(0).minute(0).second(0).valueOf()
-								|| result[k]['datetime']['$date']>dayjs(dateTime[1]).add(1, 'd').hour(0).minute(0).second(0).valueOf())
+							if (result[k]['log_time']['$date']<dayjs(dateTime[0]).hour(0).minute(0).second(0).valueOf()
+								|| result[k]['log_time']['$date']>dayjs(dateTime[1]).add(1, 'd').hour(0).minute(0).second(0).valueOf())
 							{
 								au = false
 							}
 						}
 						if (level) {
-							if (result[k]['level'] !== level) {
+							if (result[k]['log_grade']+'' !== level+'') {
 								au = false
 							}
 						}
 						if (content.length>0) {
-							if (result[k]['formatted'].indexOf(content)<0) {
+							if (result[k]['log_context'].indexOf(content)<0) {
 								au = false
 							}
 						}
@@ -74,7 +74,7 @@ function Logs() {
 				}
 			}
 		})
-		WebSocketService.call(uuid, URL.LOGS_QUERY);
+		WebSocketService.call(uuid, URL.SMART_LOGS);
 	}
 
 	// 获取主机名称
@@ -131,23 +131,23 @@ function Logs() {
 		},
 		{
 			title: '日期',
-			dataIndex: 'datetime',
+			dataIndex: 'log_time',
 			width: '14%',
-			render: t=>{if (t) return moment(t['$date']).format('YYYY-MM-DD HH:mm:ss'); else return ''},
-			sorter: (a, b) => a['datetime']['$date'] - b['datetime']['$date'],
+			render: t=>{if (t && t['$date']) return moment(t['$date']).format('YYYY-MM-DD HH:mm:ss'); else return ''},
+			sorter: (a, b) => a['log_time']['$date'] - b['log_time']['$date'],
 			defaultSortOrder: 'descend',
 		},
 		{
 			title: '等级',
-			dataIndex: 'level',
+			dataIndex: 'log_grade',
 			width: '8%',
 			render: t=> {
 				let color = 'red', text = '错误'
-				if (t === 'INFO' || t === 'NOTICE') {
+				if (t === 1 || t === '1') {
 					color = 'green';
 					text = '信息'
 				}
-				else if (t === 'WARNING') {
+				else if (t === 2 || t === '2') {
 					color = 'orange';
 					text = '警报'
 				}
@@ -164,7 +164,7 @@ function Logs() {
 		},
 		{
 			title: '消息',
-			dataIndex: 'formatted',
+			dataIndex: 'log_context',
 			width: '63%',
 		},
 	];
@@ -183,7 +183,7 @@ function Logs() {
 				<Select
 					style={{width: '120px', marginLeft: '10px'}}
 					placeholder={'选择等级'} allowClear
-					options={[{value: 'INFO', label: '信息'}, {value: 'WARNING', label: '警报'}, {value: 'CRITICAL', label: '错误'}]}
+					options={[{value: 1, label: '信息'}, {value: 2, label: '警报'}, {value: 3, label: '错误'}]}
 					value={level}
 					onChange={e=>setLevel(e)}
 				/>

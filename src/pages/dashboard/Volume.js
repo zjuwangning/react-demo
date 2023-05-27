@@ -13,6 +13,7 @@ function Volume() {
 	const [volume, setVolume] = useState({ available: 0, used: 0 })
 	const [myData, setData] = useState([{ type: "已使用", percent: 0 }, { type: "可使用", percent: 1 }])
 	const [myContent, setContent] = useState({ title: "容量使用率", percent: "0%" })
+	const [color, setColor] = useState('#5B8FF9')
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -27,16 +28,24 @@ function Volume() {
 	const getDataset = () => {
 		let uuid = getUUID();
 		querySub = PubSub.subscribe(uuid, (_, {result})=>{
-			let temp = {available: 0, used: 0};
-			for (let k in result) {
-				if (result[k]['id'].indexOf('/')<0) {
-					temp['used'] += result[k]['used']['parsed'];
-					temp['available'] += result[k]['available']['parsed'];
+			if (result && result.length>0) {
+				let temp = {available: 0, used: 0};
+				for (let k in result) {
+					if (result[k]['id'].indexOf('/')<0) {
+						temp['used'] += result[k]['used']['parsed'];
+						temp['available'] += result[k]['available']['parsed'];
+					}
 				}
+				let percent = temp['used']/(temp['used']+temp['available'])
+				let color = '#5B8FF9'
+				if (percent > 0.85) {
+					color = '#e03215'
+				}
+				setVolume(temp);
+				setColor(color);
+				setData([{ type: "已使用", percent  }, { type: "可使用", percent: temp['available']/(temp['used']+temp['available']) }])
+				setContent({ title: "容量使用率", percent: (Number(temp['used']/(temp['used']+temp['available']))*100).toFixed(2)+'%' })
 			}
-			setVolume(temp)
-			setData([{ type: "已使用", percent: temp['used']/(temp['used']+temp['available']) }, { type: "可使用", percent: temp['available']/(temp['used']+temp['available']) }])
-			setContent({ title: "容量使用率", percent: (Number(temp['used']/(temp['used']+temp['available']))*100).toFixed(2)+'%' })
 		})
 		WebSocketService.call(uuid, URL.DATASET_QUERY);
 	}
@@ -44,7 +53,7 @@ function Volume() {
 	return (
 		<Row type={'flex'} style={{height: '100%', width: '100%'}}>
 			<Col span={16}>
-				<Ring data={myData} content={myContent} />
+				<Ring data={myData} content={myContent} color={color}/>
 			</Col>
 			{
 				isEmpty(volume['available']) || volume['available']===0?'':(

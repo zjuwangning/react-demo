@@ -95,7 +95,7 @@ function NFSAuth() {
 						}
 					})
 					WebSocketService.call(uuid, URL.SHARE_NFS_UPDATE, [Number(search.get('id')), params]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

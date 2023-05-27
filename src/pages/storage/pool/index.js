@@ -121,7 +121,10 @@ function Pool() {
 							getData();
 						}
 						else if (result['state'] === 'FAILED') {
-							notification.success({message: '删除存储池失败'});
+							Modal.error({
+								title: '删除失败',
+								content: result['error']
+							})
 							onCancel();
 						}
 					})
@@ -189,10 +192,20 @@ function Pool() {
 			dataIndex: 'status',
 			width: '11%',
 			render: t => {
-				let color = 'red'
-				if (t === 'ONLINE') color='green'
-				else if (t === 'DEGRADED') color='orange'
-				return <Tag color={color}>{t}</Tag>
+				let color = 'red', text = '异常';
+				if (t === 'ONLINE') {
+					color='green';
+					text='在线';
+				}
+				else if (t === 'DEGRADED') {
+					color='orange';
+					text='降级';
+				}
+				else if (t === 'OFFLINE') {
+					color='red';
+					text='离线';
+				}
+				return <Tag color={color}>{text}</Tag>
 			}
 		},
 		{
@@ -201,18 +214,21 @@ function Pool() {
 			width: '48%',
 			render: (t, r) => {
 				let percent = 0
-				if (!isEmpty(r['used']['parsed']) && !isEmpty(r['available']['parsed'])) {
+				if (!isEmpty(r['used']) && !isEmpty(r['available']) && !isEmpty(r['used']['parsed']) && !isEmpty(r['available']['parsed'])) {
 					percent = r['used']['parsed']/(r['used']['parsed']+r['available']['parsed'])
-					percent = (Number(percent)*100).toFixed(0)
+					percent = (Number(percent)*100).toFixed(2)
+				}
+				else {
+					return ''
 				}
 				return (
 					<Row type={'flex'}>
 						<Col span={12}>
-							<Progress percent={percent} size="large" showInfo={false}/>
+							<Progress percent={percent} strokeColor={percent>=85?'red':'#1677ff'} size="large" showInfo={false}/>
 						</Col>
 						<Col span={1}/>
 						<Col span={11}>
-							{r['used']['value']} 已使用（{percent}%）丨
+							{r['used']['value']} 已使用（<span style={{color: percent>=85?'red':'#1677ff'}}>{percent}%</span>）丨
 							{r['available']['value']} 空闲
 						</Col>
 					</Row>
@@ -223,7 +239,7 @@ function Pool() {
 			title: 'RAID类型',
 			dataIndex: 'topology',
 			width: '10%',
-			render: t => getRaid(t)
+			render: t => t?getRaid(t):''
 		},
 		{
 			title: '操作',
@@ -269,6 +285,7 @@ function Pool() {
 					</Row>
 				)}
 				onCancel={onCancel}
+				style={{top: 20}}
 			>
 				<Row>删除后，池中的数据将不可用。可以通过设置销毁池数据选项来销毁池磁盘上的数据。在删除池之前备份关键数据。</Row>
 				{
@@ -294,10 +311,10 @@ function Pool() {
 			</Modal>
 
 			<Modal
-				title={record['name']+' 删除中...'}
+				title={record['name']+' 删除中... 请稍候'}
 				open={deleting}
-				onCancel={onCancel}
-				footer={(<Row type={'flex'} justify={'end'}><Button onClick={onCancel}>关闭窗口</Button></Row>)}
+				closable={false}
+				footer={null}
 			>
 				<Row type={'flex'} align={'middle'} style={{marginTop: '30px'}}>
 					进度： <Col span={18}><Progress percent={percent} size="small" status="active" /></Col>

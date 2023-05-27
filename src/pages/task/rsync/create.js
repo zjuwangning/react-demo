@@ -144,7 +144,7 @@ function RsyncTaskCreate() {
 						resolve();
 					})
 					WebSocketService.call(uuid, URL.RSYNC_TASK_CREATE, [temp]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

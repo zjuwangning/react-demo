@@ -131,7 +131,7 @@ function ScrubTaskEdit() {
 						resolve();
 					})
 					WebSocketService.call(uuid, URL.SCRUB_TASK_UPDATE, [Number(search.get('id')), values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

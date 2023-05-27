@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Tooltip, Dropdown, Divider, Space, Button, theme, notification, Tag, Badge } from "antd";
-import { PoweroffOutlined } from '@ant-design/icons';
-import {useLocation, useNavigate} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Row, Modal, Dropdown, Divider, Space, Button, theme, notification, Tag, Badge } from "antd";
+import { PoweroffOutlined, LogoutOutlined, RedoOutlined } from '@ant-design/icons';
 import PubSub from "pubsub-js";
 import moment from "moment";
 import {SubEvent} from "../enum";
@@ -21,7 +21,8 @@ const User = () => {
 	const location = useLocation();
 
 	const [userName, setUserName] = useState('');
-	const [open, setOpen] = useState(false);
+	const [alertOpen, setAlert] = useState(false);
+	const [powerOpen, setPower] = useState(false);
 	const [items, setItem] = useState([]);
 	const [numbers, setNum] = useState(false);
 
@@ -39,7 +40,7 @@ const User = () => {
 		if (timer !== null) {
 			clearInterval(timer);
 		}
-		timer = setInterval(getLogs, 5000);
+		timer = setInterval(getLogs, 20000);
 
 		return () => {
 			PubSub.unsubscribe(fetchSub);
@@ -69,7 +70,6 @@ const User = () => {
 					if (!['INFO', 'NOTICE', 'WARNING'].includes(result[k]['level'])) {
 						if (temp.length >= 5) {
 							flag = true
-							break ;
 						}
 						temp.push({
 							key: k,
@@ -99,12 +99,31 @@ const User = () => {
 			return ;
 		}
 		PubSub.publish(SubEvent.SWITCH_PAGE, '/system/logs')
-		setOpen(false);
+		setAlert(false);
 	}
 
+	//
 	const handleOpenChange = (flag) => {
-		setOpen(flag);
+		setAlert(flag);
 	};
+
+	//
+	const restart = () => {
+		Modal.confirm({
+			title: '确认操作',
+			content: '确认重启系统',
+			onOk: () => navigate('/reboot')
+		})
+	}
+
+	//
+	const shutdown = () => {
+		Modal.confirm({
+			title: '确认操作',
+			content: '确认系统关机',
+			onOk: () => navigate('/shutdown')
+		})
+	}
 
 
 	const { token } = useToken();
@@ -118,6 +137,36 @@ const User = () => {
 		maxHeight: '70vh',
 		overflowY: 'auto'
 	};
+
+	const powerItems = [
+		{
+			key: '1',
+			label: (
+				<Row type={'flex'} align={'middle'} style={{padding: '5px'}} onClick={logOut}>
+					<LogoutOutlined style={{fontSize: '20px'}}/>
+					<span style={{fontSize: '16px', marginLeft: '10px'}}>登出</span>
+				</Row>
+			),
+		},
+		{
+			key: '2',
+			label: (
+				<Row type={'flex'} align={'middle'} style={{padding: '5px'}} onClick={restart}>
+					<RedoOutlined style={{fontSize: '20px'}}/>
+					<span style={{fontSize: '16px', marginLeft: '10px'}}>重启</span>
+				</Row>
+			),
+		},
+		{
+			key: '3',
+			label: (
+				<Row type={'flex'} align={'middle'} style={{padding: '5px'}} onClick={shutdown}>
+					<PoweroffOutlined style={{fontSize: '20px'}}/>
+					<span style={{fontSize: '16px', marginLeft: '10px'}}>关机</span>
+				</Row>
+			),
+		},
+	];
 
 	return (
 		<Row type={'flex'} align={'middle'} style={{marginRight: '1vw'}}>
@@ -133,23 +182,28 @@ const User = () => {
 							style: menuStyle,
 						})}
 						<Divider style={{margin: 0,}}/>
-						<Space style={{padding: 8,}}>
-							&nbsp;&nbsp;<Button type="primary" onClick={viewLogs}>查看更多</Button>&nbsp;&nbsp;
-						</Space>
+						{/*<Space style={{padding: 8,}}>*/}
+						{/*	&nbsp;&nbsp;<Button type="primary" onClick={viewLogs}>查看更多</Button>&nbsp;&nbsp;*/}
+						{/*</Space>*/}
 					</div>
 				)}
 				onOpenChange={handleOpenChange}
-				open={open}
+				open={alertOpen}
 			>
 				<Badge count={numbers?'...':items.length}>
-					<img src={warningImg} alt="" style={{height: '24px', cursor: 'pointer'}}/>
+					<img src={warningImg} alt="" style={{height: '24px', cursor: 'pointer'}} />
 				</Badge>
-
 			</Dropdown>
-			<Tooltip placement="bottom" title={'退出登录'}>
-				<PoweroffOutlined style={{marginLeft: '1.5vw', fontSize: '22px', cursor: 'pointer'}} onClick={logOut}/>
-			</Tooltip>
-			<span style={{marginLeft: '0.5vw',fontSize: '24px'}}>{userName}</span>
+
+			<Dropdown
+				menu={{items: powerItems}}
+				onOpenChange={flag => setPower(flag)}
+				open={powerOpen}
+				placement="bottomRight"
+			>
+				<PoweroffOutlined style={{marginLeft: '1.5vw', fontSize: '22px', cursor: 'pointer'}}/>
+			</Dropdown>
+			<span style={{marginLeft: '1vw',fontSize: '24px'}}>{userName}</span>
 		</Row>
 	);
 };

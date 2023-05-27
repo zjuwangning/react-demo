@@ -133,7 +133,7 @@ function ShareFiles() {
 						}
 					})
 					WebSocketService.call(uuid, URL.NETWORK_TEST, [{checkin_timeout: seconds+''}]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}
@@ -166,7 +166,7 @@ function ShareFiles() {
 						}
 					})
 					WebSocketService.call(uuid, URL.NETWORK_SAVE);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}
@@ -190,7 +190,7 @@ function ShareFiles() {
 						}
 					})
 					WebSocketService.call(uuid, URL.NETWORK_ROLLBACK);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

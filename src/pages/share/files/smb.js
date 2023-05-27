@@ -99,6 +99,7 @@ function SMBAuth() {
 			}
 		})
 		WebSocketService.call(uuid, URL.USER_QUERY, [[['builtin', '=', false]]]);
+		// WebSocketService.call(uuid, URL.USER_QUERY, [[['builtin', '=', false]], {extra: {search_dscache: true}}]);
 	}
 
 	// 设置组选项

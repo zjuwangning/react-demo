@@ -82,7 +82,7 @@ function BindNet() {
 						}
 					})
 					WebSocketService.call(uuid, URL.NETWORK_CREATE, [params]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

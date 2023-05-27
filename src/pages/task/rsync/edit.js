@@ -188,7 +188,7 @@ function RsyncTaskEdit() {
 						resolve();
 					})
 					WebSocketService.call(uuid, URL.RSYNC_TASK_UPDATE, [Number(search.get('id')), temp]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

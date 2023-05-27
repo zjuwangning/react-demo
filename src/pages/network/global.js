@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Row, Button, Input, Form, notification, Modal } from 'antd'
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from "react-router-dom";
 import PubSub from "pubsub-js";
 import { URL } from "../../server/enum";
@@ -17,7 +18,6 @@ function GlobalConfig() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		getConfig();
-
 
 		return () => {
 			PubSub.unsubscribe(fetchSub);
@@ -37,6 +37,8 @@ function GlobalConfig() {
 				temp['hostname'] = result['hostname']
 				temp['ipv4gateway'] = result['ipv4gateway']
 				temp['nameserver1'] = result['nameserver1']
+				temp['nameserver2'] = result['nameserver2']
+				temp['nameserver3'] = result['nameserver3']
 				form.setFieldsValue(temp)
 			}
 		})
@@ -53,20 +55,23 @@ function GlobalConfig() {
 					let uuid = getUUID();
 					configSub = PubSub.subscribe(uuid, (_, {error})=>{
 						if (error) {
-							notification.error({message: '全局配置修改失败，请稍后重试'})
-							resolve();
+							Modal.error({
+								title: '操作错误',
+								content: error.reason
+							})
 						}
 						else {
 							notification.success({message: '全局配置修改成功'});
-							resolve();
 							navigate('/network');
 						}
+						resolve();
 					})
 					WebSocketService.call(uuid, URL.NETWORK_GLOBAL_UPDATE, [values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}
+
 
 	return (
 		<div className={'full-page'}>
@@ -89,6 +94,13 @@ function GlobalConfig() {
 					<Form.Item label="DNS" name={'nameserver1'} rules={[{ required: true, message: '请填写DNS！' }]}>
 						<Input />
 					</Form.Item>
+					<Form.Item name={'nameserver2'} >
+						<Input style={{marginLeft: '35%'}}/>
+					</Form.Item>
+					<Form.Item name={'nameserver3'} >
+						<Input style={{marginLeft: '35%'}}/>
+					</Form.Item>
+
 					<Form.Item label="主机名" name={'hostname'} rules={[{ required: true, message: '请填写主机名！' }]}>
 						<Input />
 					</Form.Item>

@@ -69,7 +69,7 @@ function SnapCreate() {
 						}
 					})
 					WebSocketService.call(uuid, URL.SNAPSHOT_CREATE, [params]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

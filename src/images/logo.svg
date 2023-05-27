@@ -2,7 +2,8 @@
 <svg
    id="图层_1"
    data-name="图层 1"
-   viewBox="0 0 571.62 137.72"
+   width="820"
+   height="140"
    version="1.1"
    sodipodi:docname="truenas_scale_logo_full.svg"
    inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
@@ -21,7 +22,7 @@
      inkscape:deskcolor="#505050"
      showgrid="false"
      inkscape:zoom="2.1990133"
-     inkscape:cx="243.97306"
+     inkscape:cx="643.97306"
      inkscape:cy="69.12191"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
@@ -36,19 +37,16 @@
   </defs>
   <text
      class="cls-1"
-     transform="translate(94.72,100.06)"
-     id="text41">Sma<tspan
-   class="cls-2"
-   x="164.53"
-   y="0"
-   id="tspan37">r</tspan><tspan
-   x="196.42"
-   y="0"
-   id="tspan39">Stor</tspan></text>
-  <text
-     class="cls-3"
-     transform="translate(100.56,130.82)"
-     id="text47">NAS</text>
+     transform="translate(100,110) scale(0.7)"
+     id="text41"
+  >Sma
+    <tspan class="cls-2" x="164.53" y="0" id="tspan37">r</tspan>
+    <tspan x="196.42" y="0" id="tspan39">Stor StorageManager</tspan>
+  </text>
+<!--  <text-->
+<!--     class="cls-3"-->
+<!--     transform="translate(100.56,130.82)"-->
+<!--     id="text47">NAS</text>-->
   <path
      class="cls-5"
      d="M15,75.6A2.94,2.94,0,1,1,12,72.67,2.93,2.93,0,0,1,15,75.6Z"

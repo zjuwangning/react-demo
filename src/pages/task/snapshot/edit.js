@@ -149,7 +149,7 @@ function SnapshotTaskEdit() {
 						}
 					})
 					WebSocketService.call(uuid, URL.SNAP_TASK_UPDATE, [Number(search.get('id')), values]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

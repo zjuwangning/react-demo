@@ -222,7 +222,7 @@ function FileEdit() {
 						}
 					})
 					WebSocketService.call(uuid, URL.DATASET_UPDATE, [dataset['id'], params]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

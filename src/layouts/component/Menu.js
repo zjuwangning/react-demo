@@ -63,7 +63,7 @@ const MenuList = () => {
 		{
 			key: '/storage', icon: <UploadOutlined style={{fontSize: '20px'}}/>, label: '存储池',
 			children: [
-				{key: '/storage/disks', label: '硬盘列表'},
+				{key: '/storage/disks', label: '物理硬盘'},
 				{key: '/storage/pools', label: '存储池列表'}
 			]
 		},
@@ -97,7 +97,8 @@ const MenuList = () => {
 			key: '/system', icon: <SettingOutlined style={{fontSize: '20px'}}/>, label: '系统设置',
 			children: [
 				{key: '/system/logs', label: '系统日志'},
-				{key: '/system/mailservice', label: '邮件预警'},
+				{key: '/system/email', label: '邮件预警'},
+				{key: '/system/service', label: '服务设置'},
 				{key: '/system/update', label: '系统升级'}
 			]
 		},

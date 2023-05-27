@@ -41,7 +41,6 @@ function NetConfig() {
 				notification.error({message: '数据获取失败'});
 			}
 			else {
-				console.log('result', result);
 				let temp = {}
 				temp['ipv4_dhcp'] = result[0]['ipv4_dhcp']
 				temp['ipv6_auto'] = result[0]['ipv6_auto']
@@ -95,7 +94,7 @@ function NetConfig() {
 						}
 					})
 					WebSocketService.call(uuid, URL.NETWORK_UPDATE, [search.get('id'), params]);
-				}).catch(() => console.log('Oops errors!'));
+				}).catch(() => console.error('Oops errors!'));
 			}
 		})
 	}

@@ -229,7 +229,7 @@ function ShareFiles() {
 	return (
 		<div className={'full-page'}>
 			<Row className={'title'}>共享文件</Row>
-			<Row className={'sub-title'}>显示所有共享文件的基本信息，创建、修改、删除不同协议（SMB/NFS/FTP.WEBDAV）的共享文件。</Row>
+			<Row className={'sub-title'}>显示所有共享文件的基本信息，创建、修改、删除不同协议（SMB/NFS/FTP/WEBDAV）的共享文件。</Row>
 			<Row className={'actions'}>{actions}</Row>
 			<Table
 				size={'middle'}

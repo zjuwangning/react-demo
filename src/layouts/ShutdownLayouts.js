@@ -10,7 +10,7 @@ import {URL} from "../server/enum";
 import './index.css'
 
 let timer = null;
-let rebootSub = null;
+let shutdownSub = null;
 
 const RebootLayout = () => {
 	const navigate = useNavigate();
@@ -18,33 +18,33 @@ const RebootLayout = () => {
 
 	useEffect(() => {
 		ellipsisDots();
-		reboot();
+		shutdown();
 
 		return () => {
 			clearInterval(timer);
 			timer = null;
-			PubSub.unsubscribe(rebootSub);
+			PubSub.unsubscribe(shutdownSub);
 		}
 
 	}, [])
 
 	// 发送重启命令
-	const reboot = () => {
+	const shutdown = () => {
 		let uuid = getUUID();
-		rebootSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+		shutdownSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 			if (error) {
-				notification.error({message: '系统重启失败，请稍后再试！'})
+				notification.error({message: '系统关闭失败，请稍后再试！'})
 				navigate('/login');
 			}
 			else {
 				WebSocketService.prepareShutdown();
 				setTimeout(() => {
-					notification.error({message: '系统重启成功！'})
+					notification.success({message: '系统已关闭！'})
 					navigate('/login');
 				}, 5000);
 			}
 		})
-		WebSocketService.call(uuid, URL.SYSTEM_REBOOT);
+		WebSocketService.call(uuid, URL.SYSTEM_SHUTDOWN);
 	}
 
 	// 动态显示省略号
@@ -74,7 +74,7 @@ const RebootLayout = () => {
 					</Col>
 				</Row>
 				<Row type={'flex'} className={'reboot-foot-title'}>
-					系统重启中<span id={'dots'}>.</span>
+					系统关闭中<span id={'dots'}>.</span>
 				</Row>
 			</div>
 			<Footer />

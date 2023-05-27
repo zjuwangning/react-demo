@@ -150,14 +150,14 @@ class Panel extends Component {
                   ? <FullscreenExitOutlined style={{fontSize: '20px'}}/>
                   : <FullscreenOutlined style={{fontSize: '20px'}}/>}
             </a>
-            <a
-              className="panel-control-collapsed"
-              onClick={this.onCollapse(collapse ? false : true)}
-            >
-              {collapse
-                  ? <PlusOutlined style={{fontSize: '20px'}}/>
-                  : <MinusOutlined style={{fontSize: '20px'}}/>}
-            </a>
+            {/*<a*/}
+            {/*  className="panel-control-collapsed"*/}
+            {/*  onClick={this.onCollapse(collapse ? false : true)}*/}
+            {/*>*/}
+            {/*  {collapse*/}
+            {/*      ? <PlusOutlined style={{fontSize: '20px'}}/>*/}
+            {/*      : <MinusOutlined style={{fontSize: '20px'}}/>}*/}
+            {/*</a>*/}
           </span>
         </div>
       ) : (
