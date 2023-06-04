@@ -1,25 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {
-	Row,
-	notification,
-	Form,
-	Select,
-	Col,
-	Checkbox,
-	InputNumber,
-	Radio,
-	Button,
-	Spin,
-	Modal,
-	Tooltip,
-	Input
-} from "antd";
+import { Row, Col, notification, Form, Select, Checkbox, InputNumber, Radio, Button, Spin, Modal, Tooltip, Input } from "antd";
 import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import {tailFormItemLayout, getUUID, isEmpty, cpy} from "../../../utils/cmn";
 import { WebSocketService } from "../../../server";
 import {QuestionCircleOutlined} from "@ant-design/icons";
+import {compressionOptions} from "../enum";
 
 let datasetSub = null,
 	shareSub = null,
@@ -148,11 +135,34 @@ function FileEdit() {
 				getSmb(result['smb']);
 				getDav(result['webdav']);
 				setOrigin(result);
-				form.setFieldsValue({sync: data['sync']['value'], compression: data['compression']['value'], })
-				setLoading(false);
+				setForm(data)
 			}
 		})
 		WebSocketService.call(uuid, URL.DATASET_SHARE_ITEM, [data['mountpoint']]);
+	}
+
+	// 初始化form数据
+	const setForm = data => {
+		let values = {sync: data['sync']['value'], compression: data['compression']['value']}
+		if (data['refquota'] && data['refquota']['parsed']) {
+			let refquota = generateQuota(data['refquota']['parsed'])
+			values['refquota'] = refquota['refquota']
+			values['suffix'] = refquota['suffix']
+			setQuota(true);
+		}
+		form.setFieldsValue(values)
+		setLoading(false);
+	}
+
+	// 根据字节数生成配额大小和单位
+	const generateQuota = bytes => {
+		let refquota = bytes/1024/1024/1024, suffix = 'GB';
+		if (refquota>1024) {
+			refquota = refquota/1024;
+			suffix = 'TB'
+		}
+		refquota = Number(refquota.toFixed(2))
+		return {refquota, suffix}
 	}
 
 	//
@@ -192,7 +202,10 @@ function FileEdit() {
 		let params = {}
 		params['compression'] = values['compression'];
 		params['sync'] = values['sync'];
-		if (values['refquota']) {
+		if (!quotaDisabled) {
+			params['refquota'] = 0
+		}
+		else if (values['refquota']) {
 			params['refquota'] = values['refquota'];
 			let flag = 3
 			if (values['suffix'] === 'MB') flag = 2
@@ -214,12 +227,12 @@ function FileEdit() {
 					let uuid = getUUID();
 					updateSub = PubSub.subscribe(uuid, (_, {error})=>{
 						if (error) {
-							notification.error({message: '修改失败，请稍后再试'})
+							Modal.error({title: '修改失败，请稍后重试', content: error.reason})
 						}
 						else {
-							resolve();
 							checkProtocol()
 						}
+						resolve();
 					})
 					WebSocketService.call(uuid, URL.DATASET_UPDATE, [dataset['id'], params]);
 				}).catch(() => console.error('Oops errors!'));
@@ -331,7 +344,7 @@ function FileEdit() {
 	//
 	const suffixSelector = (
 		<Form.Item name="suffix" noStyle>
-			<Select style={{width: 70}} defaultValue={'GB'} options={[{label: 'MB', value: 'MB'},{label: 'GB', value: 'GB'},{label: 'TB', value: 'TB'}]}/>
+			<Select style={{width: 70}} defaultValue={'GB'} options={[{label: 'GB', value: 'GB'},{label: 'TB', value: 'TB'}]}/>
 		</Form.Item>
 	);
 
@@ -361,14 +374,14 @@ function FileEdit() {
 						<Row type={'flex'} style={{marginBottom: '20px'}}>
 							<Col span={6}>
 								<Row type={'flex'} justify={'end'}>
-									<Checkbox value="multiple" onChange={e=>{setQuota(e.target.checked)}}>开启配额</Checkbox>
+									<Checkbox checked={quotaDisabled} onChange={e=>{setQuota(e.target.checked)}}>开启配额</Checkbox>
 								</Row>
 							</Col>
 						</Row>
 						{
 							quotaDisabled?(
-								<Form.Item label="配额大小" name="refquota" rules={[{required: true, message: '请输入配额大小！'}]}>
-									<InputNumber placeholder="请输入配额大小" addonAfter={suffixSelector}/>
+								<Form.Item label="配额大小" name="refquota" tooltip={'共享文件配额最小为1GB'} rules={[{required: true, message: '请输入配额大小！'}]}>
+									<InputNumber placeholder="请输入配额大小" addonAfter={suffixSelector} min={1}/>
 								</Form.Item>
 							):''
 						}
@@ -430,10 +443,7 @@ function FileEdit() {
 							</Radio.Group>
 						</Form.Item>
 						<Form.Item label="压缩" name="compression" rules={[{required: true, message: '请选择是否启用压缩！'}]}>
-							<Radio.Group>
-								<Radio value="LZ4">启用</Radio>
-								<Radio value="OFF">禁用</Radio>
-							</Radio.Group>
+							<Select options={compressionOptions}/>
 						</Form.Item>
 						<Form.Item {...tailFormItemLayout(6)}>
 							<Button type="primary" htmlType="submit">

@@ -29,7 +29,7 @@ const LoginLayout = () => {
 			notification.warning({message: '令牌已过期，请重新登录。'});
 		}
 		connected();
-		getScreen();
+		// getScreen();
 
 		// 轮询判断当前 connected连接双胎
 		return () => {
@@ -44,9 +44,7 @@ const LoginLayout = () => {
 
 	// 获取screen尺寸
 	const getScreen = () => {
-		console.log('getRatio', getRatio());
-		console.log('availWidth', window.screen.availWidth)
-		console.log('availHeight', window.screen.availHeight)
+		// Cache.saveScreenInfo({width: window.screen.availWidth, height: window.screen.availHeight})
 	}
 
 	// 获取屏幕缩放比例

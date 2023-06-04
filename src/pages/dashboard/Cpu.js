@@ -9,7 +9,13 @@ import './index.less'
 
 let querySub = null;
 
-function Cpu() {
+function Cpu({size=516}) {
+	let fontSize = 18
+	if (size) {
+		fontSize = Math.floor(size/28)
+	}
+	fontSize+='px'
+
 	const [cpu, setCpu] = useState({ tempMax: 0, tempMaxList: [], useMax: 0, useMaxList: [] })
 	const [myData, setData] = useState([{ type: "占用", percent: 0 }, { type: "空闲", percent: 1 }])
 	const [myContent, setContent] = useState({ title: "平均占用", percent: "0%" })
@@ -77,14 +83,14 @@ function Cpu() {
 	return (
 		<Row type={'flex'} style={{height: '100%', width: '100%'}}>
 			<Col span={16}>
-				<Ring data={myData} content={myContent} color={color}/>
+				<Ring data={myData} content={myContent} color={color} height={size*0.6-80}/>
 			</Col>
 			{
 				cpu['useMaxList'].length===0||cpu['tempMaxList'].length===0?'':(
 					<Col span={8}>
-						<Row style={{marginTop: '10px'}}><span className={'volume-text'}>占用：{(myData[0]['percent']*100).toFixed(1)}%</span></Row>
-						<Row style={{marginTop: '20px'}}><span className={'volume-text'}>空闲：{(myData[1]['percent']*100).toFixed(1)}%</span></Row>
-						<Row style={{marginTop: '20px'}}><span className={'volume-text'}>温度：{cpu['tempMax']} ℃</span></Row>
+						<Row style={{marginTop: '10px'}}><span style={{fontSize}}>占用：{(myData[0]['percent']*100).toFixed(1)}%</span></Row>
+						<Row style={{marginTop: '20px'}}><span style={{fontSize}}>空闲：{(myData[1]['percent']*100).toFixed(1)}%</span></Row>
+						<Row style={{marginTop: '20px'}}><span style={{fontSize}}>温度：{cpu['tempMax']} ℃</span></Row>
 					</Col>
 				)
 			}

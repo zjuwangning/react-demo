@@ -51,7 +51,7 @@ function Nfs() {
 
 		Modal.confirm({
 			title: '确认操作',
-			content: '确认修改NFS配置',
+			content: 'NFS配置修改时，NFS服务会重启，进行中的NFS读写业务可能出错，请谨慎操作。',
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();
@@ -93,9 +93,9 @@ function Nfs() {
 							<Radio value={0}>禁用</Radio>
 						</Radio.Group>
 					</Form.Item>
-					<Form.Item label="进程数量" name={'description'}>
-						<Input />
-					</Form.Item>
+					{/*<Form.Item label="进程数量" name={'description'}>*/}
+					{/*	<Input />*/}
+					{/*</Form.Item>*/}
 					<Form.Item {...tailFormItemLayout(6)}>
 						<Button type="primary" htmlType="submit" loading={loading}>
 							确定

@@ -285,12 +285,12 @@ function Ftp() {
 		index = 0
 		let uuid = getUUID();
 		editUser = PubSub.subscribe(uuid, (_, {error})=>{
+			index++;
 			if (error) {
 				setLoading(false);
 				Modal.error({title: '添加错误', content: error.reason})
 			}
 			else {
-				index++;
 				if (values['user'].length === index) {
 					getAclState(values, gid)
 				}
@@ -364,7 +364,7 @@ function Ftp() {
 					setLoading(false);
 					Modal.error({title: '添加错误', content: '权限数据获取失败'})
 				}
-				else getAclDefault(result[0], values, gid, aclInfo)
+				else getAclDefault(result[1], values, gid, aclInfo)
 			}
 		})
 		WebSocketService.call(uuid, URL.FILE_ACL_CHOICES, [values['ftp_path']]);
@@ -571,10 +571,45 @@ function Ftp() {
 				Modal.error({title: '组成员编辑错误', content: error.reason})
 			}
 			else {
-				editGroupAuth(id, oldData, newData)
+				editUserPath(id, oldData, newData);
 			}
 		})
 		WebSocketService.call(uuid, URL.GROUP_EDIT, [id, {users: newData['user']}]);
+	}
+
+	// 删除掉的组内成员主目录设置为/nonexistent 增加的成员主目录设置为共享目录
+	const editUserPath = (id, oldData, newData) => {
+		let delUser = [], addUser = newData['user'];
+		for (let k in oldData['user']) {
+			if (addUser.includes(oldData['user'][k])) {
+				addUser.splice(addUser.indexOf(oldData['user'][k]), 1)
+			}
+			else {
+				delUser.push(oldData['user'][k])
+			}
+		}
+
+		PubSub.unsubscribe(editUser);
+		index = 0
+		let uuid = getUUID();
+		editUser = PubSub.subscribe(uuid, (_, {error})=>{
+			index++;
+			if (error) {
+				setLoading(false);
+				Modal.error({title: '删除错误', content: error.reason})
+			}
+			else {
+				if (addUser.length+delUser.length<=index) {
+					editGroupAuth(id, oldData, newData)
+				}
+			}
+		})
+		for (let k in delUser) {
+			WebSocketService.call(uuid, URL.USER_EDIT, [delUser[k], {home: '/nonexistent'}]);
+		}
+		for (let k in addUser) {
+			WebSocketService.call(uuid, URL.USER_EDIT, [addUser[k], {home: oldData['path']}]);
+		}
 	}
 
 	// 修改组权限
@@ -600,6 +635,7 @@ function Ftp() {
 			else {
 				notification.success({message: 'ftp共享编辑成功'});
 				getFtp();
+				getGroup();
 				setOpen(false)
 			}
 		})
@@ -636,12 +672,12 @@ function Ftp() {
 		index = 0
 		let uuid = getUUID();
 		editUser = PubSub.subscribe(uuid, (_, {error})=>{
+			index++;
 			if (error) {
 				setLoading(false);
 				Modal.error({title: '删除错误', content: error.reason})
 			}
 			else {
-				index++;
 				if (group['users'].length<=index) {
 					delGroup(group['id'])
 				}
@@ -678,6 +714,7 @@ function Ftp() {
 			else {
 				notification.success({message: 'ftp共享删除成功'});
 				getFtp();
+				getGroup();
 				setDelOpen(false);
 			}
 		})
@@ -755,14 +792,14 @@ function Ftp() {
 				Modal.error({title: 'FTP匿名权限设置错误', content: error.reason})
 			}
 			else {
-				save();
+				save(true);
 			}
 		})
 		WebSocketService.call(uuid, URL.FILE_ACL_SET, [param]);
 	}
 
 	// 保存数据
-	const save = () => {
+	const save = (flag=false) => {
 		let temp = submitData;
 		delete temp['anonAuth']
 		delete temp['ftp_path']
@@ -773,7 +810,12 @@ function Ftp() {
 				notification.error({message: 'FTP共享设置错误'});
 			}
 			else {
-				notification.success({message: 'FTP共享设置成功'});
+				if (flag) {
+					notification.success({message: 'FTP共享设置成功，配置匿名权限生效时间有短暂延迟（约5秒），请稍后尝试。'});
+				}
+				else {
+					notification.success({message: 'FTP共享设置成功'});
+				}
 				navigate('/share/protocol');
 			}
 		})

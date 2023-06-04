@@ -1,21 +1,12 @@
 import React from "react";
-import {
-	Chart,
-	Interval,
-	Axis,
-	Tooltip,
-	Coordinate,
-	Legend,
-	View,
-	Annotation,
-	getTheme,
-} from "bizcharts";
+import { Chart, Interval, Coordinate, Legend, View, Annotation } from "bizcharts";
 
 
 
-function Ring({ data = [], content = {}, intervalConfig = {}, color='#5B8FF9' }) {
+function Ring({ data = [], content = {}, intervalConfig = {}, color='#5B8FF9', height=230 }) {
+
 	return (
-		<Chart placeholder={false} height={200} padding="auto" autoFit>
+		<Chart placeholder={false} height={height} padding="auto" autoFit={true} forceUpdate={true}>
 			<Legend visible={false} />
 			{/* 绘制图形 */}
 			<View
@@ -41,7 +32,7 @@ function Ring({ data = [], content = {}, intervalConfig = {}, color='#5B8FF9' })
 					content={content.title}
 					style={{
 						lineHeight: "240px",
-						fontSize: "16",
+						fontSize: height/14+'',
 						fill: "#000",
 						textAlign: "center",
 					}}
@@ -51,7 +42,7 @@ function Ring({ data = [], content = {}, intervalConfig = {}, color='#5B8FF9' })
 					content={content.percent}
 					style={{
 						lineHeight: "240px",
-						fontSize: "24",
+						fontSize: height/10+'',
 						fill: color,
 						textAlign: "center",
 					}}

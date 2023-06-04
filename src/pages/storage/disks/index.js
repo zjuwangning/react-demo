@@ -12,7 +12,7 @@ function Disk() {
 		return () => {}
 	}, []);
 
-	const items = [{key: '1', label: '硬盘列表', children: <DisksList/>}, {key: '2', label: '硬盘槽位图', children: <DisksSlot/>}]
+	const items = [{key: '1', label: '硬盘列表', children: <DisksList/>, forceRender: true}, {key: '2', label: '硬盘槽位图', children: <DisksSlot/>, forceRender: true}]
 
 	return (
 		<div className={'full-page'}>

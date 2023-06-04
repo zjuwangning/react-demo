@@ -60,6 +60,7 @@ function Snapshot() {
 				setLoading(false);
 			}
 			else {
+				result = result.sort((a, b)=>{return b['properties']['creation']['parsed']['$date'] - a['properties']['creation']['parsed']['$date']})
 				setSnapshot(result);
 				setLoading(false);
 			}

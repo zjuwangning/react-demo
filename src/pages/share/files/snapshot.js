@@ -66,6 +66,7 @@ function Snapshot() {
 				setLoading(false);
 			}
 			else {
+				result = result.sort((a, b)=>{return b['properties']['creation']['parsed']['$date'] - a['properties']['creation']['parsed']['$date']})
 				setSnapshot(result);
 				setLoading(false);
 			}
@@ -103,7 +104,8 @@ function Snapshot() {
 			onOk() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();
-					delSub = PubSub.subscribe(uuid, (_, result, error)=>{resolve();
+					delSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+						resolve();
 						if (error) {
 							notification.error({message: '删除失败'});
 						}
@@ -261,7 +263,7 @@ function Snapshot() {
 			</Row>
 			<Table
 				size={'middle'}
-				style={{width: 1000}}
+				style={{width: '100%', minWidth: 1000}}
 				columns={columns}
 				rowKey={(record) => record.id || record.serial}
 				dataSource={snapshotList}

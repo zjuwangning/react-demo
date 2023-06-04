@@ -9,7 +9,13 @@ import './index.less'
 
 let querySub = null;
 
-function Volume() {
+function Volume({size=516}) {
+	let fontSize = 18
+	if (size) {
+		fontSize = Math.floor(size/28)
+	}
+	fontSize+='px'
+
 	const [volume, setVolume] = useState({ available: 0, used: 0 })
 	const [myData, setData] = useState([{ type: "已使用", percent: 0 }, { type: "可使用", percent: 1 }])
 	const [myContent, setContent] = useState({ title: "容量使用率", percent: "0%" })
@@ -52,15 +58,15 @@ function Volume() {
 
 	return (
 		<Row type={'flex'} style={{height: '100%', width: '100%'}}>
-			<Col span={16}>
-				<Ring data={myData} content={myContent} color={color}/>
+			<Col span={15}>
+				<Ring data={myData} content={myContent} color={color} height={size*0.6-80}/>
 			</Col>
 			{
 				isEmpty(volume['available']) || volume['available']===0?'':(
-					<Col span={8}>
-						<Row style={{marginTop: '10px'}}><span className={'volume-text'}>总计：{getVolume(volume['used']+volume['available'])}</span></Row>
-						<Row style={{marginTop: '20px'}}><span className={'volume-text'}>已用：{getVolume(volume['used'])}</span></Row>
-						<Row style={{marginTop: '20px'}}><span className={'volume-text'}>可用：{getVolume(volume['available'])}</span></Row>
+					<Col span={9}>
+						<Row style={{marginTop: '10px'}}><span style={{fontSize}}>总计：{getVolume(volume['used']+volume['available'])}</span></Row>
+						<Row style={{marginTop: '20px'}}><span style={{fontSize}}>已用：{getVolume(volume['used'])}</span></Row>
+						<Row style={{marginTop: '20px'}}><span style={{fontSize}}>可用：{getVolume(volume['available'])}</span></Row>
 					</Col>
 				)
 			}

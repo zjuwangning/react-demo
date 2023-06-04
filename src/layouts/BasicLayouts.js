@@ -32,7 +32,6 @@ const BasicLayout = () => {
 						</Row>
 					)
 				}
-
 				<Menu />
 			</Sider>
 			<Layout className="site-layout">

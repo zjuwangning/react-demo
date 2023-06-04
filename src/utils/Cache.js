@@ -15,7 +15,7 @@ const Cache = {
 		sessionStorage.removeItem(key);
 	},
 
-	// 用户相关
+	/* 用户相关 */
 	saveUserInfo(user_info) {
 		sessionStorage.setItem("user", JSON.stringify(user_info));
 	},
@@ -25,12 +25,12 @@ const Cache = {
 	removeUserInfo(){
 		sessionStorage.removeItem("user");
 	},
+
 	// 获取用户token
 	getUserToken:function () {
 		let user_info = json_decode(sessionStorage.getItem("user"));
 		return user_info && user_info.key ? user_info.key : -1;
 	},
-
 
 	// 记录登录信息 使用localStorage 用于记住密码功能
 	saveLoginInfo(loginInfo) {
@@ -43,6 +43,18 @@ const Cache = {
 	// 移除登录信息
 	removeLoginInfo() {
 		localStorage.removeItem("loginInfo");
+	},
+
+
+	/* 显示相关 */
+	// 保存显示器可用宽高
+	saveScreenInfo(screen) {
+		sessionStorage.removeItem("screenInfo");
+		sessionStorage.setItem("screenInfo", JSON.stringify(screen));
+	},
+	// 获取显示器可用宽高
+	getScreenInfo() {
+		return json_decode(sessionStorage.getItem("screenInfo"));
 	},
 };
 

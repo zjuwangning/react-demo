@@ -13,9 +13,6 @@ function Smb() {
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
 
-	const [data, setData] = useState([]);   // 数据集列表
-	const [loading, setLoading] = useState(false);
-
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		getData();
@@ -102,16 +99,14 @@ function Smb() {
 							<Radio value={0}>禁用</Radio>
 						</Radio.Group>
 					</Form.Item>
-					<Form.Item label="隐藏文件" name={'files'}>
+					{/*<Form.Item label="隐藏文件" name={'files'}>*/}
 						{/*<Radio.Group>*/}
 						{/*	<Radio value={1}>启用</Radio>*/}
 						{/*	<Radio value={2}>禁用</Radio>*/}
 						{/*</Radio.Group>*/}
-					</Form.Item>
+					{/*</Form.Item>*/}
 					<Form.Item {...tailFormItemLayout(6)}>
-						<Button type="primary" htmlType="submit" loading={loading}>
-							确定
-						</Button>
+						<Button type="primary" htmlType="submit">确定</Button>
 						<Button style={{marginLeft: '2vw'}} onClick={()=>{navigate('/share/protocol')}}>
 							取消
 						</Button>

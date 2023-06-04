@@ -10,6 +10,7 @@ let attachSub = null,
 	poolSub = null,
 	datasetSub = null,
 	delSub = null,
+	ftpQuery = null,
 	delProgressSub = null;
 
 let dataset = null, poolInfo = null;
@@ -25,8 +26,6 @@ function Pool() {
 		},
 	});
 	const [loading, setLoading] = useState(false);
-
-
 	const [record, setRecord] = useState({})
 	const [visible, setVisible] = useState(false)
 	const [deleting, setDelVisible] = useState(false)
@@ -44,6 +43,7 @@ function Pool() {
 			PubSub.unsubscribe(delSub);
 			PubSub.unsubscribe(poolSub);
 			PubSub.unsubscribe(datasetSub);
+			PubSub.unsubscribe(ftpQuery);
 			PubSub.unsubscribe(delProgressSub);
 		}
 	}, []);
@@ -134,17 +134,49 @@ function Pool() {
 		}
 	}
 
+	// 获取池相关的服务
 	const deletePool = r => {
-		setVisible(true);
-		setRecord(r)
-
+		setLoading(true);
 		if (WebSocketService) {
 			let uuid = getUUID();
-			attachSub = PubSub.subscribe(uuid, (_, {result})=>{
-				setAttach(result);
+			attachSub = PubSub.subscribe(uuid, (_, {error, result})=>{
+				if (error) {
+					notification.error({message: '获取池相关服务出错，请联系管理员'});
+				}
+				else {
+					getFtp(result, r)
+				}
 			})
 			WebSocketService.call(uuid, URL.POOL_ATTACH, [r['id']]);
 		}
+	}
+
+	//获取ftp服务
+	const getFtp = (att, record) => {
+		let uuid = getUUID();
+		ftpQuery = PubSub.subscribe(uuid, (_, {result, error})=>{
+			setLoading(false);
+			if (error) {
+				notification.error({message: '获取池相关服务出错，请联系管理员'});
+			}
+			else {
+				let attachments = [];
+				for (let k in result) {
+					let tempArr = result[k]['path'].split('/')
+					if (tempArr && tempArr[2] && tempArr[2]===record['name']) {
+						attachments.push(result[k]['path'])
+					}
+				}
+				if (attachments && attachments.length>0) {
+					att.push({type: "FTP Share", attachments})
+				}
+				setRecord(record)
+				setAttach(att);
+				setVisible(true);
+			}
+		})
+		WebSocketService.call(uuid, URL.SHARE_FTP_QUERY);
+
 	}
 
 	const onCancel = () => {
@@ -287,27 +319,34 @@ function Pool() {
 				onCancel={onCancel}
 				style={{top: 20}}
 			>
-				<Row>删除后，池中的数据将不可用。可以通过设置销毁池数据选项来销毁池磁盘上的数据。在删除池之前备份关键数据。</Row>
+				<Row>删除后，池中的数据将不可用。可以通过设置销毁池数据选项来销毁池磁盘上的数据。在删除池之前请先备份关键数据。</Row>
 				{
 					attach.length>0?(
 						<div style={{marginTop: '40px'}}>
-							<Row>下列服务依赖于池 {record['name']}，如果池被删除，将会中断：</Row>
+							<Row>下列服务依赖于池 {record['name']}，如果池被删除，可能造成错误：</Row>
 							{
 								attach.map(item=>{
 									return (
 										<div>
-											<Row>{item['type']}：</Row>
+											<Row style={{marginTop: '10px'}}>{item['type']}：</Row>
 											{item['attachments'].map(item=>{return (<Row>- {item}</Row>)})}
 										</div>
 									)
 								})
 							}
+							<Row style={{marginTop: '15px', marginBottom: '10px'}}>请先将上述服务涉及的共享文件删除后，再操作存储池的删除。</Row>
 						</div>
 					):''
 				}
-				<Row style={{marginTop: '45px'}}><Checkbox checked={params['destroy']} onChange={e=>onDataChange('destroy', e.target.checked)}>销毁池数据</Checkbox></Row>
-				<Row style={{marginTop: '20px'}}><Checkbox checked={params['cascade']} onChange={e=>onDataChange('cascade', e.target.checked)}>删除共享配置</Checkbox></Row>
-				<Row style={{marginTop: '20px'}}><Checkbox checked={confirmed} onChange={e=>{setConfirm(e.target.checked)}}>确认删除</Checkbox></Row>
+				{
+					attach.length>0?'':(
+						<>
+							<Row style={{marginTop: '45px'}}><Checkbox checked={params['destroy']} onChange={e=>onDataChange('destroy', e.target.checked)}>销毁池数据</Checkbox></Row>
+							<Row style={{marginTop: '20px'}}><Checkbox checked={params['cascade']} onChange={e=>onDataChange('cascade', e.target.checked)}>删除共享配置</Checkbox></Row>
+							<Row style={{marginTop: '20px'}}><Checkbox checked={confirmed} onChange={e=>{setConfirm(e.target.checked)}}>确认删除</Checkbox></Row>
+						</>
+					)
+				}
 			</Modal>
 
 			<Modal

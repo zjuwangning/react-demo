@@ -13,6 +13,7 @@ let configSub = null,
 	addSub = null,
 	editSub = null,
 	delSub = null,
+	certSub = null,
 	davSub = null;
 const keyList = ['protocol', 'password', 'tcpport', 'tcpportssl'];
 
@@ -30,12 +31,14 @@ function WebDav() {
 	const [title, setTitle] = useState('');
 	const [open, setOpen] = useState(false);
 	const [protocol, setProtocol] = useState('');
+	const [cert, setCert] = useState(null);
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		getData();
 		getDav();
 		getPath();
+		getCert();
 
 		return () => {
 			PubSub.unsubscribe(configSub);
@@ -44,6 +47,7 @@ function WebDav() {
 			PubSub.unsubscribe(addSub);
 			PubSub.unsubscribe(editSub);
 			PubSub.unsubscribe(delSub);
+			PubSub.unsubscribe(certSub);
 			PubSub.unsubscribe(pathSub);
 		}
 	}, []);
@@ -53,7 +57,7 @@ function WebDav() {
 		let uuid = getUUID();
 		configSub = PubSub.subscribe(uuid, (_, {error, result})=>{
 			if (error) {
-				notification.error({message: '获取SMB配置错误，请稍后重试'})
+				Modal.error({title: '获取SMB配置错误', content: error.reason})
 			}
 			else {
 				let params = {}
@@ -69,22 +73,46 @@ function WebDav() {
 		WebSocketService.call(uuid, URL.DAV_CONFIG, []);
 	}
 
+	// 获取可用证书
+	const getCert = () => {
+		let uuid = getUUID();
+		certSub = PubSub.subscribe(uuid, (_, {error, result})=>{
+			if (error) {
+				Modal.error({title: '获取可用证书错误', content: error.reason})
+			}
+			else {
+				let temp = null;
+				if (result && result.length>0) {
+					temp = result[0]['id']
+				}
+				setCert(temp);
+			}
+		})
+		WebSocketService.call(uuid, URL.CERT_QUERY);
+	}
+
 	// 获取WebDAV访问目录
 	const getDav = () => {
 		PubSub.unsubscribe(davSub);
 		setLoading(true);
 		let uuid = getUUID();
-		davSub = PubSub.subscribe(uuid, (_, {result})=>{
-			let temp=[], list=[];
-			if (result && result.length>0) {
-				temp = result
-				for (let k in result) {
-					list.push(result[k]['name'])
-				}
+		davSub = PubSub.subscribe(uuid, (_, {error, result})=>{
+			if (error) {
+				Modal.error({title: '数据获取失败', content: error.reason})
 			}
-			setLoading(false);
-			setData(temp)
-			setList(list)
+			else {
+				let temp=[], list=[];
+				if (result && result.length>0) {
+					temp = result
+					for (let k in result) {
+						list.push(result[k]['name'])
+					}
+				}
+				setLoading(false);
+				setData(temp)
+				setList(list)
+			}
+
 		})
 		WebSocketService.call(uuid, URL.SHARE_DAV_QUERY);
 	}
@@ -94,7 +122,7 @@ function WebDav() {
 		let uuid = getUUID();
 		pathSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 			if (error) {
-				notification.error({message: '数据获取失败'});
+				Modal.error({title: '数据获取失败', content: error.reason})
 			}
 			else {
 				let pathTemp = [];
@@ -112,6 +140,14 @@ function WebDav() {
 	//
 	const handleSubmit = values => {
 		delete values['confirmPassword'];
+		if (values['protocol'].indexOf('S')>-1) {
+			if (cert === null) {
+				notification.error({message: '暂无可用证书，无法设置HTTPS协议。'})
+			}
+			else {
+				values['certssl'] = cert;
+			}
+		}
 		Modal.confirm({
 			title: '确认操作',
 			content: '确认修改WebDAV配置',
@@ -121,7 +157,7 @@ function WebDav() {
 					updateSub = PubSub.subscribe(uuid, (_, {result, error})=>{
 						resolve();
 						if (error) {
-							notification.error({message: 'WebDAV设置错误'});
+							Modal.error({title: 'WebDAV设置错误', content: error.reason})
 						}
 						else {
 							notification.success({message: 'WebDAV设置成功'});

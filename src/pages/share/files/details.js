@@ -74,9 +74,9 @@ function FileDetails() {
 						temp+=k+'+'
 						if (k === 'nfs') getNfs(result[k]);
 						else if (k === 'smb') getSmb(result[k]);
-						else if (k === 'webdav') getDav(result[k]);
 					}
 				}
+				getDav(data['mountpoint']);
 				if (temp.length>0) temp = temp.slice(0, temp.length-1);
 				setShare(temp)
 			}
@@ -116,7 +116,7 @@ function FileDetails() {
 	}
 
 	// 获取webdav协议内容
-	const getDav = id => {
+	const getDav = path => {
 		PubSub.unsubscribe(davSub);
 		let uuid = getUUID();
 		davSub = PubSub.subscribe(uuid, (_, {error, result})=>{
@@ -124,10 +124,19 @@ function FileDetails() {
 				notification.error({message: 'WEBDAV共享获取错误'})
 			}
 			else {
-				setDav(result[0]['name'])
+				let temp = ''
+				for (let k in result) {
+					if (result[k]['path'] === path) {
+						temp += result[k]['name']+'、'
+					}
+				}
+				if (temp.length>1) {
+					temp = temp.slice(0, temp.length-1)
+				}
+				setDav(temp)
 			}
 		})
-		WebSocketService.call(uuid, URL.SHARE_DAV_QUERY, [[["id", "=", id]]]);
+		WebSocketService.call(uuid, URL.SHARE_DAV_QUERY);
 	}
 
 
@@ -139,8 +148,12 @@ function FileDetails() {
 				isEmpty(dataset)?'':(
 					<Row type={'flex'} style={{marginTop: '2vh'}}>
 						<Descriptions bordered column={2}>
-							<Descriptions.Item label="共享文件名称">{dataset['name'].slice(dataset['pool'].length+1)}</Descriptions.Item>
-							<Descriptions.Item label="磁盘池名">{dataset['pool']}</Descriptions.Item>
+							<Descriptions.Item label="共享文件名称">
+								<div style={{width: '200px'}}>{dataset['name'].slice(dataset['pool'].length+1)}</div>
+							</Descriptions.Item>
+							<Descriptions.Item label="磁盘池名">
+								<div style={{width: '200px'}}>{dataset['pool']}</div>
+							</Descriptions.Item>
 							<Descriptions.Item label="已用容量">{dataset['used']['value']}</Descriptions.Item>
 							<Descriptions.Item label="可用容量">{dataset['available']['value']}</Descriptions.Item>
 							<Descriptions.Item label="启用协议">{isEmpty(shareInfo)?'N/A':shareInfo}</Descriptions.Item>

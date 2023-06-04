@@ -10,16 +10,27 @@ import Panel from '../../component/Panel'
 import { getUUID, getBandwidth, getIops } from "../../utils/cmn";
 import { WebSocketService } from "../../server";
 import { URL } from "../../server/enum";
+import Cache from "../../utils/Cache";
 import './index.less'
 
 let sysSub = null,
 	querySub = null;
-
 let timer = null
-
 const nameArr = {bandWidthWrite: '写带宽', bandWidthRead: '读带宽', ioWrite: '写IOPS', ioRead: '读IOPS'}
 
+
 function Dashboard() {
+	let screenInfo = {width: window.screen.availWidth, height: window.screen.availHeight};
+	let width1 = 0, width2 = 0;
+	// 左侧菜单200px  margin 26px*2 padding 25px*2  共302px  可用1920-302=1618px 计算一下页面窗体宽度
+	if (screenInfo && screenInfo.width) {
+		width1 = (screenInfo.width - 302 - 70)/3;
+		width2 = (screenInfo.width - 302 - 50)/2;
+	}
+	else {
+		window.location.href = '/login'
+	}
+
 	const [bandwidth, setBandwidth] = useState([])
 	const [io, setIO] = useState([])
 	const [bwMax, setBwMax] = useState(524288000)
@@ -109,33 +120,34 @@ function Dashboard() {
 
 	return (
 		<div className={'full-page'}>
-			<Row type={'flex'} style={{width: '100%', height: 'calc(45vh - 90px)'}}>
-				<Col span={8} style={{height: '100%', paddingRight: '0.5vw'}}>
-					<Panel title="系统信息" height={'calc(45vh - 150px)'}>
-						<SysInfo />
+			<Row type={'flex'} justify={'start'} style={{width: '100%', minWidth: width2+20+'px', margin: 'auto'}}>
+				<Col style={{width: width1+'px', height: width1*0.6+'px', marginRight: '20px', marginBottom: '20px'}}>
+					<Panel title="系统信息" height={width1*0.6-40+'px'}>
+						<SysInfo size={width1}/>
 					</Panel>
 				</Col>
-				<Col span={8} style={{paddingLeft: '0.5vw', paddingRight: '0.25vw'}}>
-					<Panel title="容量使用率" height={'calc(45vh - 150px)'}>
-						<Volume />
+				<Col style={{width: width1+'px', height: width1*0.6+'px', marginRight: '20px', marginBottom: '20px'}}>
+					<Panel title="容量使用率" height={width1*0.6-40+'px'}>
+						<Volume size={width1}/>
 					</Panel>
 				</Col>
-				<Col span={8} style={{paddingLeft: '0.75vw'}}>
-					<Panel title="处理器状态" height={'calc(45vh - 150px)'}>
-						<Cpu />
+				<Col style={{width: width1+'px', height: width1*0.6+'px', marginBottom: '20px'}}>
+					<Panel title="处理器状态" height={width1*0.6-40+'px'}>
+						<Cpu size={width1}/>
 					</Panel>
 				</Col>
 			</Row>
-			<Row type={'flex'} style={{width: '100%', height: 'calc(55vh - 90px)'}}>
-				<Col span={12} style={{paddingRight: '0.5vw'}}>
-					<Panel title="带宽" height={'calc(55vh - 150px)'}>
+			<Row type={'flex'} justify={'start'} style={{width: '100%', minWidth: width2+20+'px', margin: 'auto'}}>
+				<Col style={{width: width2+'px', height: width2*0.5+'px', marginRight: '20px', marginBottom: '20px'}}>
+					<Panel title="带宽" height={width2*0.5-40+'px'}>
 						<Chart
 							scale={{
 								rwValue: { type:"linear", min: 0, max: bwMax, tickInterval: bwMax/5 },
 								rwType: {formatter: v => {return {bandWidthWrite: '写带宽', bandWidthRead: '读带宽'}[v]}}
 							}}
 							padding={[30, 20, 60, 80]}
-							autoFit height={320}
+							autoFit
+							height={width2*0.4}
 							data={bandwidth}
 							interactions={['element-active']}
 						>
@@ -152,15 +164,16 @@ function Dashboard() {
 						</Chart>
 					</Panel>
 				</Col>
-				<Col span={12} style={{paddingLeft: '0.5vw'}}>
-					<Panel title="IOPS" height={'calc(55vh - 150px)'}>
+				<Col style={{width: width2+'px', height: width2*0.5+'px', marginBottom: '20px'}}>
+					<Panel title="IOPS" height={width2*0.5-40+'px'}>
 						<Chart
 							scale={{
 								rwValue: {  type:"linear", min: 0, max: ioMax, tickInterval: ioMax/5  },
 								rwType: {formatter: v => {return {ioWrite: '写IOPS', ioRead: '读IOPS'}[v]}}
 							}}
 							padding={[30, 20, 60, 80]}
-							autoFit height={320}
+							autoFit
+							height={width2*0.4}
 							data={io}
 							interactions={['element-active']}
 						>

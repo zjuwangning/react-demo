@@ -6,6 +6,7 @@ import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty, tailFormItemLayout, cpy } from "../../../utils/cmn";
+import { compressionOptions } from '../enum'
 
 let poolSub = null,         // 获取所有池 用于生成选项
 	datasetSub = null,      // 获取数据集 用于去重判断
@@ -15,6 +16,10 @@ let poolSub = null,         // 获取所有池 用于生成选项
 	protocolSub = null,     // 为数据集添加协议
 	shareSub = null,        // 获取当前共享协议状态
 	openSmbSub = null,      // 开启smb
+	choiceSub = null,      // 获取ACL默认选项
+	aclDefaultSub = null,      // 获取acl初始restricted权限
+	aclSub = null,      // 获取刚创建的共享文件的acl数据
+	setAclSub = null,      // 设置acl权限
 	openNfsSub = null;      // 开启nfs
 
 let protocolNum = 0;
@@ -46,14 +51,10 @@ function PoolCreate() {
 		getShare();
 
 		return () => {
-			PubSub.unsubscribe(poolSub);
-			PubSub.unsubscribe(datasetSub);
-			PubSub.unsubscribe(createSub);
-			PubSub.unsubscribe(smbSub);
-			PubSub.unsubscribe(davSub);
-			PubSub.unsubscribe(protocolSub);
-			PubSub.unsubscribe(shareSub);
-			PubSub.unsubscribe(openSmbSub);
+			PubSub.unsubscribe(poolSub);PubSub.unsubscribe(datasetSub);PubSub.unsubscribe(createSub);
+			PubSub.unsubscribe(smbSub);PubSub.unsubscribe(davSub);PubSub.unsubscribe(protocolSub);
+			PubSub.unsubscribe(shareSub);PubSub.unsubscribe(openSmbSub);PubSub.unsubscribe(choiceSub);
+			PubSub.unsubscribe(aclDefaultSub);PubSub.unsubscribe(aclSub);PubSub.unsubscribe(setAclSub);
 			PubSub.unsubscribe(openNfsSub);
 		}
 	}, []);
@@ -219,27 +220,101 @@ function PoolCreate() {
 				return new Promise((resolve, reject) => {
 					let uuid = getUUID();
 					createSub = PubSub.subscribe(uuid, (_, {result, error})=>{
-						if (result) {
-							resolve();
-							if (temp.length === 0){
-								notification.success({message: '创建成功'});
-								navigate('/share/files');
-							}
-							else {
-								addProtocol(result, temp, openArr)
-							}
-						}
-						else if (error) {
+						resolve();
+						if (error) {
 							Modal.error({
 								title: '操作错误',
 								content: error.reason
 							})
+						}
+						else {
+							if (temp.length === 0){
+								getAclInfo(result)
+							}
+							else {
+								addProtocol(result, temp, openArr)
+							}
 						}
 					})
 					WebSocketService.call(uuid, URL.DATASET_CREATE, [params]);
 				}).catch(() => console.error('Oops errors!'));
 			}
 		})
+	}
+
+	// 获取acl基本信息 包括uid gid等 保存时需要用到
+	const getAclInfo = (item) => {
+		PubSub.unsubscribe(aclSub);
+		let uuid = getUUID();
+		aclSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '共享文件创建成功，但权限初始化错误，请联系管理员'})
+				navigate('/share/files');
+			}
+			else {
+				getAclChoices(result, item);
+			}
+		})
+		WebSocketService.call(uuid, URL.FILE_ACL_QUERY, [item['mountpoint'], false, true]);
+	}
+
+	// 获取acl默认选项 FILE_ACL_CHOICES
+	const getAclChoices = (aclInfo, item) => {
+		let uuid = getUUID();
+		choiceSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '共享文件创建成功，但权限初始化错误，请联系管理员'})
+				navigate('/share/files');
+			}
+			else {
+				if (isEmpty(result)) {
+					notification.error({message: '共享文件创建成功，但权限初始化错误，请联系管理员'})
+					navigate('/share/files');
+				}
+				else getAclDefault(result[1], aclInfo);
+			}
+		})
+		WebSocketService.call(uuid, URL.FILE_ACL_CHOICES, [item['mountpoint']]);
+	}
+
+	// 获取acl默认值 默认值需添加一条掩码数据
+	const getAclDefault = (choice, aclInfo) => {
+		let uuid = getUUID();
+		aclDefaultSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '共享文件创建成功，但权限初始化错误，请联系管理员'})
+				navigate('/share/files');
+			}
+			else {
+				let temp = result;
+				temp.push({default: false, id: -1, perms: {READ: true, WRITE: true, EXECUTE: true}, tag: "MASK"})
+				setAclList(temp, aclInfo)
+			}
+		})
+		WebSocketService.call(uuid, URL.FILE_ACL_DEFAULT, [choice]);
+	}
+
+	// 开启默认acl权限 默认为restricted
+	const setAclList = (list, aclInfo) => {
+		let param = {}
+		param['acltype'] = aclInfo['acltype']
+		param['gid'] = aclInfo['gid']
+		param['uid'] = aclInfo['uid']
+		param['path'] = aclInfo['path']
+		param['options'] = {recursive: false, traverse: false}
+		param['dacl'] = list;
+		let uuid = getUUID();
+		setAclSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '共享文件创建成功，但权限初始化错误，请联系管理员'})
+				navigate('/share/files');
+			}
+			else {
+				notification.success({message: '创建成功'});
+				navigate('/share/files');
+			}
+		})
+		WebSocketService.call(uuid, URL.FILE_ACL_SET, [param]);
 	}
 
 	// 为新创建的共享文件添加协议
@@ -253,11 +328,10 @@ function PoolCreate() {
 			if (protocolNum === protocol.length) {
 				clearInterval(timer)
 				if (openArr.length>0) {
-					openSmb(openArr)
+					openSmb(openArr, data)
 				}
 				else {
-					notification.success({message: '创建成功'});
-					navigate('/share/files');
+					getAclInfo(data)
 				}
 			}
 		}, 500)
@@ -268,8 +342,7 @@ function PoolCreate() {
 			}
 			else if (error) {
 				clearInterval(timer)
-				notification.success({message: '创建成功，但有共享协议开启失败，请稍后再试'});
-				navigate('/share/files');
+				getAclInfo(data)
 			}
 		})
 		for (let k in protocol) {
@@ -278,7 +351,7 @@ function PoolCreate() {
 				params = {path: data['mountpoint'], name: smbName, purpose: "DEFAULT_SHARE", enabled: true}
 			}
 			else if (protocol[k] === 'sharing.nfs.create') {
-				params = {paths: [data['mountpoint']], enabled: true}
+				params = {paths: [data['mountpoint']], enabled: false,}
 			}
 			else if (protocol[k] === 'sharing.webdav.create') {
 				params = {name: davName, path: data['mountpoint'], perm: true, enabled: true}
@@ -291,7 +364,7 @@ function PoolCreate() {
 	}
 
 	// 开启smb
-	const openSmb = (openArr) => {
+	const openSmb = (openArr, data) => {
 		if (openArr.includes('SMB')) {
 			setLoading(true);
 			let uuid = getUUID();
@@ -301,14 +374,14 @@ function PoolCreate() {
 						title: '操作错误',
 						content: error.reason
 					})
+					getAclInfo(data)
 				}
 				else {
 					if (openArr.length>1) {
-						openNfs()
+						openNfs(data)
 					}
 					else {
-						notification.success({message: '创建成功'});
-						navigate('/share/files');
+						getAclInfo(data)
 					}
 				}
 			})
@@ -320,7 +393,7 @@ function PoolCreate() {
 	}
 
 	// 开启nfs
-	const openNfs = () => {
+	const openNfs = (data) => {
 		setLoading(true);
 		let uuid = getUUID();
 		openNfsSub = PubSub.subscribe(uuid, (_, {error})=>{
@@ -330,10 +403,7 @@ function PoolCreate() {
 					content: error.reason
 				})
 			}
-			else {
-				notification.success({message: '创建成功'});
-				navigate('/share/files');
-			}
+			getAclInfo(data)
 		})
 		WebSocketService.call(uuid, URL.SERVICE_START, ['nfs']);
 	}
@@ -355,7 +425,7 @@ function PoolCreate() {
 
 	const suffixSelector = (
 		<Form.Item name="suffix" noStyle>
-			<Select style={{width: 70}} defaultValue={'GB'} options={[{label: 'MB', value: 'MB'},{label: 'GB', value: 'GB'},{label: 'TB', value: 'TB'}]}/>
+			<Select style={{width: 70}} defaultValue={'GB'} options={[{label: 'GB', value: 'GB'},{label: 'TB', value: 'TB'}]}/>
 		</Form.Item>
 	);
 
@@ -408,8 +478,8 @@ function PoolCreate() {
 						</Row>
 						{
 							quotaDisabled?(
-								<Form.Item label="配额大小" name="refquota" rules={[{required: true, message: '请输入配额大小！'}]}>
-									<InputNumber placeholder="请输入配额大小" addonAfter={suffixSelector}/>
+								<Form.Item label="配额大小" name="refquota" tooltip={'共享文件配额最小为1GB'} rules={[{required: true, message: '请输入配额大小！'}]}>
+									<InputNumber placeholder="请输入配额大小" addonAfter={suffixSelector} min={1}/>
 								</Form.Item>
 							):''
 						}
@@ -471,10 +541,7 @@ function PoolCreate() {
 							</Radio.Group>
 						</Form.Item>
 						<Form.Item label="压缩" name="compression" rules={[{required: true, message: '请选择是否启用压缩！'}]}>
-							<Radio.Group>
-								<Radio value="LZ4">启用</Radio>
-								<Radio value="OFF">禁用</Radio>
-							</Radio.Group>
+							<Select options={compressionOptions}/>
 						</Form.Item>
 						<Form.Item {...tailFormItemLayout(6)}>
 							<Button type="primary" htmlType="submit">

@@ -48,8 +48,8 @@ const URL = {
 	DATASET_CREATE: 'pool.dataset.create',      // 创建数据集
 	DATASET_DELETE: 'pool.dataset.delete',      // 删除数据集
 	DATASET_UPDATE: 'pool.dataset.update',      // 删除数据集
-	DATASET_SHARE_ITEM: 'smarcoshare.query_share_status',   // 查询单个数据集共享情况
-	DATASET_SHARE_MULTI: 'smarcoshare.query_multi_share_status',   // 查询多个数据集共享情况
+	DATASET_SHARE_ITEM: 'smarcoshare.query_share_status',           // 查询单个数据集共享情况
+	DATASET_SHARE_MULTI: 'smarcoshare.query_multi_share_status',    // 查询多个数据集共享情况
 	DATASET_SHARE: 'smarcoshare.query_all_share_status',    // 查询所有数据集共享情况
 
 	/* 快照相关 */
@@ -175,6 +175,9 @@ const URL = {
 
 	/* 性能监控 */
 	REPORT_GET: 'reporting.get_data',   // 获取性能监控数据
+
+	/* 获取证书 */
+	CERT_QUERY: 'certificate.query',    // 可用证书查询
 
 	/* 机箱类型 */
 	SLOT_TYPE: 'smarcoslotmap.get_slot_bitmap',   // 获取机箱槽位图

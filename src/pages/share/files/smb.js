@@ -9,6 +9,7 @@ import { WebSocketService } from "../../../server";
 
 let statSub = null,     // 获取权限状态
 	choiceSub = null,   // 获取acl默认选项
+	smbSub = null,   // 获取acl默认选项
 	userSub = null,     // 获取用户 生成选项
 	groupSub = null,    // 获取组 生成选项
 	aclSub = null,    // 获取组 生成选项
@@ -32,6 +33,7 @@ function SMBAuth() {
 	const [aclList, setAcl] = useState([]);  // 所有acl权限列表
 	const [aclInfo, setInfo] = useState({}); // acl基本信息
 	const [item, setItem] = useState({}); // 要删除的权限条目
+	const [smb, setSmb] = useState(''); // 要删除的权限条目
 
 
 	// componentDidMount componentWillUnmount
@@ -42,6 +44,7 @@ function SMBAuth() {
 				getUser();
 				getGroup();
 				getProgress();
+				getSmb();
 			}
 			else {
 				// 数据没有拿到id 跳转错误
@@ -57,8 +60,29 @@ function SMBAuth() {
 			PubSub.unsubscribe(aclSub);
 			PubSub.unsubscribe(setAclSub);
 			PubSub.unsubscribe(statSub);
+			PubSub.unsubscribe(smbSub);
 		}
 	}, []);
+
+	// 获取smb授权的名称
+	const getSmb = () => {
+		PubSub.unsubscribe(smbSub);
+		let uuid = getUUID();
+		smbSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '数据获取失败，请稍后重试'});
+				setUserOption([])
+			}
+			else {
+				let temp = ''
+				if (result && result[0] && result[0]['name']) {
+					temp = result[0]['name']
+				}
+				setSmb(temp);
+			}
+		})
+		WebSocketService.call(uuid, URL.SHARE_SMB_QUERY, [[['path', '=', search.get('path')]]]);
+	}
 
 	// 开启监听
 	const getProgress = () => {
@@ -186,7 +210,7 @@ function SMBAuth() {
 			}
 			else {
 				if (isEmpty(result)) notification.error({message: '数据获取失败，请稍后重试'})
-				else getAclDefault(result[0])
+				else getAclDefault(result[1])
 			}
 		})
 		WebSocketService.call(uuid, URL.FILE_ACL_CHOICES, [search.get('path')]);
@@ -403,7 +427,10 @@ function SMBAuth() {
 		<div className={'full-page'}>
 			<Row className={'title'}>SMB授权</Row>
 			<Row className={'sub-title'}>配置共享文件的SMB相关权限</Row>
-			<Row className={'actions'} type={'flex'} align={'middle'}>共享文件路径 {search.get('path')}</Row>
+			<Row className={'actions'} type={'flex'} align={'middle'}>
+				<span>SMB共享名称：{smb}</span>
+				<span style={{marginLeft: '30px'}}>文件路径：{search.get('path')}</span>
+			</Row>
 			<Row type={'flex'}>
 				<Col span={12}>
 					<Row className={'body-title'}>SMB用户授权</Row>

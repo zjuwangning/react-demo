@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import PubSub from "pubsub-js";
 import dayjs from 'dayjs'
-import { Row, Tag } from 'antd'
+import { Row, Col } from 'antd'
 import {getUUID, isEmpty} from "../../utils/cmn";
 import {WebSocketService} from "../../server";
 import {URL} from "../../server/enum";
@@ -11,7 +11,15 @@ let timer = null;
 let sysSub = null;
 let start = 0
 
-function SysInfo() {
+function SysInfo({size=516}) {
+	let fontSize = 14, height = 50
+	if (size) {
+		fontSize = Math.floor(size/36)
+		height = Math.floor(size/8)
+	}
+	fontSize+='px'
+	height+='px'
+
 	const [sysInfo, setInfo] = useState({})
 	const [warning, setWarning] = useState(false)
 	const [remoteTime, setTime] = useState('')
@@ -19,7 +27,6 @@ function SysInfo() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 		getSysInfo();
-
 		return () => {
 			PubSub.unsubscribe(sysSub);
 			if (timer !== null) {
@@ -58,38 +65,61 @@ function SysInfo() {
 	}
 
 	return (
-		<div style={{height: '100%', width: '100%', overflowX: 'auto'}}>
+		<div style={{height: '100%', width: size<380?'360px':'100%', overflowX: 'auto'}}>
 			{/*<img src={logo} alt="" style={{height: '100%'}}/>*/}
-			<Row type={'flex'} style={{marginTop: '2vh'}}>
-				<Tag color={'green'}>主机名</Tag>
-				<span style={{width: '130px'}}>SmarStorNAS</span>
-				<Tag color={'green'}>运行时间</Tag>
-				{
-					isEmpty(sysInfo['uptime_seconds'])?'':(
-						<span>
-							{Math.floor(Number(sysInfo['uptime_seconds'])/86400) + '天'
-							+ Math.floor(Number(sysInfo['uptime_seconds'])%86400/3600) + '小时'
-							+ Math.floor(Number(sysInfo['uptime_seconds'])%86400%3600/60) + '分钟'}
-						</span>
-					)
-				}
-			</Row>
-			<Row type={'flex'} style={{marginTop: '3vh'}}>
-				<Tag color={'green'}>处理器</Tag>
-				<span  style={{width: '130px'}}>
-									{sysInfo['physical_cores']} 核心 ({sysInfo['cores']} 线程)
+			<Row type={'flex'} style={{height}}>
+				<Col span={12}>
+					<Row type={'flex'} align={'middle'}>
+						<div className={'tag-div-info'} style={{fontSize}}>主机名</div>
+						<span style={{fontSize}}>SmarStorNAS</span>
+					</Row>
+				</Col>
+				<Col span={12}>
+					<Row type={'flex'}>
+						<div className={'tag-div-info'} style={{fontSize}}>运行时间</div>
+						{
+							isEmpty(sysInfo['uptime_seconds'])?'':(
+								<span style={{fontSize}}>
+									{Math.floor(Number(sysInfo['uptime_seconds'])/86400) + '天'
+									+ Math.floor(Number(sysInfo['uptime_seconds'])%86400/3600) + '小时'
+									+ Math.floor(Number(sysInfo['uptime_seconds'])%86400%3600/60) + '分钟'}
 								</span>
-				<Tag color={'green'}>内存大小</Tag>
-				{isEmpty(sysInfo['physmem'])?'':(Number(sysInfo['physmem'])/1024/1024/1024).toFixed(1)} GB
+							)
+						}
+					</Row>
+				</Col>
 			</Row>
-			<Row type={'flex'} style={{marginTop: '3vh'}}>
-				<Tag color={'green'}>版本号</Tag><span style={{marginRight: '30px'}}>{sysInfo['version']}</span>
+			<Row type={'flex'} style={{height}}>
+				<Col span={12}>
+					<Row type={'flex'}>
+						<div className={'tag-div-info'} style={{fontSize}}>处理器</div>
+						<span style={{fontSize}}>{sysInfo['physical_cores']} 核心 ({sysInfo['cores']} 线程)</span>
+					</Row>
+				</Col>
+				<Col span={12}>
+					<Row type={'flex'}>
+						<div className={'tag-div-info'} style={{fontSize}}>内存大小</div>
+						{isEmpty(sysInfo['physmem'])?'':<span style={{fontSize}}>{(Number(sysInfo['physmem'])/1024/1024/1024).toFixed(1)} GB</span>}
+					</Row>
+				</Col>
+			</Row>
+			<Row type={'flex'} style={{height}}>
+				<Col span={24}>
+					<Row>
+						<div className={'tag-div-info'} style={{fontSize}}>版本号</div>
+						<span style={{fontSize}}>{sysInfo['version']}</span>
+					</Row>
+				</Col>
 			</Row>
 			{
 				warning?(
-					<Row type={'flex'} style={{marginTop: '3vh'}}>
-						<Tag color={'red'}>警告</Tag>
-						<span style={{marginRight: '30px'}}>NAS时间 {remoteTime} 与本地时间相差过大</span>
+					<Row type={'flex'} style={{height}}>
+						<Col span={24}>
+							<Row type={'flex'}>
+								<div className={'tag-div-warning'} style={{fontSize}}>警告</div>
+								<span style={{fontSize}}>NAS时间 {remoteTime} 与本地时间相差过大</span>
+							</Row>
+						</Col>
 					</Row>
 				):''
 			}
