@@ -10,9 +10,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: add dependencies">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: add dependencies" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -71,6 +69,7 @@
       <workItem from="1682238360576" duration="5667000" />
       <workItem from="1682498921619" duration="94000" />
       <workItem from="1685586102275" duration="628000" />
+      <workItem from="1686126385719" duration="42000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
