@@ -10,13 +10,14 @@ import { WebSocketService } from "../../../server";
 let configSub = null, pathSub = null, userSub = null, groupSub = null, creatGroup = null, uidSub = null, updateSub = null, ftpQuery = null,
 	ftpDelete = null, ftpCreate = null, editUser = null, editGroup = null, statSub = null, aclChoiceSub = null, aclDefaultSub = null,
 	aclInfoSub = null, setAclSub = null, groupItemSub = null, groupUserSub = null, editGroupUserSub = null, delGroupSub = null,
-	ftpUidSub = null;
+	ftpUidSub = null, aclPubSub = null;
 
 const keyList = ['port', 'loginattempt', 'clients', 'timeout_notransfer', 'ipconnections', 'timeout', 'onlyanonymous', 'anonpath', 'onlylocal']
 const bandwidthList = ['localuserbw', 'localuserdlbw', 'anonuserbw', 'anonuserdlbw']
 const options = [{label: 'KB', value: 0},{label: 'MB', value: 1},{label: 'GB', value: 2},{label: 'TB', value: 3}]
 let index = 0;  // 索引计数用
 let submitData = {}
+let aclFlag = true
 
 function Ftp() {
 	const [form] = Form.useForm();
@@ -38,6 +39,8 @@ function Ftp() {
 	const [loading, setLoading] = useState(false);    // 保存按钮loading
 	const [record, setRecord] = useState({});    // 查看数据 编辑数据
 	const [subGroups, setSub] = useState({});    // 用户副群组列表
+	const [content, setContent] = useState('');    // 确认保存时的提醒信息
+	const [oldAnonPath, setAnon] = useState('');    // 确认保存时的提醒信息
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -53,8 +56,7 @@ function Ftp() {
 			PubSub.unsubscribe(groupSub);PubSub.unsubscribe(creatGroup);PubSub.unsubscribe(editUser);PubSub.unsubscribe(editGroup);
 			PubSub.unsubscribe(statSub);PubSub.unsubscribe(aclChoiceSub);PubSub.unsubscribe(aclDefaultSub);PubSub.unsubscribe(aclInfoSub);
 			PubSub.unsubscribe(setAclSub);PubSub.unsubscribe(groupUserSub);PubSub.unsubscribe(editGroupUserSub);PubSub.unsubscribe(delGroupSub);
-			PubSub.unsubscribe(ftpUidSub);
-			PubSub.unsubscribe(groupItemSub);
+			PubSub.unsubscribe(ftpUidSub);PubSub.unsubscribe(aclPubSub);PubSub.unsubscribe(groupItemSub);
 		}
 	}, []);
 
@@ -109,6 +111,9 @@ function Ftp() {
 				notification.error({message: '获取FTP配置错误，请稍后重试'})
 			}
 			else {
+				if (result && result['anonpath'].length>0) {
+					setAnon(result['anonpath'])
+				}
 				let params = {}
 				for (let k in keyList) {
 					params[keyList[k]] = result[keyList[k]]
@@ -147,6 +152,7 @@ function Ftp() {
 					if (error.error === 2 && error.reason === '[ENOENT] Path not found.') {
 						notification.warning({message: 'ftp配置的匿名登录路径已被删除，如需匿名登录，请重新配置其他路径'})
 						delete params['anonpath']
+						setAnon('')
 						form.setFieldsValue(params)
 					}
 					else {
@@ -156,9 +162,11 @@ function Ftp() {
 				else {
 					let anonAuth = '';
 					for (let k in result['acl']) {
-						if (result['acl'][k]['tag'] === 'USER' && result['acl'][k]['who'] === 'ftp') {
-							anonAuth = 5;
-							if (result['acl'][k]['perms']['WRITE']) {
+						if (result['acl'][k]['tag'] === 'OTHER' && result['acl'][k]['default'] === false) {
+							if (result['acl'][k]['perms']['READ'] && !result['acl'][k]['perms']['WRITE'] && result['acl'][k]['perms']['EXECUTE']) {
+								anonAuth = 5;
+							}
+							if (result['acl'][k]['perms']['READ'] && result['acl'][k]['perms']['WRITE'] && result['acl'][k]['perms']['EXECUTE']) {
 								anonAuth = 7;
 							}
 						}
@@ -735,6 +743,12 @@ function Ftp() {
 				delete values[bandwidthList[k]+'-suffix']
 			}
 		}
+		if (values['onlyanonymous']) {
+			setContent('允许FTP匿名登录，可能会影响路径其他共享协议。我们强烈建议您设置单独的FTP匿名路径，不要与其他共享协议混用！')
+		}
+		else {
+			setContent('确认保存FTP配置修改')
+		}
 		submitData = values;
 		setTitle("");
 		setEditOpen(true);
@@ -743,21 +757,15 @@ function Ftp() {
 	// 确认编辑数据保存
 	const confirmSubmit = () => {
 		setLoading(true);
-		// 允许匿名用户登录 先 查询内置用户ftp的uid 增加一条用户为ftp的共享配置
+
+		let temp = submitData
 		if (submitData['onlyanonymous']) {
-			let uuid = getUUID();
-			ftpUidSub = PubSub.subscribe(uuid, (_, {result, error})=>{
-				if (error) {
-					setLoading(false);
-					notification.error({message: '内置FTP用户获取失败，请稍后重试！'});
-				}
-				else {
-					let temp = submitData
-					temp['ftp_path'] = temp['anonpath']
-					getAclState(temp, result[0]['uid'])
-				}
-			})
-			WebSocketService.call(uuid, URL.USER_QUERY, [[['username', '=', 'ftp']]]);
+			temp['ftp_path'] = temp['anonpath']
+			getAclState(temp, -1)
+		}
+		else if (oldAnonPath.length>0) {        // 之前开启了匿名 现在取消了匿名
+			temp['ftp_path'] = oldAnonPath
+			getAclState(temp, -1)
 		}
 		else {
 			save();
@@ -767,14 +775,19 @@ function Ftp() {
 	// 设置匿名读写权限
 	const setFtpAnon = (values, uid, aclInfo, aclAuth) => {
 		let perms = {READ: false, WRITE: false, EXECUTE: false}
-		if (values['anonAuth']+'' === '5') {
+		if (values['onlyanonymous'] && values['anonAuth']+'' === '5') {
 			perms = {READ: true, WRITE: false, EXECUTE: true}
 		}
-		else if (values['anonAuth']+'' === '7') {
+		else if (values['onlyanonymous'] && values['anonAuth']+'' === '7') {
 			perms = {READ: true, WRITE: true, EXECUTE: true}
 		}
 		let dacl = aclAuth
-		dacl.push({tag: 'USER', default: false, perms, id: uid})
+		for (let k in dacl) {
+			if (dacl[k]['tag'] === 'OTHER') {
+				dacl[k]['perms'] = perms
+				break;
+			}
+		}
 
 		let param = {}
 		param['acltype'] = aclInfo['acltype']
@@ -792,10 +805,28 @@ function Ftp() {
 				Modal.error({title: 'FTP匿名权限设置错误', content: error.reason})
 			}
 			else {
-				save(true);
+				// 设置匿名读写权限 开启监听 监听权限设置 权限设置完成后才进行下一步操作
+				aclFlag = true;
+				subACL();
 			}
 		})
 		WebSocketService.call(uuid, URL.FILE_ACL_SET, [param]);
+	}
+
+	// 监听权限 aclFlag
+	const subACL = () => {
+		PubSub.unsubscribe(aclPubSub);
+		aclPubSub = PubSub.subscribe(URL.FILE_ACL_SET, (_, {result})=>{
+			if (aclFlag && result['state']==='SUCCESS') {
+				aclFlag = false
+				PubSub.unsubscribe(aclPubSub);
+				save();
+			}
+			else if (result['state'] === 'FAILED') {
+				PubSub.unsubscribe(aclPubSub);
+				save(true);
+			}
+		})
 	}
 
 	// 保存数据
@@ -811,7 +842,7 @@ function Ftp() {
 			}
 			else {
 				if (flag) {
-					notification.success({message: 'FTP共享设置成功，配置匿名权限生效时间有短暂延迟（约5秒），请稍后尝试。'});
+					notification.success({message: 'FTP共享设置成功，但配置匿名权限出错，请稍后尝试。'});
 				}
 				else {
 					notification.success({message: 'FTP共享设置成功'});
@@ -959,7 +990,10 @@ function Ftp() {
 					</Row>
 					<Row type={'flex'}>
 						<Col span={12}>
-							<Form.Item label="允许匿名登录" name={'onlyanonymous'} valuePropName={'checked'} tooltip={'允许匿名FTP登录名访问路径中指定的目录。'}>
+							<Form.Item
+								label="允许匿名登录" name={'onlyanonymous'} valuePropName={'checked'}
+								tooltip={'允许FTP匿名登录，可能会影响路径其他共享协议。我们强烈建议您设置单独的FTP匿名路径，不要与其他共享协议混用！'}
+							>
 								<Checkbox />
 							</Form.Item>
 						</Col>
@@ -1125,7 +1159,7 @@ function Ftp() {
 					</Row>
 				)}
 			>
-				确认保存FTP配置修改
+				{content}
 			</Modal>
 		</div>
 	);

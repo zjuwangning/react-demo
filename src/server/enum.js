@@ -179,8 +179,9 @@ const URL = {
 	/* 获取证书 */
 	CERT_QUERY: 'certificate.query',    // 可用证书查询
 
-	/* 机箱类型 */
-	SLOT_TYPE: 'smarcoslotmap.get_slot_bitmap',   // 获取机箱槽位图
+	/* 产品类型 */
+	PROD_TYPE: 'smarcoproduct.query_product_config',   // 获取产品类型
+	// PROD_TYPE: 'smarcoslotmap.get_slot_bitmap',   // 获取机箱槽位图
 }
 
 

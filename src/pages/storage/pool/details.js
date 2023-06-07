@@ -9,6 +9,8 @@ import { isEmpty, getUUID, getRaid, getVolume, getTime } from "../../../utils/cm
 import { WebSocketService } from "../../../server";
 import { PoolScanState, renderState, renderDisk } from "./enum";
 import BaseTablePage from "../../../component/TablePage";
+import Cache from "../../../utils/Cache";
+import {esp} from "../../../component/DiskSlot/enum";
 
 let poolSub = null, setSub = null, jobSub = null, handleSub = null, diskItemSub = null,
 	diskSub = null, replaceSub = null, poolChange = null, scanSub = null,
@@ -61,7 +63,13 @@ function PoolDetails() {
 	// 页面所有需要获取的数据
 	const getAllData = () => {
 		getPoolInfo(true);
-		getUnusedDisk();
+		let userInfo = Cache.getUserInfo()
+		if (userInfo && typeof userInfo['productType']==='number') {
+			getUnusedDisk(userInfo['productType']);
+		}
+		else {
+			getUnusedDisk(null);
+		}
 	}
 
 	// 刷新机箱槽位图
@@ -70,11 +78,26 @@ function PoolDetails() {
 	}
 
 	// 获取可用硬盘 生成options 用于硬盘替换
-	const getUnusedDisk = () => {
+	const getUnusedDisk = (type=null) => {
 		let uuid = getUUID();
 		diskSub = PubSub.subscribe(uuid, (_, {result})=>{
-			let temp = []
-			if (result.length>0) temp = result
+			let temp = [], enDisks = [], noEnDisks = []
+			if (result.length>0) {
+				for (let k in result) {
+					if (type && result[k]['enclosure'] && result[k]['enclosure']['number'] && result[k]['enclosure']['slot'] && esp[type]['es_pos'][result[k]['enclosure']['number']+'_'+result[k]['enclosure']['slot']]) {
+						result[k]['position'] = esp[type]['es_pos'][result[k]['enclosure']['number']+'_'+result[k]['enclosure']['slot']]['title']
+						enDisks.push(result[k])
+					}
+					else {
+						result[k]['position'] = 'unknown'
+						noEnDisks.push(result[k])
+					}
+				}
+				enDisks.sort(function (a, b) {
+					return a['position'] - b['position']
+				})
+				temp = enDisks.concat(noEnDisks);
+			}
 			setIdleDisks(temp);
 		})
 		WebSocketService.call(uuid, URL.DISK_UNUSED);
@@ -368,7 +391,7 @@ function PoolDetails() {
 				for (let k in idleDisks) {
 					if (idleDisks[k]['type'] === result[0]['type'] && idleDisks[k]['size']>=result[0]['size']) {
 						temp.push({
-							label: `${idleDisks[k]['name']}（${idleDisks[k]['type']}, ${getVolume(idleDisks[k]['size'], 2)}）`,
+							label: `${idleDisks[k]['name']}（位置-${idleDisks[k]['position']}; ${idleDisks[k]['type']}, ${getVolume(idleDisks[k]['size'], 2)}）`,
 							value: idleDisks[k]['identifier']
 						})
 					}
@@ -409,40 +432,29 @@ function PoolDetails() {
 			notification.warning({message: '存储池有任务进行中'});
 			return ;
 		}
+		let tempType = 'SSD'
 		if (title === '缓存盘') {
 			if (poolType === 'SSD') {
 				notification.warning({message: '该存储池介质类型为SSD，无需添加缓存盘'});
 				return ;
 			}
-			let temp = []
-			for (let k in idleDisks) {
-				if (idleDisks[k]['type'] === 'SSD') {
-					temp.push({
-						label: `${idleDisks[k]['name']}（${idleDisks[k]['type']}, ${getVolume(idleDisks[k]['size'], 2)}）`,
-						value: idleDisks[k]['identifier']
-					})
-				}
-			}
-			if (temp.length === 0) {
-				notification.warning({message: '暂无满足需求的可用硬盘'});
-			}
-			setOption(temp);
 		}
 		else if (title === '热备盘') {
-			let temp = []
-			for (let k in idleDisks) {
-				if (idleDisks[k]['type'] === poolType) {
-					temp.push({
-						label: `${idleDisks[k]['name']}（${idleDisks[k]['type']}, ${getVolume(idleDisks[k]['size'], 2)}）`,
-						value: idleDisks[k]['identifier']
-					})
-				}
-			}
-			if (temp.length === 0) {
-				notification.warning({message: '暂无满足需求的可用硬盘'});
-			}
-			setOption(temp);
+			tempType = poolType
 		}
+		let temp = []
+		for (let k in idleDisks) {
+			if (idleDisks[k]['type'] === tempType) {
+				temp.push({
+					label: `${idleDisks[k]['name']}（位置-${idleDisks[k]['position']}; ${idleDisks[k]['type']}, ${getVolume(idleDisks[k]['size'], 2)}）`,
+					value: idleDisks[k]['identifier']
+				})
+			}
+		}
+		if (temp.length === 0) {
+			notification.warning({message: '暂无满足需求的可用硬盘'});
+		}
+		setOption(temp);
 		setTitle(title);
 		setAddOpen(true);
 	}

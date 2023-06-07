@@ -6,11 +6,15 @@ import DisksSlot from "../../../component/DiskSlot";
 import { URL } from "../../../server/enum";
 import { WebSocketService } from "../../../server";
 import { getUUID, isEmpty, cpy, getVolume } from "../../../utils/cmn";
+import {esp} from "../../../component/DiskSlot/enum";
+import Cache from "../../../utils/Cache";
 
 let poolSub = null,     // 获取所有池 判断新建的池名称是否重复
 	diskSub = null,     // 获取空闲可用硬盘
 	createSub = null,   // 新建存储池
 	percentSub = null;  // 监听创建过程数据上报
+
+let type = null
 
 
 function PoolCreate() {
@@ -32,6 +36,11 @@ function PoolCreate() {
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
+		let userInfo = Cache.getUserInfo()
+		if (userInfo && typeof userInfo['productType']==='number') {
+			type = userInfo['productType']
+		}
+
 		if (WebSocketService) {
 			getPool();
 			getDisk();
@@ -65,18 +74,31 @@ function PoolCreate() {
 			if (result.length === 0) {
 				notification.warning({message: '暂无可用硬盘'})
 			}
-			let temp = [];
+
+			let temp = [], enDisks = [], noEnDisks = [], disks = [];
+			// 按title给result排序 将数组分为有enclosure和无enclosure两部分 有enclosure的按位置title排序
 			for (let k in result) {
-				if (result[k]['type'] === 'SSD') {
-					let label = '位置-unknown; '+result[k]['type']+'; '+getVolume(result[k]['size'], 2)
-					if (result[k]['enclosure'] && result[k]['enclosure']['slot']) {
-						label = '位置-'+result[k]['enclosure']['slot']+'; '+result[k]['type']+'; '+getVolume(result[k]['size'], 2)
-					}
-					temp.push({label, value: result[k]['name']})
+				if (type && result[k]['enclosure'] && result[k]['enclosure']['number'] && result[k]['enclosure']['slot'] && esp[type]['es_pos'][result[k]['enclosure']['number']+'_'+result[k]['enclosure']['slot']]) {
+					result[k]['position'] = esp[type]['es_pos'][result[k]['enclosure']['number']+'_'+result[k]['enclosure']['slot']]['title']
+					enDisks.push(result[k])
+				}
+				else {
+					result[k]['position'] = 'unknown'
+					noEnDisks.push(result[k])
+				}
+			}
+			enDisks.sort(function (a, b) {
+				return a['position'] - b['position']
+			})
+			disks = enDisks.concat(noEnDisks);
+			for (let k in disks) {
+				if (disks[k]['type'] === 'SSD') {
+					let label = `${disks[k]['name']}（位置-${disks[k]['position']}; ${disks[k]['type']}; ${getVolume(disks[k]['size'], 2)}）`
+					temp.push({label, value: disks[k]['name']})
 				}
 			}
 			setCacheOption(temp);
-			setDisk(result);
+			setDisk(disks);
 		})
 		WebSocketService.call(uuid, URL.DISK_UNUSED);
 	}
@@ -180,10 +202,7 @@ function PoolCreate() {
 			let temp = []
 			for (let k in diskList) {
 				if (diskList[k]['type'] === changedValues['type']) {
-					let label = '位置-unknown; '+diskList[k]['type']+'; '+getVolume(diskList[k]['size'], 2)
-					if (diskList[k]['enclosure'] && diskList[k]['enclosure']['slot']) {
-						label = '位置-'+diskList[k]['enclosure']['slot']+'; '+diskList[k]['type']+'; '+getVolume(diskList[k]['size'], 2)
-					}
+					let label = `${diskList[k]['name']}（位置-${diskList[k]['position']}; ${diskList[k]['type']}; ${getVolume(diskList[k]['size'], 2)}）`
 					temp.push({label, value: diskList[k]['name']})
 				}
 			}

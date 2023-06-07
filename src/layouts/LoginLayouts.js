@@ -5,7 +5,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from 'pubsub-js'
 import { WebSocketService } from '../server'
 import { EventMessage, URL } from '../server/enum'
-import { isEmpty, getUUID } from "../utils/cmn";
+import { getUUID } from "../utils/cmn";
+import { product } from "../component/DiskSlot/enum";
 import { usernameValidator, passwordValidator, tipsText } from '../pages/credentials/users/helptext'
 import Cache from "../utils/Cache";
 import './index.css'
@@ -13,7 +14,7 @@ import './index.css'
 const { Content } = Layout;
 const FormItem = Form.Item;
 let timer = null;
-let loginSub = null, tokenSub = null;
+let loginSub = null, tokenSub = null, typeSub = null;
 
 const LoginLayout = () => {
 	Cache.removeUserInfo();
@@ -29,12 +30,12 @@ const LoginLayout = () => {
 			notification.warning({message: '令牌已过期，请重新登录。'});
 		}
 		connected();
-		// getScreen();
 
 		// 轮询判断当前 connected连接双胎
 		return () => {
 			PubSub.unsubscribe(loginSub);
 			PubSub.unsubscribe(tokenSub);
+			PubSub.unsubscribe(typeSub);
 
 			if (timer!==null) {
 				clearInterval(timer)
@@ -92,7 +93,6 @@ const LoginLayout = () => {
 	const loginCallback = (result, username) => {
 		if (result === 0) {
 		// if (result) {
-			notification.success({message: '登录成功'})
 			getToken(username);
 		}
 		else if(result === 1) {   // 被列入黑名单
@@ -110,8 +110,7 @@ const LoginLayout = () => {
 	const getToken = username => {
 		const uuid = getUUID();
 		tokenSub = PubSub.subscribe(uuid, (_, {result})=>{
-			Cache.saveUserInfo({username, token: result})
-			navigate('/index')
+			getType(username, result);
 		})
 		WebSocketService.call(uuid, URL.GET_TOKEN, [300]);
 
@@ -121,6 +120,31 @@ const LoginLayout = () => {
 			name: '*',
 			msg: EventMessage.Sub,
 		});
+	}
+
+	// 获取设备类型 用于硬盘槽位的对应
+	const getType = (username, token) => {
+		let uuid = getUUID();
+		typeSub = PubSub.subscribe(uuid, (_, {result, error})=>{
+			if (error) {
+				notification.error({message: '登录成功但设备类型获取错误，请联系管理员！'});
+				Cache.saveUserInfo({username, token})
+				navigate('/index')
+			}
+			else {
+				// getList(Number(result+''))
+				if (result && result['product_type'] && typeof product[result['product_type']]==='number') {
+					notification.success({message: '登录成功'})
+					Cache.saveUserInfo({username, token, productType: product[result['product_type']]})
+				}
+				else {
+					notification.error({message: '登录成功但设备类型获取错误，请联系管理员！'});
+					Cache.saveUserInfo({username, token})
+				}
+				navigate('/index')
+			}
+		})
+		WebSocketService.call(uuid, URL.PROD_TYPE);
 	}
 
 	// 判断socket连接状态

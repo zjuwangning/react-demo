@@ -181,10 +181,10 @@ function SMBAuth() {
 				if (flag) {
 					let userTemp = [], groupTemp = [], aclTemp = [];
 					for (let k in result['acl']) {
-						if (result['acl'][k]['tag'] === 'USER' && result['acl'][k]['who']!=='ftp') {
+						if (result['acl'][k]['tag'] === 'USER' && result['acl'][k]['who'] && result['acl'][k]['who']!=='ftp') {
 							userTemp.push(result['acl'][k])
 						}
-						else if (result['acl'][k]['tag'] === 'GROUP') {
+						else if (result['acl'][k]['tag'] === 'GROUP' && result['acl'][k]['who'] ) {
 							groupTemp.push(result['acl'][k])
 						}
 						let temp = cpy(result['acl'][k])

@@ -14,9 +14,8 @@ const IndexLayout = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		navigate('/dashboard')
-
 		loginState();
+
 		return () => {
 			PubSub.unsubscribe(authSub);
 		}
@@ -27,7 +26,8 @@ const IndexLayout = () => {
 		// 登录校验 未登录需跳转到登录页面
 		let userInfo = Cache.getUserInfo();
 		if (userInfo && userInfo['token']) {
-			authState();
+			navigate('/dashboard')
+			// authState();
 		}
 		else {
 			navigate('/login')

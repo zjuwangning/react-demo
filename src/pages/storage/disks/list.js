@@ -6,6 +6,8 @@ import PubSub from "pubsub-js";
 import { URL } from "../../../server/enum";
 import { getUUID, isEmpty, getVolume } from "../../../utils/cmn";
 import {WebSocketService} from "../../../server";
+import Cache from "../../../utils/Cache";
+import { esp } from '../../../component/DiskSlot/enum'
 
 let timer = null,
 	fetchSub = null,        // 获取硬盘数据
@@ -31,7 +33,14 @@ function DisksList() {
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
-		getType();
+		let userInfo = Cache.getUserInfo()
+		if (userInfo && typeof userInfo['productType']==='number') {
+			getList(userInfo['productType'])
+		}
+		else {
+			notification.error({message: '未获取到设备类型，请联系管理员！'})
+			getList(null)
+		}
 
 		return () => {
 			PubSub.unsubscribe(fetchSub);
@@ -44,14 +53,8 @@ function DisksList() {
 		}
 	}, []);
 
-	// 获取槽位规格 1*24 or 3*4
-	const getType = () => {
-		const type = 1
-		getList(type)
-	}
-
-	// 获取硬盘列表
-	const getList = type => {
+	// 获取硬盘列表  叶黄素/钙片
+	const getList = (type=null) => {
 		setTable(true);
 		let uuid = getUUID();
 		fetchSub = PubSub.subscribe(uuid, (_, {result, error})=>{
@@ -68,37 +71,30 @@ function DisksList() {
 
 	// 数据按slot排序
 	const sortData = (list, type) => {
-		let temp = [], disks = [], bootDisk = [];
-		if (type === 1) {
-			for (let k in list) {
-				if (list[k]['pool'] === 'boot-pool') {
-					bootDisk.push(list[k])
-				}
-				else {
-					if (list[k]['enclosure'] && list[k]['enclosure']['slot']) {
-						list[k]['slot'] = list[k]['enclosure']['slot']
-						disks[list[k]['slot']] = list[k]
-					}
-				}
+		// 将数据分为三组 系统盘/有enclosure的/没有enclosure的
+		let temp = [], disks = [], noEnDisks = [], bootDisk = [];
+		for (let k in list) {
+			if (list[k]['pool'] === 'boot-pool') {
+				bootDisk.push(list[k])
 			}
-			// 当数据没有enclosure时 直接将数据推进数组中
-			for (let k in list) {
-				if (list[k]['pool'] !== 'boot-pool' && list[k]['enclosure'] === null) {
+			else {
+				if (list[k]['enclosure'] && list[k]['enclosure']['number'] && list[k]['enclosure']['slot'] && esp[type]['es_pos'][list[k]['enclosure']['number']+'_'+list[k]['enclosure']['slot']]) {
+					list[k]['position'] = esp[type]['es_pos'][list[k]['enclosure']['number']+'_'+list[k]['enclosure']['slot']]['title']
 					disks.push(list[k])
 				}
-			}
-
-			for (let k in bootDisk) {
-				bootDisk[k]['slot'] = '系统盘'+(Number(k)+1)
-			}
-			for (let k in disks) {
-				if (disks[k] && disks[k]['identifier']) {
-					temp.push(disks[k])
+				else {
+					noEnDisks.push(list[k])
 				}
 			}
-			temp = bootDisk.concat(temp)
-			setData(temp)
 		}
+		disks.sort(function (a, b) {
+			return a['position'] - b['position']
+		})
+		for (let k in bootDisk) {
+			bootDisk[k]['position'] = '系统盘'+(Number(k)+1)
+		}
+		temp = bootDisk.concat(disks, noEnDisks)
+		setData(temp)
 	}
 
 	// 点击初始化按钮
@@ -228,7 +224,7 @@ function DisksList() {
 		},
 		{
 			title: (<div>位置 <Tooltip title={'物理硬盘在设备中的槽位，具体位置可以参照硬盘槽位图。'}><QuestionCircleOutlined /></Tooltip></div>),
-			dataIndex: 'slot',
+			dataIndex: 'position',
 			width: '8%',
 			render: t => t?t:'unknown'
 		},
