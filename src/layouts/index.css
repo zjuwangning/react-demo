@@ -70,14 +70,6 @@
     background-color: #87BEFA;
 }
 
-.logo-div {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 820px;
-    height: 140px;
-    background: url("/src/images/logo.svg") no-repeat;
-}
 
 .login-div {
     padding: 25px;

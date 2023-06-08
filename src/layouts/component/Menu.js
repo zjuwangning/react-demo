@@ -6,7 +6,7 @@ import PubSub from "pubsub-js";
 import { SubEvent } from '../enum'
 import '../index.css'
 
-const rootSubmenuKeys = ['/storage', '/share', '/task', '/credentials', '/system'];
+const rootSubmenuKeys = ['/credentials'];
 
 const MenuList = () => {
 	const [openKeys, setOpenKeys] = useState(['']);
@@ -61,45 +61,10 @@ const MenuList = () => {
 			key: '/dashboard', icon: <DashboardOutlined style={{fontSize: '20px'}}/>, label: '仪表盘'
 		},
 		{
-			key: '/storage', icon: <UploadOutlined style={{fontSize: '20px'}}/>, label: '存储池',
+			key: '/credentials', icon: <UserOutlined style={{fontSize: '20px'}}/>, label: '用户权限',
 			children: [
-				{key: '/storage/disks', label: '物理硬盘'},
-				{key: '/storage/pools', label: '存储池列表'}
-			]
-		},
-		{
-			key: '/network', icon: <ApartmentOutlined style={{fontSize: '20px'}}/>, label: '网络管理'
-		},
-		{
-			key: '/share', icon: <ShareAltOutlined style={{fontSize: '20px'}}/>, label: 'NAS共享',
-			children: [
-				{key: '/share/files', label: '共享文件'},
-				{key: '/share/protocol', label: '共享协议'},
-				{key: '/share/snapshot-manage', label: '快照管理'}
-			]
-		},
-		{
-			key: '/task', icon: <SnippetsOutlined style={{fontSize: '20px'}}/>, label: '任务管理',
-			children: [
-				{key: '/task/snapshot-task', label: '定期快照'},
-				{key: '/task/scrub-task', label: '校验任务'},
-				{key: '/task/rsync-task', label: '同步任务'}
-			]
-		},
-		{
-			key: '/credentials', icon: <UserOutlined style={{fontSize: '20px'}}/>, label: 'NAS账户',
-			children: [
-				{key: '/credentials/users', label: 'NAS用户'},
-				{key: '/credentials/groups', label: 'NAS群组'}
-			]
-		},
-		{
-			key: '/system', icon: <SettingOutlined style={{fontSize: '20px'}}/>, label: '系统设置',
-			children: [
-				{key: '/system/logs', label: '系统日志'},
-				{key: '/system/email', label: '邮件预警'},
-				{key: '/system/service', label: '服务设置'},
-				{key: '/system/update', label: '系统升级'}
+				{key: '/credentials/users', label: '用户'},
+				{key: '/credentials/groups', label: '群组'}
 			]
 		},
 	]
