@@ -10,69 +10,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: add dependencies">
+    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: clean router pages">
+      <change afterPath="$PROJECT_DIR$/src/server/fetch.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/server/socket.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/layouts/LoginLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/LoginLayouts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/component/Menu.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/Menu.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/network/bond.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/network/config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/network/global.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/network/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/network/index.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/enum.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/details.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/nfs.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/smb.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/files/snapshot.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/protocol/ftp.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/protocol/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/protocol/nfs.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/protocol/smb.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/protocol/webdav.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/snapshot/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/snapshot/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/task/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/task/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/task/enum.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/share/task/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/disks/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/disks/initialization.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/disks/list.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/details.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/enum.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/index.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/storage/pool/scrub.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/logs/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/mail/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/mail/receive.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/mail/send.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/network/bond.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/network/global.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/network/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/service/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/service/ssh.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/system/update/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/enum.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/rsync/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/rsync/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/rsync/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/scrub/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/scrub/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/scrub/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/scrub/priority.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/snapshot/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/snapshot/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/task/snapshot/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/route/route.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/route/route.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/dashboard/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,6 +81,7 @@
       <workItem from="1682238360576" duration="5667000" />
       <workItem from="1682498921619" duration="94000" />
       <workItem from="1685586102275" duration="628000" />
+      <workItem from="1686270326124" duration="1200000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
@@ -180,7 +125,14 @@
       <option name="project" value="LOCAL" />
       <updated>1682239103979</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="feat: clean router pages">
+      <created>1686189704226</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1686189704226</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -207,20 +159,21 @@
     <MESSAGE value="feat: add dependency less-loader" />
     <MESSAGE value="feat: add dependencies" />
     <MESSAGE value="feat: fix README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: fix README.md" />
+    <MESSAGE value="feat: clean router pages" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: clean router pages" />
   </component>
   <component name="WindowStateProjectService">
     <state x="957" y="277" key="FileChooserDialogImpl" timestamp="1682416103395">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="957" y="277" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1682416103395" />
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1686126579092">
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1686193415966">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1686126579092" />
-    <state x="973" y="256" width="596" height="532" key="find.popup" timestamp="1686127601971">
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1686193415966" />
+    <state x="973" y="256" width="596" height="532" key="find.popup" timestamp="1686212975731">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="973" y="256" width="596" height="532" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1686127601971" />
+    <state x="973" y="256" width="596" height="532" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1686212975731" />
   </component>
 </project>

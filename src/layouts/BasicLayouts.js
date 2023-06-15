@@ -24,11 +24,12 @@ const BasicLayout = () => {
 			<Sider trigger={null} collapsible collapsed={collapsed} style={{height: '100vh', overflowY: 'auto'}}>
 				{
 					collapsed?(
-						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px'}}><img src={logo} alt="" style={{height: '40px'}}/></Row>
+						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px', padding: '10px'}}>
+							<div style={{width: '100%', height: '100%', backgroundColor: 'lightGray'}}/>
+						</Row>
 					):(
-						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px', width: '200px'}}>
-							<img src={logo} alt="" style={{height: '40px'}}/>
-							<span className={'menu-title'}>SmarStor</span>
+						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px', width: '200px', padding: '10px'}}>
+							<div style={{width: '100%', height: '100%', backgroundColor: 'lightGray'}}/>
 						</Row>
 					)
 				}

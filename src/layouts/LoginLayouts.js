@@ -105,6 +105,7 @@ const LoginLayout = () => {
 				// getList(Number(result+''))
 				if (result && result['product_type'] && typeof product[result['product_type']]==='number') {
 					notification.success({message: '登录成功'})
+
 					Cache.saveUserInfo({username, token, productType: product[result['product_type']]})
 				}
 				else {
