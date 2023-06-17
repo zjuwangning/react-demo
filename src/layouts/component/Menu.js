@@ -63,8 +63,7 @@ const MenuList = () => {
 		{
 			key: '/credentials', icon: <UserOutlined style={{fontSize: '20px'}}/>, label: '用户权限',
 			children: [
-				{key: '/credentials/users', label: '用户'},
-				{key: '/credentials/groups', label: '群组'}
+
 			]
 		},
 	]
