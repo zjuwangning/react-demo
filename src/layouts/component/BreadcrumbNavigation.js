@@ -13,7 +13,7 @@ const BreadcrumbNavigation = () => {
 	const pathSnippets = location.pathname.split('/').filter((i) => i);
 	const extraBreadcrumbItems = pathSnippets.map((item, index) => {
 		const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
-		if (item === 'dashboard') {}
+		if (item === 'homepage') {}
 		else if (isEmpty(BreadcrumbData[item])) {}
 		else if (index+'' === pathSnippets.length-1+'') {
 			return (
@@ -40,11 +40,11 @@ const BreadcrumbNavigation = () => {
 
 	let breadcrumbItems = [
 		<Breadcrumb.Item key="home">
-			<a onClick={()=>{PubSub.publish(SubEvent.SWITCH_PAGE, '/dashboard')}}>首页</a>
+			<a onClick={()=>{PubSub.publish(SubEvent.SWITCH_PAGE, '/homepage')}}>首页</a>
 		</Breadcrumb.Item>,
 	].concat(extraBreadcrumbItems);
 
-	if (pathSnippets[0] === 'dashboard') {
+	if (pathSnippets[0] === 'homepage') {
 		breadcrumbItems = [
 			<Breadcrumb.Item key="home">
 				首页

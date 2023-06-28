@@ -4,6 +4,7 @@ import { Menu } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from "pubsub-js";
 import { SubEvent } from '../enum'
+import homeIcon from '../../images/homepage.png'
 import '../index.css'
 
 const rootSubmenuKeys = ['/credentials'];
@@ -58,13 +59,11 @@ const MenuList = () => {
 
 	const list = [
 		{
-			key: '/dashboard', icon: <DashboardOutlined style={{fontSize: '20px'}}/>, label: '仪表盘'
+			key: '/homepage', icon: (<img src={homeIcon} alt="" style={{height: '20px'}}/>), label: '首页'
 		},
 		{
-			key: '/credentials', icon: <UserOutlined style={{fontSize: '20px'}}/>, label: '用户权限',
-			children: [
+			key: '/user', icon: <UserOutlined style={{fontSize: '20px'}}/>, label: '用户',
 
-			]
 		},
 	]
 

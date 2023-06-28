@@ -6,7 +6,6 @@ import Footer from "./component/Footer";
 import Menu from "./component/Menu";
 import User from "./component/User";
 import BreadcrumbNavigation from "./component/BreadcrumbNavigation";
-import logo from '../images/logo.png'
 import './index.css'
 
 const { Header, Sider, Content } = Layout;

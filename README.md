@@ -25,7 +25,7 @@ src
 │  ├─credentials    
 │  │  ├─groups
 │  │  └─users
-│  ├─dashboard
+│  ├─homepage
 │  └─storage
 │      ├─disks
 │      └─pool
