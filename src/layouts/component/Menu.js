@@ -71,7 +71,7 @@ const MenuList = () => {
 	return (
 		<Menu
 			theme="dark"
-			mode="inline"
+			mode="horizontal"
 			selectedKeys={selectedKeys}
 			openKeys={openKeys}
 			onOpenChange={onOpenChange}

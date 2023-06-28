@@ -4,6 +4,7 @@ import LoginLayouts from "../layouts/LoginLayouts";
 import IndexLayouts from "../layouts/IndexLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
 
+import Homepage from "../pages/homepage";
 
 
 const NoMatch = () => (
@@ -25,7 +26,7 @@ export const routes = [
 
 // 后台页面路由
 export const basicRoutes = [
-
+	{path: '/homepage', element: <Homepage/>},
 
 	{path: '*', element: <NoMatch/>}
 ];

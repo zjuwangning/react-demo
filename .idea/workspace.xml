@@ -10,52 +10,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: update">
-      <change afterPath="$PROJECT_DIR$/src/pages/homepage/index.js" afterDir="false" />
+    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: menu">
+      <change afterPath="$PROJECT_DIR$/src/pages/homepage/activities.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/DiskSlot/enum.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/DiskSlot/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/DiskSlot/index.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/TablePage/index.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/TablePage/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/12bay.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/24bay.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/background.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/stars-sky.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/images/warning.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/IndexLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/IndexLayouts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/LicenseLayouts.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/LoginLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/LoginLayouts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/RebootLayouts.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/ShutdownLayouts.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/component/BreadcrumbNavigation.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/BreadcrumbNavigation.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/component/FakeMenu.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/component/FakeUser.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/layouts/component/Menu.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/Menu.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/component/User.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/User.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/enum.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/enum.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/groups/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/groups/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/groups/index.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/groups/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/groups/member.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/users/create.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/users/edit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/users/helptext.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/credentials/users/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/Cpu.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/Ring.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/SysInfo.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/Volume.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/dashboard/index.less" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/homepage/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/homepage/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/route/route.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/route/route.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/enum.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/enum.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/socket.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +85,8 @@
       <workItem from="1686270326124" duration="1200000" />
       <workItem from="1686815686643" duration="2091000" />
       <workItem from="1687671683382" duration="678000" />
-      <workItem from="1687830699281" duration="8031000" />
+      <workItem from="1687830699281" duration="13576000" />
+      <workItem from="1687936763051" duration="4937000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
@@ -188,7 +151,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687015381627</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="feat: menu">
+      <created>1687917185667</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1687917185667</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -217,24 +187,25 @@
     <MESSAGE value="feat: fix README.md" />
     <MESSAGE value="feat: clean router pages" />
     <MESSAGE value="feat: update" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: update" />
+    <MESSAGE value="feat: menu" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: menu" />
   </component>
   <component name="WindowStateProjectService">
     <state x="933" y="268" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1687838525025">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="933" y="268" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1687838525025" />
-    <state x="957" y="277" key="FileChooserDialogImpl" timestamp="1687674542648">
+    <state x="957" y="277" key="FileChooserDialogImpl" timestamp="1687924581824">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="957" y="277" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1687674542648" />
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1687015383327">
+    <state x="957" y="277" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1687924581824" />
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1687917187520">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1687015383327" />
-    <state x="973" y="256" width="596" height="584" key="find.popup" timestamp="1687856249686">
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1687917187520" />
+    <state x="973" y="256" width="596" height="584" key="find.popup" timestamp="1687923249159">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="973" y="256" width="596" height="584" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1687856249686" />
+    <state x="973" y="256" width="596" height="584" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1687923249159" />
   </component>
 </project>

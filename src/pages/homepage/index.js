@@ -1,7 +1,13 @@
 import React, { useEffect } from 'react';
+import { Row, Col } from 'antd'
+import Panel from '../../component/Panel'
+import Activities from './activities'
 
 
 function Homepage() {
+	// 获取页面可用宽度
+	let screenInfo = {width: window.screen.availWidth, height: window.screen.availHeight};
+	console.log('screenInfo', screenInfo);
 
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
@@ -11,7 +17,9 @@ function Homepage() {
 
 	return (
 		<div className={'full-page'}>
-			homepage
+			{/*<Panel title="活动日历" >*/}
+				<Activities />
+			{/*</Panel>*/}
 		</div>
 	);
 }

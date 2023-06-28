@@ -19,21 +19,16 @@ const BasicLayout = () => {
 
 
 	return (
-		<Layout>
-			<Sider trigger={null} collapsible collapsed={collapsed} style={{height: '100vh', overflowY: 'auto'}}>
-				{
-					collapsed?(
-						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px', padding: '10px'}}>
-							<div style={{width: '100%', height: '100%', backgroundColor: 'lightGray'}}/>
-						</Row>
-					):(
-						<Row type={'flex'} justify={'center'} align={'middle'} style={{height: '64px', width: '200px', padding: '10px'}}>
-							<div style={{width: '100%', height: '100%', backgroundColor: 'lightGray'}}/>
-						</Row>
-					)
-				}
+		<Layout className="layout">
+			<Header
+				style={{
+					display: 'flex',
+					alignItems: 'center',
+				}}
+			>
+				<div style={{width: '120px', height: '32px', backgroundColor: 'lightGray'}}/>
 				<Menu />
-			</Sider>
+			</Header>
 			<Layout className="site-layout">
 				<Header style={{padding: '0 10px', background: colorBgContainer,}}>
 					<Row type={'flex'} justify={'space-between'} align={'middle'} style={{height: '100%'}}>
