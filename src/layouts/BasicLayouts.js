@@ -8,10 +8,9 @@ import User from "./component/User";
 import BreadcrumbNavigation from "./component/BreadcrumbNavigation";
 import './index.css'
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
 
 const BasicLayout = () => {
-	const [collapsed, setCollapsed] = useState(false);
 
 	const {
 		token: { colorBgContainer },
@@ -26,31 +25,16 @@ const BasicLayout = () => {
 					alignItems: 'center',
 				}}
 			>
-				<div style={{width: '120px', height: '32px', backgroundColor: 'lightGray'}}/>
-				<Menu />
+				<div style={{width: '120px', height: '32px', backgroundColor: 'lightGray', marginRight: '50px'}}/>
+				<div style={{flexGrow: 1}}><Menu /></div>
+				<div><User /></div>
 			</Header>
-			<Layout className="site-layout">
-				<Header style={{padding: '0 10px', background: colorBgContainer,}}>
-					<Row type={'flex'} justify={'space-between'} align={'middle'} style={{height: '100%'}}>
-						<Col>
-							{React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
-								className: 'trigger',
-								onClick: () => setCollapsed(!collapsed),
-							})}
-						</Col>
-						<Col><User /></Col>
-					</Row>
-				</Header>
-				<Content style={{margin: '0 26px'}}>
-					<Row type={'flex'} align={'middle'} style={{height: '50px'}}>
-						<BreadcrumbNavigation />
-					</Row>
-					<div style={{ height: "calc(100vh - 145px)", padding: '12px 25px', background: colorBgContainer }}>
-						<BasicRouter />
-					</div>
-					<Footer />
-				</Content>
-			</Layout>
+			<Content>
+				<Row type={'flex'} align={'middle'} style={{height: '50px', marginLeft: '24px'}}>
+					<BreadcrumbNavigation />
+				</Row>
+				<BasicRouter />
+			</Content>
 		</Layout>
 	);
 };

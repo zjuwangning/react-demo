@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import PubSub from "pubsub-js";
 import { SubEvent } from '../enum'
 import homeIcon from '../../images/homepage.png'
+import userIcon from '../../images/user.png'
 import '../index.css'
 
 const rootSubmenuKeys = ['/credentials'];
@@ -62,7 +63,7 @@ const MenuList = () => {
 			key: '/homepage', icon: (<img src={homeIcon} alt="" style={{height: '20px'}}/>), label: '首页'
 		},
 		{
-			key: '/user', icon: <UserOutlined style={{fontSize: '20px'}}/>, label: '用户',
+			key: '/user', icon: (<img src={userIcon} alt="" style={{height: '20px'}}/>), label: '用户',
 
 		},
 	]

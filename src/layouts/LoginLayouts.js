@@ -35,7 +35,7 @@ const LoginLayout = () => {
 
 
 	return (
-		<Layout className="full-layout login-page">
+		<Layout className="login-page">
 			<Content>
 				<Row type={'flex'} justify={'center'} align={'middle'} style={{width: '100%', height: '100%'}}>
 					<div className={'login-div'}>

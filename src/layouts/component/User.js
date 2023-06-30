@@ -46,17 +46,17 @@ const User = () => {
 	];
 
 	return (
-		<Row type={'flex'} align={'middle'} style={{marginRight: '1vw'}}>
+		<div>
 			<Dropdown
 				menu={{items: powerItems}}
 				onOpenChange={flag => setPower(flag)}
 				open={powerOpen}
 				placement="bottomRight"
 			>
-				<PoweroffOutlined style={{marginLeft: '1.5vw', fontSize: '22px', cursor: 'pointer'}}/>
+				<PoweroffOutlined style={{marginLeft: '1.5vw', fontSize: '22px', cursor: 'pointer', color: 'white'}}/>
 			</Dropdown>
-			<span style={{marginLeft: '1vw',fontSize: '24px'}}>{userName}</span>
-		</Row>
+			<span style={{marginLeft: '1vw',fontSize: '24px', color: 'white'}}>{userName}</span>
+		</div>
 	);
 };
 export default User;
