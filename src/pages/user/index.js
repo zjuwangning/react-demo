@@ -11,7 +11,6 @@ function User() {
 
 	return (
 		<div className={'full-page'}>
-			<Row style={{height: '3000px'}}></Row>
 		</div>
 	);
 }

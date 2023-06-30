@@ -10,12 +10,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: basic layout">
-      <change afterPath="$PROJECT_DIR$/src/pages/user/index.js" afterDir="false" />
+    <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: user page">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/BasicLayouts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/homepage/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/homepage/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/route/route.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/route/route.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/user/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/user/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,7 +82,8 @@
       <workItem from="1687671683382" duration="678000" />
       <workItem from="1687830699281" duration="13576000" />
       <workItem from="1687936763051" duration="4978000" />
-      <workItem from="1688018072224" duration="5485000" />
+      <workItem from="1688018072224" duration="6708000" />
+      <workItem from="1688111634872" duration="578000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
@@ -171,7 +169,21 @@
       <option name="project" value="LOCAL" />
       <updated>1688092073271</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="feat: user page">
+      <created>1688093378864</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1688093378864</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat: user page">
+      <created>1688093390757</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1688093390757</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -203,7 +215,8 @@
     <MESSAGE value="feat: menu" />
     <MESSAGE value="feat: Layout" />
     <MESSAGE value="feat: basic layout" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: basic layout" />
+    <MESSAGE value="feat: user page" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: user page" />
   </component>
   <component name="WindowStateProjectService">
     <state x="933" y="268" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1687838525025">
@@ -214,10 +227,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="957" y="277" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1687958440183" />
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1688092074453">
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1688093391811">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1688092074453" />
+    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1688093391811" />
     <state x="973" y="256" width="596" height="584" key="find.popup" timestamp="1688091700518">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
