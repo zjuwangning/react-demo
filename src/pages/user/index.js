@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { Row, Col } from 'antd'
-import Panel from '../../component/Panel'
-import Activities from './activities'
 
 
-function Homepage() {
+function User() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 
@@ -13,11 +11,9 @@ function Homepage() {
 
 	return (
 		<div className={'full-page'}>
-			{/*<Panel title="活动日历" >*/}
-				<Activities />
-			{/*</Panel>*/}
+			<Row style={{height: '3000px'}}></Row>
 		</div>
 	);
 }
 
-export default Homepage;
+export default User;

@@ -30,7 +30,7 @@ const BasicLayout = () => {
 				<div><User /></div>
 			</Header>
 			<Content>
-				<Row type={'flex'} align={'middle'} style={{height: '50px', marginLeft: '24px'}}>
+				<Row type={'flex'} align={'middle'} style={{height: '50px', marginLeft: '36px'}}>
 					<BreadcrumbNavigation />
 				</Row>
 				<BasicRouter />
