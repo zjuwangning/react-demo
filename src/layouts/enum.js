@@ -3,7 +3,9 @@ const SubEvent = {
 }
 
 const BreadcrumbData = {
-	'user': {name: '用户', isPage: true},
+	'handbook': {name: '图鉴', isPage: false},
+	'character': {name: '角色图鉴', isPage: true},
+	'relic': {name: '遗器图鉴', isPage: true},
 }
 
 export { SubEvent, BreadcrumbData }

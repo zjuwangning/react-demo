@@ -1,13 +1,26 @@
-const environment = {
-	// remote: window.location.hostname,
-	remote: '192.17.1.216',
-	// remote: '192.17.1.172',
-	// remote: '192.17.1.185',
-	// remote: '192.17.1.183',
-	// remote: '10.188.1.40',
-	port: 6000,
-	production: false,
-	sentryPublicDsn: 'https://7ac3e76fe2a94f77a58e1c38ea6b42d9@sentry.ixsystems.com/4'
-};
+let environment = {}
+
+if (process.env.NODE_ENV === 'production') {
+	environment = {
+		host: window.location.hostname,
+		port: window.location.port,
+		protocol: window.location.protocol,
+
+		remote: window.location.hostname+':'+window.location.port,
+		origin: window.location.protocol + '//' + window.location.hostname + ':' + window.location.port,
+		production: true,
+	};
+}
+else if (process.env.NODE_ENV === 'development') {
+	environment = {
+		host: '192.17.1.216',
+		port: '80',
+		protocol: 'http:',
+
+		remote: '192.17.1.187',
+		origin: 'http://192.17.1.187',
+		production: false,
+	};
+}
 
 export default environment

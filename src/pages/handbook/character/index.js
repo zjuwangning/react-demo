@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Row, Col } from 'antd'
 
 
-function User() {
+function Character() {
 	// componentDidMount componentWillUnmount
 	useEffect(() => {
 
@@ -11,8 +11,9 @@ function User() {
 
 	return (
 		<div className={'full-page'}>
+			Character
 		</div>
 	);
 }
 
-export default User;
+export default Character;

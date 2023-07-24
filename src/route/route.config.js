@@ -5,7 +5,8 @@ import IndexLayouts from "../layouts/IndexLayouts";
 import BasicLayouts from "../layouts/BasicLayouts";
 
 import Homepage from "../pages/homepage";
-import User from "../pages/user";
+import Character from "../pages/handbook/character";
+import Relic from "../pages/handbook/relic";
 
 
 const NoMatch = () => (
@@ -28,7 +29,8 @@ export const routes = [
 // 后台页面路由
 export const basicRoutes = [
 	{path: '/homepage', element: <Homepage/>},
-	{path: '/user', element: <User/>},
+	{path: '/handbook/character', element: <Character/>},
+	{path: '/handbook/relic', element: <Relic/>},
 
 	{path: '*', element: <NoMatch/>}
 ];

@@ -11,7 +11,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bab36c0b-5f41-4dd6-883f-72c54794eeb2" name="Default Changelist" comment="feat: user page">
+      <change afterPath="$PROJECT_DIR$/src/pages/handbook/character/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/handbook/relic/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/component/Menu.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/component/Menu.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/layouts/enum.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/layouts/enum.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/user/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/route/route.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/route/route.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/environment.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/environment.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +89,10 @@
       <workItem from="1687830699281" duration="13576000" />
       <workItem from="1687936763051" duration="4978000" />
       <workItem from="1688018072224" duration="6708000" />
-      <workItem from="1688111634872" duration="1200000" />
+      <workItem from="1688111634872" duration="2472000" />
+      <workItem from="1689040370862" duration="7654000" />
+      <workItem from="1689149037341" duration="61000" />
+      <workItem from="1689927199700" duration="599000" />
     </task>
     <task id="LOCAL-00001" summary="feat: react-router-dom v6 路由功能添加">
       <created>1675245372202</created>
@@ -189,7 +199,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688119017591</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="feat: user page">
+      <created>1688542541262</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1688542541262</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -229,17 +246,21 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="933" y="268" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1687838525025" />
-    <state x="957" y="277" key="FileChooserDialogImpl" timestamp="1687958440183">
+    <state x="957" y="277" key="FileChooserDialogImpl" timestamp="1689142341716">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="957" y="277" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1687958440183" />
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2" timestamp="1688119018804">
+    <state x="957" y="277" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1689142341716" />
+    <state x="635" y="276" key="Vcs.Push.Dialog.v2" timestamp="1688542553140">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="732" y="241" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1688119018804" />
-    <state x="973" y="256" width="596" height="584" key="find.popup" timestamp="1688091700518">
+    <state x="635" y="276" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1688542553140" />
+    <state x="1105" y="332" width="596" height="584" key="find.popup" timestamp="1689047497089">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="973" y="256" width="596" height="584" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1688091700518" />
+    <state x="1105" y="332" width="596" height="584" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1689047497089" />
+    <state x="874" y="236" width="672" height="678" key="search.everywhere.popup" timestamp="1689057878298">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="874" y="236" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1689057878298" />
   </component>
 </project>

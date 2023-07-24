@@ -63,8 +63,11 @@ const MenuList = () => {
 			key: '/homepage', icon: (<img src={homeIcon} alt="" style={{height: '20px'}}/>), label: '首页'
 		},
 		{
-			key: '/user', icon: (<img src={userIcon} alt="" style={{height: '20px'}}/>), label: '用户',
-
+			key: '/handbook', icon: (<img src={userIcon} alt="" style={{height: '20px'}}/>), label: '图鉴',
+			children: [
+				{key: '/handbook/character', label: '角色图鉴'},
+				{key: '/handbook/relic', label: '遗器图鉴'}
+			]
 		},
 	]
 
